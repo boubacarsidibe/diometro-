@@ -70,8 +70,17 @@ export const interventionSchema = z.object({
 export const memberSchema = z.object({
   user_id: z.uuid(),
   role: z.enum(ROLES),
-  active: z.boolean(),
+  active: z.enum(["true", "false"]).transform((v) => v === "true"),
 });
+
+export const inviteSchema = z.object({
+  email: z.email("Email invalide").max(254),
+  displayName: text(120).min(2, "Nom trop court"),
+  role: z.enum(ROLES),
+});
+
+export const emailSchema = z.object({ email: z.email("Email invalide").max(254) });
+export const newPasswordSchema = z.object({ password: passwordSchema });
 
 export const mfaCodeSchema = z.string().regex(/^\d{6}$/, "Code à 6 chiffres");
 
