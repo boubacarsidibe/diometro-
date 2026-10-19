@@ -51,6 +51,15 @@ export function canWrite(role: Role): boolean {
   return role === "admin" || role === "responsable";
 }
 
+export const ROLE_LABEL: Record<Role, string> = { admin: "Administrateur", responsable: "Coordinateur", consultation: "Consultation" };
+
+// Admin ou coordinateur : gestion des comptes (un coordinateur ne gère pas les administrateurs).
+export async function requireManager(): Promise<Session> {
+  const s = await requireSession();
+  if (s.role === "consultation") redirect("/dashboard");
+  return s;
+}
+
 export async function requireAdmin(): Promise<Session> {
   const s = await requireSession();
   if (s.role !== "admin") redirect("/dashboard");

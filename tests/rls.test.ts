@@ -19,6 +19,7 @@ const AUTH_STUB = `
 const A_ADMIN = "00000000-0000-0000-0000-0000000000a1";
 const A_RESP = "00000000-0000-0000-0000-0000000000a2";
 const A_VIEW = "00000000-0000-0000-0000-0000000000a3";
+const A_RESP2 = "00000000-0000-0000-0000-0000000000a4";
 const B_ADMIN = "00000000-0000-0000-0000-0000000000b1";
 
 let db: PGlite;
@@ -47,13 +48,14 @@ beforeAll(async () => {
   db = new PGlite();
   await db.exec(AUTH_STUB);
   await db.exec(readFileSync("supabase/migrations/0001_init.sql", "utf8"));
-  for (const id of [A_ADMIN, A_RESP, A_VIEW, B_ADMIN]) await db.exec(`insert into auth.users values ('${id}')`);
+  await db.exec(readFileSync("supabase/migrations/0002_coordinators_manage_coordinators.sql", "utf8"));
+  for (const id of [A_ADMIN, A_RESP, A_RESP2, A_VIEW, B_ADMIN]) await db.exec(`insert into auth.users values ('${id}')`);
 
   tenantA = await as(A_ADMIN, "aal1", async () => (await db.query<{ create_tenant: string }>(`select public.create_tenant('Entreprise A','Alice')`)).rows[0].create_tenant);
   tenantB = await as(B_ADMIN, "aal1", async () => (await db.query<{ create_tenant: string }>(`select public.create_tenant('Entreprise B','Bob')`)).rows[0].create_tenant);
   // Rattachement des autres membres de A (provisionnement serveur, hors API publique).
   await db.exec(`insert into public.profiles(user_id,tenant_id,display_name,role) values
-    ('${A_RESP}','${tenantA}','Resp','responsable'), ('${A_VIEW}','${tenantA}','Lecteur','consultation')`);
+    ('${A_RESP}','${tenantA}','Resp','responsable'), ('${A_VIEW}','${tenantA}','Lecteur','consultation'), ('${A_RESP2}','${tenantA}','Resp 2','responsable')`);
   await as(A_ADMIN, "aal2", () => db.exec(`insert into public.instruments(tenant_id,ref,designation) values ('${tenantA}','A-1','Manomètre A')`));
   await as(B_ADMIN, "aal2", () => db.exec(`insert into public.instruments(tenant_id,ref,designation) values ('${tenantB}','B-1','Balance B')`));
 });
@@ -91,6 +93,27 @@ describe("isolation multi-entreprise (RLS)", () => {
     await as(A_VIEW, "aal2", () => db.exec(`update public.profiles set role='admin' where user_id='${A_VIEW}'`));
     expect(await count(`select * from public.profiles where user_id='${A_VIEW}' and role='admin'`, [A_ADMIN, "aal2"])).toBe(0);
     expect(await fails(`update public.profiles set tenant_id='${tenantB}' where user_id='${A_ADMIN}'`, [A_ADMIN, "aal2"])).toBe(true);
+  });
+
+  it("un coordinateur gère les autres coordinateurs, mais pas les administrateurs", async () => {
+    const role = (id: string) => db.query<{ role: string; active: boolean }>(`select role, active from public.profiles where user_id='${id}'`).then((r) => r.rows[0]);
+    await as(A_RESP, "aal2", () => db.exec(`update public.profiles set active=false where user_id='${A_RESP2}'`));
+    expect((await role(A_RESP2)).active).toBe(false);
+    await as(A_RESP, "aal2", () => db.exec(`update public.profiles set active=true, role='consultation' where user_id='${A_RESP2}'`));
+    expect((await role(A_RESP2)).role).toBe("consultation");
+    await as(A_RESP, "aal2", () => db.exec(`update public.profiles set role='responsable' where user_id='${A_RESP2}'`));
+    // pas d'élévation en admin, ni sur soi-même, ni sur un autre
+    expect(await fails(`update public.profiles set role='admin' where user_id='${A_RESP2}'`, [A_RESP, "aal2"])).toBe(true);
+    expect(await fails(`update public.profiles set role='admin' where user_id='${A_RESP}'`, [A_RESP, "aal2"])).toBe(true);
+    // ne peut pas désactiver ni rétrograder un administrateur (aucune ligne visible en écriture)
+    await as(A_RESP, "aal2", () => db.exec(`update public.profiles set active=false, role='consultation' where user_id='${A_ADMIN}'`));
+    expect((await role(A_ADMIN))).toEqual({ role: "admin", active: true });
+    // un coordinateur d'une autre entreprise n'a aucune prise
+    await as(B_ADMIN, "aal2", () => db.exec(`update public.profiles set active=false where user_id='${A_RESP2}'`));
+    expect((await role(A_RESP2)).active).toBe(true);
+    // un consultant ne peut rien
+    await as(A_VIEW, "aal2", () => db.exec(`update public.profiles set active=false where user_id='${A_RESP2}'`));
+    expect((await role(A_RESP2)).active).toBe(true);
   });
 
   it("un admin ne peut pas retirer le dernier administrateur", async () => {

@@ -3,14 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { parseForm, type FormState } from "@/lib/form";
 import { inviteSchema, memberSchema } from "@/lib/schemas";
-import { requireAdmin } from "@/lib/session";
+import { requireManager } from "@/lib/session";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export async function updateMember(_: FormState, formData: FormData): Promise<FormState> {
-  const s = await requireAdmin();
+  const s = await requireManager();
   const parsed = parseForm(memberSchema, formData);
   if ("state" in parsed) return parsed.state;
+  if (s.role !== "admin" && parsed.data.role === "admin") return { error: "Seul un administrateur peut attribuer ce rôle." };
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("profiles")
@@ -25,9 +26,10 @@ export async function updateMember(_: FormState, formData: FormData): Promise<Fo
 }
 
 export async function inviteMember(_: FormState, formData: FormData): Promise<FormState> {
-  const s = await requireAdmin();
+  const s = await requireManager();
   const parsed = parseForm(inviteSchema, formData);
   if ("state" in parsed) return parsed.state;
+  if (s.role !== "admin" && parsed.data.role === "admin") return { error: "Seul un administrateur peut inviter un administrateur." };
   try {
     const admin = createAdminClient();
     const { data, error } = await admin.auth.admin.inviteUserByEmail(parsed.data.email);
