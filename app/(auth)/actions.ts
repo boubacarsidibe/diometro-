@@ -27,11 +27,17 @@ export async function register(_: FormState, formData: FormData): Promise<FormSt
   const parsed = parseForm(registerSchema, formData);
   if ("state" in parsed) return parsed.state;
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     ...parsed.data,
     options: { emailRedirectTo: `${await siteUrl()}/auth/confirm?next=/onboarding` },
   });
-  if (error && error.status !== 422) return { error: "Inscription impossible pour le moment. Réessayez plus tard." };
+  if (error && error.status !== 422) {
+    // Cause technique dans les logs serveur (jamais d'email ni de mot de passe).
+    console.error("signUp refusé", { status: error.status, code: error.code });
+    return { error: "Inscription impossible pour le moment. Réessayez plus tard." };
+  }
+  // Confirmation d'email désactivée côté Supabase : la session est déjà ouverte.
+  if (data?.session) redirect("/onboarding");
   // Même réponse que le compte existe ou non (anti-énumération).
   return { ok: "Si l'adresse est valide, un email de confirmation vient d'être envoyé." };
 }
