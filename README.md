@@ -21,7 +21,7 @@ Solution numérique de gestion et de suivi métrologique des instruments de mesu
 ## Installation
 
 1. Créez un projet gratuit sur [supabase.com](https://supabase.com).
-2. Exécutez, dans l'ordre, `supabase/migrations/0001_init.sql` puis `0002_coordinators_manage_coordinators.sql` dans **SQL Editor** (ou via la CLI Supabase).
+2. Exécutez, dans l'ordre, `supabase/migrations/0001_init.sql`, `0002_coordinators_manage_coordinators.sql` puis `0003_revoke_trigger_function_execute.sql` dans **SQL Editor** (ou via la CLI Supabase).
 3. **Authentication > Providers > Email** : activez « Confirm email ».
 4. **Authentication > URL Configuration** : renseignez *Site URL* (votre domaine Vercel).
 5. **Authentication > Email Templates** (Confirm signup, Invite user, Reset password) : remplacez le lien par

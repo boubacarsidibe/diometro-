@@ -49,6 +49,7 @@ beforeAll(async () => {
   await db.exec(AUTH_STUB);
   await db.exec(readFileSync("supabase/migrations/0001_init.sql", "utf8"));
   await db.exec(readFileSync("supabase/migrations/0002_coordinators_manage_coordinators.sql", "utf8"));
+  await db.exec(readFileSync("supabase/migrations/0003_revoke_trigger_function_execute.sql", "utf8"));
   for (const id of [A_ADMIN, A_RESP, A_RESP2, A_VIEW, B_ADMIN]) await db.exec(`insert into auth.users values ('${id}')`);
 
   tenantA = await as(A_ADMIN, "aal1", async () => (await db.query<{ create_tenant: string }>(`select public.create_tenant('Entreprise A','Alice')`)).rows[0].create_tenant);
@@ -143,6 +144,15 @@ describe("isolation multi-entreprise (RLS)", () => {
     expect(await fails(`delete from public.audit_log`, [A_ADMIN, "aal2"])).toBe(true);
     expect(await fails(`update public.audit_log set action='x'`, [A_ADMIN, "aal2"])).toBe(true);
     expect(await fails(`insert into public.audit_log(tenant_id,action,entity,entity_id) values ('${tenantA}','fake','x','1')`, [A_ADMIN, "aal2"])).toBe(true);
+  });
+
+  it("les fonctions de trigger ne sont pas appelables par les utilisateurs, mais les triggers fonctionnent", async () => {
+    expect(await fails(`select public.write_audit()`, [A_ADMIN, "aal2"])).toBe(true);
+    expect(await fails(`select public.guard_profile()`, [A_ADMIN, "aal2"])).toBe(true);
+    // l'audit est toujours alimenté par les triggers après la révocation
+    const before = await count("select * from public.audit_log", [A_ADMIN, "aal2"]);
+    await as(A_ADMIN, "aal2", () => db.exec(`update public.instruments set zone='Z1' where ref='A-1'`));
+    expect(await count("select * from public.audit_log", [A_ADMIN, "aal2"])).toBe(before + 1);
   });
 
   it("create_tenant refuse un compte déjà rattaché et un anonyme", async () => {
