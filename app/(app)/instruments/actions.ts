@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { parseForm, type FormState } from "@/lib/form";
+import { echoValues, parseForm, type FormState } from "@/lib/form";
 import { instrumentSchema, interventionSchema } from "@/lib/schemas";
 import { canWrite, requireSession } from "@/lib/session";
 import { addMonths } from "@/lib/status";
@@ -23,7 +23,7 @@ export async function createInstrument(_: FormState, formData: FormData): Promis
     .select("id")
     .single();
   if (error) {
-    return error.code === "23505" ? { fieldErrors: { ref: "Cette référence existe déjà." }, error: "Référence déjà utilisée." } : { error: "Enregistrement impossible." };
+    return error.code === "23505" ? { fieldErrors: { ref: "Cette référence existe déjà." }, error: "Référence déjà utilisée.", values: echoValues(formData) } : { error: "Enregistrement impossible.", values: echoValues(formData) };
   }
   revalidatePath("/", "layout");
   redirect(`/instruments/${data.id}`);
@@ -36,7 +36,7 @@ export async function updateInstrument(id: string, _: FormState, formData: FormD
   if ("state" in parsed) return parsed.state;
   const supabase = await createClient();
   const { error } = await supabase.from("instruments").update(parsed.data).eq("id", id);
-  if (error) return error.code === "23505" ? { fieldErrors: { ref: "Cette référence existe déjà." }, error: "Référence déjà utilisée." } : { error: "Mise à jour impossible." };
+  if (error) return error.code === "23505" ? { fieldErrors: { ref: "Cette référence existe déjà." }, error: "Référence déjà utilisée.", values: echoValues(formData) } : { error: "Mise à jour impossible.", values: echoValues(formData) };
   revalidatePath("/", "layout");
   return { ok: "Instrument mis à jour." };
 }
@@ -57,7 +57,7 @@ export async function addIntervention(instrumentId: string, _: FormState, formDa
   if ("state" in parsed) return parsed.state;
   const supabase = await createClient();
   const { error } = await supabase.from("interventions").insert({ ...parsed.data, tenant_id: s.tenant.id, realise_par: s.userId });
-  if (error) return { error: "Enregistrement impossible." };
+  if (error) return { error: "Enregistrement impossible.", values: echoValues(formData) };
 
   // Un étalonnage conforme replanifie automatiquement la prochaine échéance.
   if (parsed.data.type === "Étalonnage" && parsed.data.resultat !== "Non conforme") {

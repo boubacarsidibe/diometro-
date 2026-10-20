@@ -14,9 +14,9 @@ export function InviteForm({ action, canAssignAdmin }: { action: (s: FormState, 
     <form action={formAction} noValidate>
       <Notice error={state.error} ok={state.ok} />
       <div className="grid cols-3">
-        <Field label="Email" name="email" error={e.email}><input id="email" name="email" type="email" className="input" required /></Field>
-        <Field label="Nom affiché" name="displayName" error={e.displayName}><input id="displayName" name="displayName" className="input" required /></Field>
-        <Field label="Rôle" name="role"><select id="role" name="role" className="input" defaultValue="consultation">{ROLES.filter((r) => canAssignAdmin || r !== "admin").map((r) => <option key={r} value={r}>{LABEL[r]}</option>)}</select></Field>
+        <Field label="Email" name="email" error={e.email}><input id="email" name="email" type="email" className="input" defaultValue={state.values?.email ?? ""} required /></Field>
+        <Field label="Nom affiché" name="displayName" error={e.displayName}><input id="displayName" name="displayName" className="input" defaultValue={state.values?.displayName ?? ""} required /></Field>
+        <Field label="Rôle" name="role"><select id="role" name="role" className="input" defaultValue={state.values?.role ?? "consultation"}>{ROLES.filter((r) => canAssignAdmin || r !== "admin").map((r) => <option key={r} value={r}>{LABEL[r]}</option>)}</select></Field>
       </div>
       <div className="form-actions"><SubmitButton>Envoyer l&apos;invitation</SubmitButton></div>
     </form>

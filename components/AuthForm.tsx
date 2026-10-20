@@ -15,7 +15,7 @@ export function AuthForm({
       <Notice error={state.error} ok={state.ok} />
       {inputs.map((i) => (
         <Field key={i.name} label={i.label} name={i.name} error={state.fieldErrors?.[i.name]}>
-          <input id={i.name} name={i.name} type={i.type ?? "text"} className="input" autoComplete={i.autoComplete} required />
+          <input id={i.name} name={i.name} type={i.type ?? "text"} className="input" autoComplete={i.autoComplete} defaultValue={state.values?.[i.name] ?? ""} required />
           {i.hint && <span className="helper">{i.hint}</span>}
         </Field>
       ))}

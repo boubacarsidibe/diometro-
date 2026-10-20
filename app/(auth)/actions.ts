@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { parseForm, type FormState } from "@/lib/form";
+import { echoValues, parseForm, type FormState } from "@/lib/form";
 import { emailSchema, loginSchema, newPasswordSchema, onboardingSchema, registerSchema } from "@/lib/schemas";
 
 async function siteUrl(): Promise<string> {
@@ -15,11 +15,11 @@ async function siteUrl(): Promise<string> {
 
 export async function login(_: FormState, formData: FormData): Promise<FormState> {
   const parsed = parseForm(loginSchema, formData);
-  if ("state" in parsed) return { error: "Email ou mot de passe invalide." };
+  if ("state" in parsed) return { error: "Email ou mot de passe invalide.", values: echoValues(formData) };
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
   // Message générique : ne révèle pas si le compte existe.
-  if (error) return { error: "Email ou mot de passe invalide." };
+  if (error) return { error: "Email ou mot de passe invalide.", values: echoValues(formData) };
   redirect("/dashboard");
 }
 
@@ -34,7 +34,7 @@ export async function register(_: FormState, formData: FormData): Promise<FormSt
   if (error && error.status !== 422) {
     // Cause technique dans les logs serveur (jamais d'email ni de mot de passe).
     console.error("signUp refusé", { status: error.status, code: error.code });
-    return { error: "Inscription impossible pour le moment. Réessayez plus tard." };
+    return { error: "Inscription impossible pour le moment. Réessayez plus tard.", values: echoValues(formData) };
   }
   // Confirmation d'email désactivée côté Supabase : la session est déjà ouverte.
   if (data?.session) redirect("/onboarding");
@@ -77,7 +77,7 @@ export async function createCompany(_: FormState, formData: FormData): Promise<F
     p_name: parsed.data.company,
     p_display_name: parsed.data.displayName,
   });
-  if (error) return { error: "Création de l'entreprise impossible (compte déjà rattaché ?)." };
+  if (error) return { error: "Création de l'entreprise impossible (compte déjà rattaché ?).", values: echoValues(formData) };
   redirect("/mfa");
 }
 
