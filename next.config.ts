@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const config: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
+  // Dev uniquement : permet d'ouvrir l'application par l'IP du réseau local (ex. 192.168.56.1)
+  // en plus de localhost, sinon la page ne s'anime pas (hydratation bloquée).
+  allowedDevOrigins: ["192.168.*.*", "10.*.*.*", "172.*.*.*"],
   async headers() {
     return [
       {
