@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC = ["/login", "/register", "/forgot-password", "/auth/confirm"];
+const PUBLIC = ["/login", "/register", "/forgot-password", "/auth/confirm", "/api/cron"];
 
 function buildCsp(nonce: string): string {
   const dev = process.env.NODE_ENV === "development";

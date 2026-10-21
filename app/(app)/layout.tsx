@@ -17,16 +17,31 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <div className="app" style={{ ["--accent" as string]: accent, ["--accent-soft" as string]: accent }}>
       <aside className="sidebar">
         <div className="logo-wrap">
-          <div className="logo-name">DIO<span>METRO</span></div>
+          {s.tenant.logo_data ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img className="logo-img" src={s.tenant.logo_data} alt={`Logo ${s.tenant.name}`} />
+          ) : (
+            <div className="logo-name">DIO<span>METRO</span></div>
+          )}
           <div className="logo-sub">{s.tenant.name}</div>
         </div>
-        <nav className="navgroup" aria-label="Navigation principale">
+        <nav className="navgroup" aria-label="Navigation principale" style={{ overflowY: "auto" }}>
           <div className="navlabel">Navigation</div>
           <NavLink href="/dashboard" badge={rows.length}>Tableau de bord</NavLink>
           <NavLink href="/instruments">Instruments</NavLink>
+          <NavLink href="/planning">Planning</NavLink>
           <NavLink href="/alerts" badge={alerts} alert>Alertes</NavLink>
+          <NavLink href="/prestataires">Prestataires</NavLink>
+          <NavLink href="/inventaire">Inventaire</NavLink>
+          <NavLink href="/etiquettes">QR codes et étiquettes</NavLink>
+          {(s.role !== "consultation" || s.isPlatformAdmin) && <div className="navlabel" style={{ marginTop: 10 }}>Administration</div>}
           {s.role !== "consultation" && <NavLink href="/users">Utilisateurs</NavLink>}
+          {s.role === "admin" && <NavLink href="/corbeille">Corbeille</NavLink>}
+          {s.role === "admin" && <NavLink href="/parametres">Paramètres</NavLink>}
           {s.role === "admin" && <NavLink href="/audit">Audit trail</NavLink>}
+          {s.isPlatformAdmin && <NavLink href="/admin">Plateforme</NavLink>}
+          <div className="navlabel" style={{ marginTop: 10 }}>Aide</div>
+          <NavLink href="/aide">Aide et FAQ</NavLink>
         </nav>
         <div className="userbox">
           <div className="userline">{s.displayName}</div>

@@ -10,7 +10,8 @@ export type Session = {
   email: string;
   displayName: string;
   role: Role;
-  tenant: { id: string; name: string; accent: string };
+  tenant: { id: string; name: string; accent: string; logo_data: string | null };
+  isPlatformAdmin: boolean;
 };
 
 // Contrôle d'accès côté serveur (défense en profondeur : la base applique aussi la RLS).
@@ -35,8 +36,10 @@ export const requireSession = cache(async (): Promise<Session> => {
   const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
   if (aal?.currentLevel !== "aal2") redirect("/mfa");
 
-  const { data: tenant } = await supabase.from("tenants").select("id, name, accent").eq("id", profile.tenant_id).single();
-  if (!tenant) redirect("/login");
+  // Entreprise bloquée ou abonnement expiré : la base masque ses données, on affiche un message clair.
+  const { data: tenant } = await supabase.from("tenants").select("id, name, accent, logo_data").eq("id", profile.tenant_id).maybeSingle();
+  if (!tenant) redirect("/suspendu");
+  const { data: platform } = await supabase.rpc("is_platform_admin");
 
   return {
     userId: user.id,
@@ -44,6 +47,7 @@ export const requireSession = cache(async (): Promise<Session> => {
     displayName: profile.display_name,
     role: profile.role as Role,
     tenant,
+    isPlatformAdmin: platform === true,
   };
 });
 
@@ -63,5 +67,11 @@ export async function requireManager(): Promise<Session> {
 export async function requireAdmin(): Promise<Session> {
   const s = await requireSession();
   if (s.role !== "admin") redirect("/dashboard");
+  return s;
+}
+
+export async function requirePlatformAdmin(): Promise<Session> {
+  const s = await requireSession();
+  if (!s.isPlatformAdmin) redirect("/dashboard");
   return s;
 }

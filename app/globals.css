@@ -142,3 +142,30 @@ tr.row-yellow td:first-child { box-shadow: inset 3px 0 0 var(--yellow); }
 .secret { font-family: Consolas, monospace; font-size: 12px; background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 8px; word-break: break-all; }
 dl.details { display: grid; grid-template-columns: 160px 1fr; gap: 8px 16px; font-size: 14px; }
 dl.details dt { color: var(--muted); font-weight: 600; font-size: 12.5px; }
+
+/* ── Calendrier, étiquettes, impression ─────────────── */
+.cal { width: 100%; table-layout: fixed; }
+.cal th { text-align: center; }
+.cal td { height: 96px; vertical-align: top; padding: 6px; border: 1px solid var(--line); font-size: 12px; background: #fff; }
+.cal td.empty-day { background: var(--panel2); }
+.cal .dnum { font-weight: 700; color: var(--muted); margin-bottom: 4px; }
+.chip { display: block; margin-top: 3px; padding: 2px 6px; border-radius: 6px; font-size: 11px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; background: var(--slate2); color: var(--text-soft); text-decoration: none; }
+.chip.red { background: var(--red2); color: #991b1b; } .chip.orange { background: var(--orange2); color: #9a3412; }
+.chip.yellow { background: var(--yellow2); color: #854d0e; } .chip.green { background: var(--green2); color: #166534; }
+.labels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.label-card { border: 1px dashed var(--line2); border-radius: 10px; padding: 10px; display: flex; gap: 10px; align-items: center; background: #fff; break-inside: avoid; }
+.label-card img { width: 96px; height: 96px; }
+.label-card .l-ref { font-weight: 800; font-size: 14px; }
+.label-card .l-sub { font-size: 11.5px; color: var(--text-soft); }
+.logo-img { max-height: 40px; max-width: 150px; object-fit: contain; background: #fff; border-radius: 8px; padding: 4px 6px; }
+.faq details { border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; background: #fff; margin-bottom: 10px; }
+.faq summary { cursor: pointer; font-weight: 700; }
+.faq p { margin-top: 8px; color: var(--text-soft); font-size: 14px; line-height: 1.5; }
+.progress { height: 10px; background: var(--slate2); border-radius: 999px; overflow: hidden; }
+.progress > div { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-soft)); }
+.stars { color: var(--yellow); letter-spacing: 2px; }
+@media print {
+  .sidebar, .topbar, .no-print { display: none !important; }
+  .app { display: block; } body { background: #fff; } .content { padding: 0; max-width: none; }
+  .label-card { border: 1px solid #999; }
+}

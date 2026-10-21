@@ -20,6 +20,7 @@ export default async function InstrumentPage({ params }: { params: Promise<{ id:
   const instrument = data as Instrument;
   const { data: ints } = await supabase.from("interventions").select("*").eq("instrument_id", id).order("date", { ascending: false });
   const interventions = (ints ?? []) as Intervention[];
+  const { data: prest } = await supabase.from("prestataires").select("id, nom").is("deleted_at", null).eq("actif", true).order("nom");
   const write = canWrite(s.role);
 
   return (
@@ -67,7 +68,7 @@ export default async function InstrumentPage({ params }: { params: Promise<{ id:
         {write && (
           <div className="card">
             <h2>Ajouter une intervention</h2>
-            <InterventionForm action={addIntervention.bind(null, id)} />
+            <InterventionForm action={addIntervention.bind(null, id)} prestataires={prest ?? []} />
           </div>
         )}
 

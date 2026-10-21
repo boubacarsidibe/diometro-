@@ -56,6 +56,10 @@ export async function addIntervention(instrumentId: string, _: FormState, formDa
   const parsed = parseForm(interventionSchema, withInstrument(formData, instrumentId));
   if ("state" in parsed) return parsed.state;
   const supabase = await createClient();
+  if (parsed.data.prestataire_id && !parsed.data.prestataire) {
+    const { data: p } = await supabase.from("prestataires").select("nom").eq("id", parsed.data.prestataire_id).maybeSingle();
+    if (p) parsed.data.prestataire = p.nom;
+  }
   const { error } = await supabase.from("interventions").insert({ ...parsed.data, tenant_id: s.tenant.id, realise_par: s.userId });
   if (error) return { error: "Enregistrement impossible.", values: echoValues(formData) };
 
