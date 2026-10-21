@@ -20,7 +20,7 @@ export default async function InstrumentsPage({ searchParams }: { searchParams: 
       <Topbar
         title="Instruments"
         subtitle={`${rows.length} instrument${rows.length > 1 ? "s" : ""}`}
-        actions={canWrite(s.role) && <Link className="btn small primary" href="/instruments/new">Ajouter un instrument</Link>}
+        actions={<><a className="btn small soft" href="/export/instruments.xlsx">Excel</a><a className="btn small soft" href="/export/instruments.pdf">PDF</a>{canWrite(s.role) && <Link className="btn small primary" href="/instruments/new">Ajouter un instrument</Link>}</>}
       />
       <div className="content">
         <form className="toolbar" role="search">

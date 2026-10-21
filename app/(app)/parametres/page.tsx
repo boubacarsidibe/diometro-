@@ -1,0 +1,30 @@
+import { BrandingForm } from "@/components/BrandingForm";
+import { Topbar } from "@/components/Topbar";
+import { requireAdmin } from "@/lib/session";
+import { createClient } from "@/lib/supabase/server";
+import { saveBranding } from "./actions";
+
+export default async function ParametresPage() {
+  const s = await requireAdmin();
+  const supabase = await createClient();
+  const { data } = await supabase.from("tenants").select("plan, plan_expires_at, alerts_enabled").eq("id", s.tenant.id).single();
+  return (
+    <>
+      <Topbar title="Paramètres de l'entreprise" subtitle="Nom, couleur, logo et alertes." />
+      <div className="content stack">
+        <div className="card">
+          <h2>Identité visuelle et alertes</h2>
+          <BrandingForm action={saveBranding} name={s.tenant.name} accent={s.tenant.accent} alertsEnabled={data?.alerts_enabled ?? true} logo={s.tenant.logo_data} />
+        </div>
+        <div className="card">
+          <h2>Abonnement</h2>
+          <dl className="details">
+            <dt>Formule</dt><dd style={{ textTransform: "capitalize" }}>{data?.plan ?? "—"}</dd>
+            <dt>Valable jusqu&apos;au</dt><dd>{data?.plan_expires_at ?? "Sans limite"}</dd>
+          </dl>
+          <p className="helper" style={{ marginTop: 10 }}>Pour changer de formule ou renouveler, contactez votre fournisseur DIOMETRO.</p>
+        </div>
+      </div>
+    </>
+  );
+}

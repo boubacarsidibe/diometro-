@@ -15,7 +15,7 @@ export default async function AuditPage() {
   const rows = (data ?? []) as Row[];
   return (
     <>
-      <Topbar title="Audit trail" subtitle="200 dernières actions — journal non modifiable." />
+      <Topbar title="Audit trail" subtitle="200 dernières actions — journal non modifiable." actions={<a className="btn small soft" href="/export/audit.xlsx">Export Excel</a>} />
       <div className="content">
         {rows.length === 0 ? (
           <div className="card empty">Aucune action enregistrée.</div>
