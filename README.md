@@ -6,22 +6,24 @@ Solution numérique de gestion et de suivi métrologique des instruments de mesu
 
 > L'ancienne application mono-fichier est archivée dans `legacy/`. Elle stockait mots de passe et données dans le navigateur ; elle ne doit plus être utilisée. Voir `SECURITY_AUDIT.md`.
 
-## Fonctionnalités (v1)
+## Fonctionnalités
 
-- Inscription d'une entreprise, connexion, mot de passe oublié, **double authentification TOTP obligatoire**
-- Multi-entreprise **isolé par la base de données** (Row Level Security)
-- Rôles : administrateur, **coordinateur** (lecture/écriture, gère les comptes des autres coordinateurs et des consultants, jamais ceux des administrateurs), consultation (lecture seule)
-- Tableau de bord de conformité (mêmes seuils : expiré, < 15 j, ≤ 30 j), alertes d'échéance
-- Instruments, fiches de vie, historique des interventions ; un étalonnage conforme replanifie automatiquement l'échéance
-- Gestion des utilisateurs (invitation par email, rôle, désactivation)
-- Audit trail non modifiable (alimenté par triggers)
-
-À venir (hors v1) : QR codes et étiquettes, planning, inventaire, prestataires, exports Excel/PDF, pièces jointes (Supabase Storage), corbeille.
+- **Comptes et sécurité :** inscription d'une entreprise (secteur, téléphone, bâtiments), connexion, mot de passe oublié, **double authentification TOTP obligatoire**, rôles administrateur / coordinateur / consultation.
+- **Multi-entreprise isolé par la base de données** (Row Level Security), avec formules (Essai, Starter, Standard, Pro, Entreprise, Grand Compte, Sur-mesure), **limite d'instruments par formule** et suspension d'une entreprise.
+- **Instruments et fiches de vie :** tous les champs métier (conformité, graduation, tolérance/EMT, propriétaire, stockage, type d'étalonnage, origine de la fréquence, raccordement, liens documents, prestataire habituel), interventions internes/externes, historique.
+- **Calculateurs métrologiques** (repris de l'ancienne version, résultats identiques vérifiés par tests) : pipettes (ISO 8655, incertitude GUM), thermomètres Pt100 (X 07-016, GUM), comparaison directe à un étalon ; **catalogue de 28 types d'instruments** avec normes et procédures. Le résultat est enregistré dans la fiche de vie, la conformité et l'échéance sont mises à jour.
+- **Prestataires :** carnet, contacts, domaines, organisme d'accréditation configurable (COFRAC, SENAC…), tarifs en FCFA, **comparateur par domaine**.
+- **Planning** mensuel + charge de travail sur 12 mois ; **alertes** d'échéance (écran, notifications du navigateur, email quotidien).
+- **QR codes et étiquettes** imprimables ; **lien public QR en lecture seule** (désactivé par défaut, révocable, données minimales).
+- **Inventaire physique** avec historique, **pièces jointes** (PDF, images, Excel, Word, 10 Mo, aperçu), **corbeille** avec restauration.
+- **Exports** Excel et PDF (instruments, fiche de vie, audit), **audit trail** non modifiable avec filtres et pagination.
+- **Super-admin** (opérateur du service) : activer/bloquer une entreprise, formule, limite d'instruments, fin d'abonnement ; il ne voit que des totaux.
+- Paramètres de l'entreprise (nom, couleur, logo, devise, bâtiments), aide et FAQ.
 
 ## Installation
 
 1. Créez un projet gratuit sur [supabase.com](https://supabase.com).
-2. Exécutez, dans l'ordre, `supabase/migrations/0001_init.sql`, `0002_coordinators_manage_coordinators.sql` puis `0003_revoke_trigger_function_execute.sql` dans **SQL Editor** (ou via la CLI Supabase).
+2. Exécutez dans l'ordre les fichiers `supabase/migrations/0001` à `0007` dans **SQL Editor** (ou via la CLI Supabase). Pour devenir super-admin : `insert into public.platform_admins (user_id) values ('<votre user id>');`
 3. **Authentication > Providers > Email** : activez « Confirm email ».
 4. **Authentication > URL Configuration** : renseignez *Site URL* (votre domaine Vercel).
 5. **Authentication > Email Templates** (Confirm signup, Invite user, Reset password) : remplacez le lien par
@@ -55,3 +57,11 @@ Déploiement : importez le dépôt dans Vercel (offre Hobby) et définissez les 
 | Redirections | Liste blanche (`/auth/confirm`) |
 | Secrets | Aucun secret dans le code ; clé `service_role` serveur uniquement |
 | CI | `npm audit`, typage, tests et build à chaque push |
+
+## Variables d'environnement
+
+Voir `.env.example`. Obligatoires : `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Pour les invitations, les alertes email et les QR codes : `SUPABASE_SERVICE_ROLE_KEY`, `APP_URL`, `CRON_SECRET`, `SMTP_*`, `MAIL_FROM`. Sur Vercel, `vercel.json` programme l'envoi quotidien des alertes (`/api/cron/alerts`).
+
+## Tests
+
+`npm test` : 70+ tests, dont l'isolation de la base sur un vrai PostgreSQL (PGlite) et un **test différentiel** qui exécute les fonctions de l'ancienne version (`legacy/index.html`) et compare ses résultats à ceux des calculateurs actuels sur 600 cas aléatoires.

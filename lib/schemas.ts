@@ -168,7 +168,7 @@ export const prestataireSchema = z.object({
       for (const line of v.split("\n").map((l) => l.trim()).filter(Boolean)) {
         const [typeMesure = "", prix = "", unite = ""] = line.split(";").map((x) => x.trim());
         const n = Number(prix.replace(",", "."));
-        if (!typeMesure || !Number.isFinite(n) || n < 0) {
+        if (!typeMesure || prix === "" || !Number.isFinite(n) || n < 0) {
           ctx.addIssue({ code: "custom", message: `Ligne invalide : « ${line.slice(0, 40)} »` });
           return z.NEVER;
         }

@@ -1,4 +1,5 @@
 import { NavLink } from "@/components/NavLink";
+import { NotificationOptIn } from "@/components/NotificationOptIn";
 import { ROLE_LABEL, requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { urgencyOf } from "@/lib/status";
@@ -48,6 +49,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <div className="userline">{s.displayName}</div>
           <div className="userrole">{ROLE_LABEL[s.role]}</div>
           <form action={logout}><button className="btn small soft">Déconnexion</button></form>
+          <NotificationOptIn alertCount={alerts} />
         </div>
       </aside>
       <div className="main">{children}</div>

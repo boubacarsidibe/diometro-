@@ -3,6 +3,9 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 import { InstrumentForm } from "@/components/InstrumentForm";
 import { CalculDetail } from "@/components/CalculDetail";
+import { PublicLinkCard } from "@/components/PublicLinkCard";
+import { appOrigin } from "@/lib/origin";
+import { qrDataUri } from "@/lib/qr";
 import { AttachmentList } from "@/components/AttachmentList";
 import { AttachmentUploader } from "@/components/AttachmentUploader";
 import { InterventionForm } from "@/components/InterventionForm";
@@ -29,6 +32,8 @@ export default async function InstrumentPage({ params }: { params: Promise<{ id:
   const { data: atts } = await supabase.from("attachments").select("id, kind, filename, mime, size_bytes, created_at").eq("instrument_id", id).order("created_at", { ascending: false });
   const { data: prest } = await supabase.from("prestataires").select("id, nom").is("deleted_at", null).eq("actif", true).order("nom");
   const write = canWrite(s.role);
+  const publicUrl = instrument.public_token ? `${await appOrigin()}/p/${instrument.public_token}` : null;
+  const publicQr = publicUrl ? await qrDataUri(publicUrl) : null;
 
   return (
     <>
@@ -81,6 +86,13 @@ export default async function InstrumentPage({ params }: { params: Promise<{ id:
           <AttachmentList items={(atts ?? []) as Attachment[]} instrumentId={id} canDelete={write} />
           {write && <div style={{ marginTop: 16 }}><AttachmentUploader instrumentId={id} /></div>}
         </div>
+
+        {write && (
+          <div className="card">
+            <h2>QR code public (lecture seule)</h2>
+            <PublicLinkCard instrumentId={id} url={publicUrl} qr={publicQr} />
+          </div>
+        )}
 
         {write && (
           <div className="card">

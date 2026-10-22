@@ -20,7 +20,7 @@ export function pdfText(value: unknown): string {
     .replace(/[^\x20-\x7E -ÿ]/g, "?");
 }
 
-const HEADERS = ["Référence", "Désignation", "Type de mesure", "Bâtiment", "Zone", "Statut", "Dernier étalonnage", "Prochaine échéance", "Jours restants", "État"];
+const HEADERS = ["Référence", "Désignation", "Type de mesure", "Bâtiment", "Zone", "Statut", "Dernier étalonnage", "Prochaine échéance", "Jours restants", "État", "Conformité", "Type d'étalonnage", "Propriétaire", "Tolérance / EMT", "Stockage"];
 
 export function instrumentRows(instruments: Instrument[], now: Date = new Date()): (string | number)[][] {
   return instruments.map((i) => {
@@ -28,6 +28,7 @@ export function instrumentRows(instruments: Instrument[], now: Date = new Date()
     return [
       safeCell(i.ref), safeCell(i.designation), safeCell(i.type_mesure), safeCell(i.batiment), safeCell(i.zone), safeCell(i.statut),
       i.date_etalonnage ?? "", i.date_prochaine ?? "", d ?? "", URGENCY_LABEL[urgencyOf(i.date_prochaine, now)],
+      safeCell(i.conformite), safeCell(i.etalonnage_type), safeCell(i.proprietaire), safeCell(i.tolerance), safeCell(i.stockage),
     ];
   });
 }
@@ -43,7 +44,7 @@ export async function buildInstrumentsXlsx(instruments: Instrument[], tenantName
   head.font = { bold: true, color: { argb: "FFFFFFFF" } };
   head.eachCell((c) => (c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1D4ED8" } }));
   for (const r of instrumentRows(instruments, now)) ws.addRow(r);
-  ws.columns.forEach((c, idx) => (c.width = [14, 34, 18, 16, 14, 14, 18, 18, 14, 14][idx] ?? 14));
+  ws.columns.forEach((c, idx) => (c.width = [14, 34, 18, 16, 14, 14, 18, 18, 14, 14, 14, 18, 18, 16, 18][idx] ?? 14));
   ws.autoFilter = { from: { row: 3, column: 1 }, to: { row: 3, column: HEADERS.length } };
   return new Uint8Array(await wb.xlsx.writeBuffer());
 }
@@ -135,6 +136,36 @@ export async function buildFichePdf(instrument: Instrument, interventions: Inter
     const detail = [it.prestataire && `Prestataire : ${it.prestataire}`, it.ref_certificat && `Certificat : ${it.ref_certificat}`, it.observation].filter(Boolean).join(" - ");
     if (detail) { c.page.drawText(fit(c.font, detail, 9, c.w - 90), { x: 52, y: c.y, size: 9, font: c.font, color: rgb(0.3, 0.33, 0.4) }); c.y -= 13; }
     c.y -= 4;
+  }
+  return c.doc.save();
+}
+
+export async function buildAuditPdf(
+  rows: { created_at: string; user: string; action: string; entity: string; entity_id: string }[],
+  tenantName: string,
+  now: Date = new Date(),
+): Promise<Uint8Array> {
+  const c = await newDoc(true);
+  const cols = [{ label: "Date (UTC)", w: 140 }, { label: "Utilisateur", w: 170 }, { label: "Action", w: 110 }, { label: "Objet", w: 200 }, { label: "Identifiant", w: 150 }];
+  const header = () => {
+    c.page.drawText(pdfText(`${tenantName} - Journal d'audit`), { x: 40, y: c.y, size: 15, font: c.bold, color: rgb(0.11, 0.31, 0.85) });
+    c.page.drawText(pdfText(`Édité le ${now.toISOString().slice(0, 10)} - ${rows.length} action(s)`), { x: 40, y: c.y - 16, size: 9, font: c.font, color: rgb(0.4, 0.45, 0.5) });
+    c.y -= 40;
+    let x = 40;
+    for (const col of cols) { c.page.drawText(pdfText(col.label), { x, y: c.y, size: 9, font: c.bold }); x += col.w; }
+    c.y -= 6;
+    c.page.drawLine({ start: { x: 40, y: c.y }, end: { x: c.w - 40, y: c.y }, thickness: 0.8, color: rgb(0.8, 0.82, 0.86) });
+    c.y -= 14;
+  };
+  header();
+  for (const r of rows) {
+    if (c.y < 50) { c.page = c.doc.addPage([c.w, c.h]); c.y = c.h - 50; header(); }
+    let x = 40;
+    [r.created_at.replace("T", " ").slice(0, 19), r.user, r.action, r.entity, r.entity_id.slice(0, 18)].forEach((t, idx) => {
+      c.page.drawText(fit(c.font, t, 9, cols[idx].w - 8), { x, y: c.y, size: 9, font: c.font });
+      x += cols[idx].w;
+    });
+    c.y -= 14;
   }
   return c.doc.save();
 }
