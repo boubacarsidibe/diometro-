@@ -48,9 +48,9 @@ export async function createContext(): Promise<Ctx> {
   for (const id of Object.values(ID)) await db.exec(`insert into auth.users values ('${id}')`);
   const mk = async (user: string, name: string, who: string) => {
     await db.exec(`set role authenticated; select set_config('request.jwt.claim.sub','${user}',false), set_config('request.jwt.claim.aal','aal1',false)`);
-    const r = await db.query<{ create_tenant: string }>(`select public.create_tenant('${name}','${who}')`);
+    const r = await db.query<{ register_tenant: string }>(`select public.register_tenant('${name}','${who}')`);
     await db.exec("reset role");
-    return r.rows[0].create_tenant;
+    return r.rows[0].register_tenant;
   };
   const tenantA = await mk(ID.A_ADMIN, "Entreprise A", "Alice");
   const tenantB = await mk(ID.B_ADMIN, "Entreprise B", "Bob");

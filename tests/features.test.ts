@@ -76,11 +76,11 @@ describe("plateforme SaaS", () => {
   });
   it("un admin d'entreprise ne peut ni changer statut/abonnement ni se promouvoir super-admin", async () => {
     expect(await fails(c.db, `update public.tenants set status='blocked'`, A())).toBe(true);
-    expect(await fails(c.db, `update public.tenants set plan='premium'`, A())).toBe(true);
+    expect(await fails(c.db, `update public.tenants set plan='pro'`, A())).toBe(true);
     expect(await fails(c.db, `insert into public.platform_admins values ('${ID.A_ADMIN}')`, A())).toBe(true);
     expect(await fails(c.db, `select * from public.platform_admins`, A())).toBe(true);
-    expect(await fails(c.db, `select * from public.platform_tenants()`, A())).toBe(true);
-    expect(await fails(c.db, `select public.platform_set_tenant('${c.tenantA}','blocked','premium',null)`, A())).toBe(true);
+    expect(await fails(c.db, `select * from public.platform_overview()`, A())).toBe(true);
+    expect(await fails(c.db, `select public.platform_update_tenant('${c.tenantA}','blocked','pro',null)`, A())).toBe(true);
   });
   it("logo : seuls les images autorisées, réservé à l'admin", async () => {
     const png = "data:image/png;base64,iVBORw0KGgo=";
@@ -93,9 +93,9 @@ describe("plateforme SaaS", () => {
     expect(await count(c.db, "select * from public.tenants where name='pwn'", A())).toBe(0);
   });
   it("le super-admin bloque une entreprise : plus aucun accès, avec trace d'audit", async () => {
-    const all = await rows<{ name: string; users: string; instruments: string }>(c.db, "select name, users, instruments from public.platform_tenants()", P);
+    const all = await rows<{ name: string; users: string; instruments: string }>(c.db, "select name, users, instruments from public.platform_overview()", P);
     expect(all.map((t) => t.name).sort()).toEqual(["Entreprise A", "Entreprise B"]);
-    await as(c.db, ID.PLATFORM, "aal2", () => c.db.exec(`select public.platform_set_tenant('${c.tenantA}','blocked','standard',null)`));
+    await as(c.db, ID.PLATFORM, "aal2", () => c.db.exec(`select public.platform_update_tenant('${c.tenantA}','blocked','standard',null)`));
     expect(await count(c.db, "select * from public.instruments", A())).toBe(0);
     expect(await count(c.db, "select * from public.instruments", R)).toBe(0);
     expect(await fails(c.db, `insert into public.instruments(tenant_id,ref,designation) values ('${c.tenantA}','Z','z')`, A())).toBe(true);
@@ -107,12 +107,12 @@ describe("plateforme SaaS", () => {
     expect(Number(audit.rows[0].n)).toBe(1);
   });
   it("un abonnement expiré coupe l'accès, une prolongation le rétablit", async () => {
-    await as(c.db, ID.PLATFORM, "aal2", () => c.db.exec(`select public.platform_set_tenant('${c.tenantA}','active','standard', current_date - 1)`));
+    await as(c.db, ID.PLATFORM, "aal2", () => c.db.exec(`select public.platform_update_tenant('${c.tenantA}','active','standard', current_date - 1)`));
     expect(await count(c.db, "select * from public.instruments", A())).toBe(0);
-    await as(c.db, ID.PLATFORM, "aal2", () => c.db.exec(`select public.platform_set_tenant('${c.tenantA}','active','standard', current_date + 365)`));
+    await as(c.db, ID.PLATFORM, "aal2", () => c.db.exec(`select public.platform_update_tenant('${c.tenantA}','active','standard', current_date + 365)`));
     expect(await count(c.db, "select * from public.instruments", A())).toBe(1);
-    expect(await fails(c.db, `select public.platform_set_tenant('${c.tenantA}','nimporte','standard',null)`, P)).toBe(true);
-    expect(await fails(c.db, `select * from public.platform_tenants()`, [ID.PLATFORM, "aal1"])).toBe(true);
+    expect(await fails(c.db, `select public.platform_update_tenant('${c.tenantA}','nimporte','standard',null)`, P)).toBe(true);
+    expect(await fails(c.db, `select * from public.platform_overview()`, [ID.PLATFORM, "aal1"])).toBe(true);
   });
 });
 

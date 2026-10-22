@@ -1,0 +1,572 @@
+[
+ {
+  "id": "pipette",
+  "icone": "🧪",
+  "nom": "Pipette",
+  "calculateur": "pipette",
+  "norme": "NF EN ISO 8655 — Appareils volumétriques à piston",
+  "compatibilite": "Pipettes à piston (mono-canal ou multi-canaux), volumes de 0,1 µL à 10 mL.",
+  "conditions": [
+   "Balance d'analyse avec résolution ≥ 0,1 mg, étalonnée et stabilisée.",
+   "Eau distillée ou déionisée, équilibrée à la température ambiante depuis au moins 1 h.",
+   "Thermomètre (résolution 0,1 °C), baromètre, hygromètre.",
+   "Température ambiante stable entre 15 et 30 °C, sans courant d'air.",
+   "Opérateur formé à la technique de pipetage (pré-rinçage, angle, vitesse)."
+  ],
+  "demarche": [
+   "Noter les conditions ambiantes (température air, pression, humidité, température eau).",
+   "Pré-rincer la pipette 3 fois avec de l'eau distillée à la température de l'eau pesée.",
+   "Tarer la balance avec le récipient de pesée.",
+   "Réaliser au minimum 10 pesées successives au volume nominal en respectant la technique du fabricant.",
+   "Si tests multi-volumes : refaire la série complète à chaque volume testé (généralement 10%, 50% et 100% du nominal).",
+   "Renseigner les masses dans le module « Vérifier la conformité » de l'application.",
+   "L'app calcule automatiquement le volume réel à 20 °C, la justesse, la fidélité, l'incertitude (GUM), et émet un verdict de conformité selon l'EMT que vous saisissez.",
+   "Archiver le résultat comme intervention dans la fiche de vie de l'instrument."
+  ]
+ },
+ {
+  "id": "balance",
+  "icone": "⚖️",
+  "nom": "Balance",
+  "calculateur": "direct",
+  "norme": "OIML R 76 / NF EN 45501 — Instruments de pesage à fonctionnement non automatique",
+  "compatibilite": "Balances de précision et balances d'analyse, toutes classes (I, II, III).",
+  "conditions": [
+   "Jeu de masses étalons certifiées (classe adaptée à la portée de la balance), avec certificat d'étalonnage à jour.",
+   "Balance installée sur un support stable, de niveau, à l'abri des courants d'air et vibrations.",
+   "Balance stabilisée thermiquement dans son environnement d'usage habituel.",
+   "Note : cette vérification par comparaison directe est une méthode simplifiée (sans incertitude). Elle ne remplace pas un contrôle complet de linéarité et d'excentration selon OIML R76 — elle convient pour une vérification périodique intermédiaire."
+  ],
+  "demarche": [
+   "Choisir au moins 3 points de vérification couvrant la portée usuelle de la balance.",
+   "Poser chaque masse étalon sur le plateau et relever la valeur affichée.",
+   "Saisir dans le module « Vérifier la conformité » : la masse étalon (référence) et la valeur affichée (lue), pour chaque point.",
+   "L'app calcule l'écart et le compare à l'EMT que vous saisissez.",
+   "Archiver le résultat comme intervention dans la fiche de vie de la balance."
+  ]
+ },
+ {
+  "id": "pied_coulisse",
+  "icone": "📏",
+  "nom": "Pied à coulisse",
+  "calculateur": "direct",
+  "norme": "NF EN ISO 13385-1 — Pieds à coulisse",
+  "compatibilite": "Pieds à coulisse mécaniques, à cadran ou digitaux, capacités jusqu'à 1000 mm.",
+  "conditions": [
+   "Jeu de cales étalons certifiées (ou bagues/cylindres étalons) couvrant la plage utile de l'instrument.",
+   "Surfaces de mesure (becs) propres, sans jeu ni usure visible.",
+   "Température stabilisée à 20 °C ± 2 °C (la dilatation thermique différentielle fausse sinon la mesure).",
+   "Opérateur formé à la manipulation du pied à coulisse (pression de contact constante, sans forcer)."
+  ],
+  "demarche": [
+   "Choisir au moins 3 points de vérification répartis sur la plage utile de l'instrument (début, milieu, fin de course).",
+   "Mesurer chaque cale étalon avec le pied à coulisse et relever la valeur lue.",
+   "Saisir dans le module « Vérifier la conformité » : la valeur de la cale (référence) et la valeur lue, pour chaque point.",
+   "L'app calcule l'écart (lue − étalon) et le compare à l'EMT que vous saisissez.",
+   "Archiver le résultat comme intervention dans la fiche de vie de l'instrument."
+  ]
+ },
+ {
+  "id": "micrometre",
+  "icone": "🔧",
+  "nom": "Micromètre",
+  "calculateur": "direct",
+  "norme": "NF EN ISO 3611 — Micromètres d'extérieur",
+  "compatibilite": "Micromètres d'extérieur, capacité 0–25 mm, 25–50 mm, etc.",
+  "conditions": [
+   "Jeu de cales étalons certifiées adapté à la plage du micromètre.",
+   "Surfaces des touches de mesure propres, planes, sans usure visible.",
+   "Température stabilisée à 20 °C ± 2 °C.",
+   "Vérifier le zéro du micromètre avant contrôle (touches jointes ou cale de zéro)."
+  ],
+  "demarche": [
+   "Choisir au moins 3 points de vérification répartis sur la plage de l'instrument.",
+   "Mesurer chaque cale étalon avec le micromètre et relever la valeur lue.",
+   "Saisir dans le module « Vérifier la conformité » : la valeur de la cale (référence) et la valeur lue, pour chaque point.",
+   "L'app calcule l'écart et le compare à l'EMT que vous saisissez.",
+   "Archiver le résultat comme intervention dans la fiche de vie de l'instrument."
+  ]
+ },
+ {
+  "id": "circometre",
+  "icone": "⭕",
+  "nom": "Circomètre",
+  "calculateur": "direct",
+  "norme": "DIN 866 (Forme B) — Rubans de circonférence pour tuyauterie et chaudronnerie",
+  "compatibilite": "Circomètres à ruban (mesure de diamètre ou circonférence, intérieur ou extérieur) pour tubes, corps cylindriques, viroles.",
+  "conditions": [
+   "Bague ou cylindre étalon certifié, de diamètre situé dans le tiers médian de la plage contrôlée (tension et angle de lecture optimaux).",
+   "Ruban propre, sans pli ni déformation, tension constante lors de la mesure.",
+   "Pièce de référence de forme parfaitement circulaire (le circomètre suppose une section circulaire — inadapté à une pièce ovalisée).",
+   "Température stabilisée à 20 °C ± 2 °C pour les contrôles de précision."
+  ],
+  "demarche": [
+   "Choisir au moins 3 points de vérification (diamètres ou circonférences) couvrant la plage utile du circomètre.",
+   "Enrouler le ruban autour de chaque bague ou cylindre étalon et relever la valeur lue.",
+   "Saisir dans le module « Vérifier la conformité » : la valeur de l'étalon (référence) et la valeur lue, pour chaque point.",
+   "L'app calcule l'écart et le compare à l'EMT que vous saisissez.",
+   "Archiver le résultat comme intervention dans la fiche de vie du circomètre."
+  ]
+ },
+ {
+  "id": "controleur_epaisseur",
+  "icone": "🎚️",
+  "nom": "Contrôleur d'épaisseur",
+  "calculateur": "direct",
+  "norme": "NF E11-057 / NF EN ISO 463 — Comparateurs mécaniques à cadran",
+  "compatibilite": "Contrôleurs / comparateurs d'épaisseur à cadran ou digitaux (épaisseur de paroi, tôles, joints).",
+  "conditions": [
+   "Cales étalons certifiées d'épaisseur connue, couvrant la plage utile de l'instrument.",
+   "Enclume et touche de mesure propres, sans jeu ni usure visible.",
+   "Surface d'appui plane et stable pendant la mesure.",
+   "Température stabilisée à 20 °C ± 2 °C pour les contrôles de précision."
+  ],
+  "demarche": [
+   "Choisir au moins 3 points de vérification couvrant la plage utile de l'instrument.",
+   "Mesurer chaque cale étalon avec le contrôleur d'épaisseur et relever la valeur lue.",
+   "Saisir dans le module « Vérifier la conformité » : la valeur de la cale (référence) et la valeur lue, pour chaque point.",
+   "L'app calcule l'écart et le compare à l'EMT que vous saisissez.",
+   "Archiver le résultat comme intervention dans la fiche de vie de l'instrument."
+  ]
+ },
+ {
+  "id": "thermometre",
+  "icone": "🌡️",
+  "nom": "Thermomètre / Sonde Pt100",
+  "calculateur": "pt100",
+  "norme": "FD X 07-010 / X 07-011 / X 07-016 — Thermométrie de contact",
+  "compatibilite": "Sondes de température Pt100 (RTD platine 100 Ω), thermomètres à dilatation, thermocouples. Méthode par comparaison à un étalon corrigé.",
+  "conditions": [
+   "Étalon de référence (thermocouple ou Pt100 étalon) certifié, avec son certificat d'étalonnage récent (les coefficients a, b, c de correction polynomiale viennent de ce certificat).",
+   "Four thermostaté ou bain régulé, capable de stabiliser les points de vérification.",
+   "Support permettant de placer la sonde à étalonner et l'étalon dans la même zone thermique.",
+   "Température ambiante : 23 ± 3 °C, humidité ~50 %, pas de vibrations ni courants d'air.",
+   "Sonde et étalon propres, sans contamination, parfaitement stabilisés avant chaque lecture.",
+   "Opérateur formé à la méthode de comparaison et au calcul d'incertitude GUM."
+  ],
+  "demarche": [
+   "Récupérer les coefficients a, b, c de votre étalon depuis son dernier certificat COFRAC (équation Vrc = a·Vref² + b·Vref + c).",
+   "Définir les points de vérification (généralement 20 / 50 / 80 °C pour usage labo, à adapter à la plage d'usage).",
+   "Régler le four au premier point. Attendre la stabilisation complète (étalon + sonde affichent une valeur stable).",
+   "Relever 3 à 5 mesures successives à chaque point, pour la sonde et pour l'étalon (répétabilité).",
+   "Saisir les valeurs dans le module \"Vérifier la conformité\" : valeurs étalon brutes (Vref), valeurs lues par la sonde (Vlue).",
+   "L'app calcule automatiquement : la valeur étalon corrigée (Vrc), la moyenne, l'écart-type, l'erreur, l'incertitude (GUM) et le verdict de conformité.",
+   "Choisir le mode de verdict : rapide (erreur ≤ EMT) ou rigoureux (erreur + U ≤ EMT, recommandé pour les certificats).",
+   "Archiver le résultat comme intervention dans la fiche de vie de la sonde."
+  ]
+ },
+ {
+  "id": "manometre",
+  "icone": "📐",
+  "nom": "Manomètre",
+  "calculateur": "direct",
+  "norme": "NF EN 837 — Manomètres pour pression",
+  "compatibilite": "Manomètres mécaniques (tube de Bourdon), électroniques, capteurs de pression.",
+  "conditions": [
+   "Étalon de pression de référence (manomètre étalon ou générateur de pression) certifié.",
+   "Raccordement étanche entre l'étalon et le manomètre à vérifier, sans fuite.",
+   "Stabilisation de la pression à chaque point avant lecture.",
+   "Température ambiante stable pendant les mesures."
+  ],
+  "demarche": [
+   "Définir les points de vérification (ex. 0 %, 25 %, 50 %, 75 %, 100 % de l'étendue de mesure).",
+   "Appliquer chaque pression de consigne et relever la valeur de l'étalon et celle du manomètre testé.",
+   "Saisir dans le module « Vérifier la conformité » : la pression étalon (référence) et la valeur lue, pour chaque point.",
+   "L'app calcule l'écart et le compare à l'EMT saisie (souvent exprimée en % de l'étendue de mesure).",
+   "Archiver le résultat comme intervention dans la fiche de vie du manomètre."
+  ]
+ },
+ {
+  "id": "multimetre",
+  "icone": "⚡",
+  "nom": "Multimètre",
+  "calculateur": "direct",
+  "norme": "CEI 61010-1 et CEI 61557 — Sécurité et étalonnage électrique",
+  "compatibilite": "Multimètres numériques (tension DC/AC, courant, résistance, capacité).",
+  "conditions": [
+   "Étalon électrique de référence (calibrateur multifonction) certifié et raccordé.",
+   "Câbles de mesure en bon état, connexions propres.",
+   "Vérifier séparément chaque fonction utilisée (tension, courant, résistance) — un point ne couvre qu'une seule fonction/gamme à la fois.",
+   "Note : cette vérification par comparaison directe est simplifiée (sans incertitude) et ne couvre qu'un point par fonction/gamme ; une vérification complète selon CEI 61010-1 / CEI 61557 couvre l'ensemble des gammes utilisées."
+  ],
+  "demarche": [
+   "Pour chaque fonction/gamme utilisée, choisir au moins 3 points de vérification.",
+   "Appliquer chaque valeur de référence issue de l'étalon et relever la valeur affichée par le multimètre.",
+   "Saisir dans le module « Vérifier la conformité » : la valeur étalon (référence) et la valeur lue, pour chaque point.",
+   "L'app calcule l'écart et le compare à l'EMT saisie pour la fonction/gamme concernée.",
+   "Archiver le résultat comme intervention dans la fiche de vie du multimètre."
+  ]
+ },
+ {
+  "id": "comparateur_cadran",
+  "icone": "🕐",
+  "nom": "Comparateur à cadran",
+  "calculateur": "direct",
+  "norme": "NF E11-057 / NF EN ISO 463 — Comparateurs mécaniques à cadran",
+  "compatibilite": "Comparateurs à cadran ou digitaux à usage général (faux-rond, planéité, alignement, montage sur colonne de mesure).",
+  "conditions": [
+   "Cales étalons certifiées ou butée micrométrique de référence, couvrant la plage utile du comparateur.",
+   "Comparateur monté rigidement (support, colonne) sans jeu, palpeur perpendiculaire à la surface de référence.",
+   "Surface d'appui propre et stable pendant la mesure.",
+   "Vérifier la course complète (aller-retour) pour détecter un éventuel jeu ou hystérésis."
+  ],
+  "demarche": [
+   "Choisir au moins 3 points de vérification couvrant la plage utile du comparateur.",
+   "Positionner le palpeur sur chaque cale étalon (ou butée micrométrique) et relever la valeur affichée.",
+   "Saisir dans le module « Vérifier la conformité » : la valeur de la cale (référence) et la valeur lue, pour chaque point.",
+   "L'app calcule l'écart et le compare à l'EMT que vous saisissez.",
+   "Archiver le résultat comme intervention dans la fiche de vie du comparateur."
+  ]
+ },
+ {
+  "id": "durometre",
+  "icone": "💎",
+  "nom": "Duromètre",
+  "calculateur": "direct",
+  "norme": "ISO 6508 / ISO 6506 / ISO 6507 — Essais de dureté Rockwell, Brinell, Vickers",
+  "compatibilite": "Duromètres Rockwell, Brinell, Vickers ou Shore (contrôle de dureté des métaux et élastomères).",
+  "conditions": [
+   "Bloc étalon de dureté certifié, dans l'échelle appropriée (HRC, HB, HV, Shore selon le duromètre) et dans la plage de dureté de la pièce contrôlée.",
+   "Surface du bloc étalon propre et plane ; espacement d'au moins 4× le diamètre de l'empreinte entre deux essais.",
+   "Duromètre stable, sans vibration ; pénétrateur en bon état visuel.",
+   "Vérification à réaliser avant chaque série d'essais et à chaque changement d'échelle de dureté."
+  ],
+  "demarche": [
+   "Réaliser au moins 3 empreintes sur le bloc étalon (valeurs répétées sur le même bloc, pas 3 blocs différents).",
+   "Relever chaque valeur de dureté affichée par le duromètre.",
+   "Saisir dans le module « Vérifier la conformité » : la dureté du bloc étalon (référence, indiquée sur son certificat) et la valeur lue, pour chaque essai.",
+   "L'app calcule l'écart et le compare à l'EMT que vous saisissez (généralement donnée par le fabricant du bloc étalon).",
+   "Archiver le résultat comme intervention dans la fiche de vie du duromètre."
+  ]
+ },
+ {
+  "id": "cle_dynamometrique",
+  "icone": "🔩",
+  "nom": "Clé dynamométrique",
+  "calculateur": "direct",
+  "norme": "ISO 6789-1 — Vérification des outils dynamométriques à commande manuelle",
+  "compatibilite": "Clés dynamométriques à déclenchement ou à lecture directe, tournevis dynamométriques.",
+  "conditions": [
+   "Banc de contrôle de couple ou transducteur de référence certifié, adapté à la plage de la clé.",
+   "Clé montée correctement sur le banc, effort appliqué de façon régulière et perpendiculaire au bras de levier.",
+   "Points de contrôle à 20 %, 60 % et 100 % de la capacité nominale (recommandation ISO 6789-1), dans le sens d'utilisation habituel.",
+   "Clé à cliquet réinitialisée à sa valeur la plus basse avant et après contrôle (évite la fatigue du ressort)."
+  ],
+  "demarche": [
+   "Définir les points de contrôle (20 %, 60 %, 100 % de la capacité nominale de la clé).",
+   "Appliquer le couple de consigne sur le banc et relever la valeur du transducteur (référence) et celle affichée/déclenchée par la clé (lue).",
+   "Saisir dans le module « Vérifier la conformité » : la valeur de référence et la valeur lue, pour chaque point.",
+   "L'app calcule l'écart et le compare à l'EMT que vous saisissez (typiquement ± 4 % de la valeur pour les clés mécaniques).",
+   "Archiver le résultat comme intervention dans la fiche de vie de la clé."
+  ]
+ },
+ {
+  "id": "manometre_vide",
+  "icone": "🧪",
+  "nom": "Manomètre à vide",
+  "calculateur": "direct",
+  "norme": "ISO 3567:2011 — Étalonnage par comparaison directe avec un manomètre de référence",
+  "compatibilite": "Manomètres à vide, vacuomètres, jauges de pression absolue en dépression.",
+  "conditions": [
+   "Manomètre de référence (étalon) certifié, raccordé étanche sur le même circuit que le manomètre à vérifier.",
+   "Absence de fuite sur le circuit de raccordement, stabilisation du vide à chaque point avant lecture.",
+   "Température ambiante stable pendant les mesures."
+  ],
+  "demarche": [
+   "Définir les points de contrôle couvrant la plage de dépression utile de l'instrument.",
+   "Stabiliser chaque niveau de vide et relever la valeur de l'étalon et celle de l'instrument testé.",
+   "Saisir dans le module « Vérifier la conformité » : la valeur de référence et la valeur lue, pour chaque point.",
+   "L'app calcule l'écart et le compare à l'EMT que vous saisissez.",
+   "Archiver le résultat comme intervention dans la fiche de vie de l'instrument."
+  ]
+ },
+ {
+  "id": "pince_amperemetrique",
+  "icone": "🔌",
+  "nom": "Pince ampèremétrique",
+  "calculateur": "direct",
+  "norme": "CEI 61010-1 et CEI 61557 — Sécurité et étalonnage électrique",
+  "compatibilite": "Pinces ampèremétriques AC/DC, multimètres à pince.",
+  "conditions": [
+   "Calibrateur de courant de référence certifié (générateur de courant étalon).",
+   "Conducteur centré dans la mâchoire de la pince, mâchoire bien refermée sans jeu.",
+   "Vérifier séparément chaque gamme et chaque fonction (AC/DC) utilisée."
+  ],
+  "demarche": [
+   "Pour chaque gamme utilisée, choisir au moins 3 points de vérification.",
+   "Appliquer le courant de référence et relever la valeur affichée par la pince.",
+   "Saisir dans le module « Vérifier la conformité » : la valeur étalon (référence) et la valeur lue, pour chaque point.",
+   "L'app calcule l'écart et le compare à l'EMT saisie pour la gamme concernée.",
+   "Archiver le résultat comme intervention dans la fiche de vie de la pince."
+  ]
+ },
+ {
+  "id": "megohmmetre",
+  "icone": "🧯",
+  "nom": "Mégohmmètre",
+  "calculateur": "direct",
+  "norme": "CEI 61010-1 et CEI 61557-2 — Contrôle de la résistance d'isolement",
+  "compatibilite": "Mégohmmètres (contrôleurs d'isolement) à 250 V, 500 V, 1000 V, 2500 V.",
+  "conditions": [
+   "Résistances étalons certifiées, adaptées aux gammes testées.",
+   "Cordons de mesure isolés en bon état, sans torsade ni dénudage.",
+   "Vérification du circuit ouvert (affichage \"∞\") avant chaque série de mesures."
+  ],
+  "demarche": [
+   "Choisir au moins 3 valeurs de résistance étalon couvrant la plage utile.",
+   "Mesurer chaque résistance étalon avec le mégohmmètre et relever la valeur lue.",
+   "Saisir dans le module « Vérifier la conformité » : la valeur étalon (référence) et la valeur lue, pour chaque point.",
+   "L'app calcule l'écart et le compare à l'EMT que vous saisissez.",
+   "Archiver le résultat comme intervention dans la fiche de vie de l'instrument."
+  ]
+ },
+ {
+  "id": "telluometre",
+  "icone": "🌐",
+  "nom": "Télluromètre (contrôleur de terre)",
+  "calculateur": "direct",
+  "norme": "CEI 61010-1 et CEI 61557-4 — Résistance de prise de terre et de liaison équipotentielle",
+  "compatibilite": "Télluromètres, contrôleurs de résistance de terre.",
+  "conditions": [
+   "Résistances étalons certifiées adaptées à la plage de l'appareil.",
+   "Piquets et cordons de test en bon état, connexions propres.",
+   "Vérification à réaliser hors influence de terre parasite (zone de test dédiée si possible)."
+  ],
+  "demarche": [
+   "Choisir au moins 3 valeurs de résistance étalon couvrant la plage utile.",
+   "Mesurer chaque résistance étalon et relever la valeur lue.",
+   "Saisir dans le module « Vérifier la conformité » : la valeur étalon (référence) et la valeur lue, pour chaque point.",
+   "L'app calcule l'écart et le compare à l'EMT que vous saisissez.",
+   "Archiver le résultat comme intervention dans la fiche de vie de l'instrument."
+  ]
+ },
+ {
+  "id": "anemometre",
+  "icone": "🍃",
+  "nom": "Anémomètre",
+  "calculateur": "direct",
+  "norme": "Comparaison directe à un étalon de référence (soufflerie, vélocimètre laser ou tube de Pitot certifié) — traçabilité NF EN ISO/CEI 17025, pas de norme produit dédiée.",
+  "compatibilite": "Anémomètres thermiques (fil chaud), à hélice, à coupelles, à ultrasons.",
+  "conditions": [
+   "Référence de vitesse d'air certifiée (soufflerie étalonnée, vélocimètre laser ou tube de Pitot de référence).",
+   "Capteur positionné dans l'axe du flux, sans obstruction en amont.",
+   "Conditions ambiantes stables (température, pression) pendant l'essai."
+  ],
+  "demarche": [
+   "Choisir au moins 3 points de vitesse couvrant la plage utile de l'instrument.",
+   "Générer chaque vitesse de référence et relever la valeur affichée par l'anémomètre.",
+   "Saisir dans le module « Vérifier la conformité » : la valeur de référence et la valeur lue, pour chaque point.",
+   "L'app calcule l'écart et le compare à l'EMT que vous saisissez.",
+   "Archiver le résultat comme intervention dans la fiche de vie de l'instrument."
+  ]
+ },
+ {
+  "id": "debitmetre",
+  "icone": "🚰",
+  "nom": "Débitmètre",
+  "calculateur": "direct",
+  "norme": "Comparaison directe à un étalon de débit de référence — traçabilité NF EN ISO/CEI 17025, pas de norme produit unique (débitmètres gaz et liquide).",
+  "compatibilite": "Débitmètres gaz et liquide (à hotte, à turbine, électromagnétiques, Coriolis).",
+  "conditions": [
+   "Référence de débit certifiée (banc étalon gravimétrique ou volumétrique).",
+   "Raccordement étanche, absence de fuite sur le circuit de mesure.",
+   "Régime d'écoulement stabilisé avant chaque lecture."
+  ],
+  "demarche": [
+   "Choisir au moins 3 points de débit couvrant la plage utile de l'instrument.",
+   "Générer chaque débit de référence et relever la valeur affichée par le débitmètre.",
+   "Saisir dans le module « Vérifier la conformité » : la valeur de référence et la valeur lue, pour chaque point.",
+   "L'app calcule l'écart et le compare à l'EMT que vous saisissez.",
+   "Archiver le résultat comme intervention dans la fiche de vie de l'instrument."
+  ]
+ },
+ {
+  "id": "hygrometre",
+  "icone": "💧",
+  "nom": "Hygromètre",
+  "calculateur": "direct",
+  "norme": "Comparaison directe à un générateur d'humidité ou solutions salines saturées certifiées — traçabilité NF EN ISO/CEI 17025, pas de norme produit dédiée.",
+  "compatibilite": "Hygromètres numériques, à aiguille, hygrothermographes, capteurs de point de rosée.",
+  "conditions": [
+   "Référence d'humidité certifiée (générateur d'humidité ou solutions salines saturées de référence).",
+   "Enceinte fermée à atmosphère contrôlée, stabilisation complète avant chaque lecture.",
+   "Sonde propre, sans condensation résiduelle."
+  ],
+  "demarche": [
+   "Choisir au moins 3 points d'humidité relative couvrant la plage utile de l'instrument.",
+   "Stabiliser chaque point et relever la valeur de référence et celle affichée par l'hygromètre.",
+   "Saisir dans le module « Vérifier la conformité » : la valeur de référence et la valeur lue, pour chaque point.",
+   "L'app calcule l'écart et le compare à l'EMT que vous saisissez.",
+   "Archiver le résultat comme intervention dans la fiche de vie de l'instrument."
+  ]
+ },
+ {
+  "id": "tachymetre",
+  "icone": "🌀",
+  "nom": "Tachymètre / Stroboscope",
+  "calculateur": "direct",
+  "norme": "Comparaison directe à un générateur de fréquence de référence (n = 60·ν) — traçabilité temps-fréquence, pas de norme produit dédiée.",
+  "compatibilite": "Tachymètres à photoréflexion, à contact, stroboscopes.",
+  "conditions": [
+   "Générateur de fréquence de référence certifié, couplé à un dispositif photoémetteur pour les tachymètres optiques.",
+   "Longueur d'onde du photoémetteur adaptée au capteur du tachymètre.",
+   "Alignement correct entre le faisceau et le capteur."
+  ],
+  "demarche": [
+   "Choisir au moins 3 vitesses de rotation couvrant la plage utile de l'instrument.",
+   "Générer chaque fréquence de référence et relever la vitesse affichée par le tachymètre.",
+   "Saisir dans le module « Vérifier la conformité » : la valeur de référence et la valeur lue, pour chaque point.",
+   "L'app calcule l'écart et le compare à l'EMT que vous saisissez.",
+   "Archiver le résultat comme intervention dans la fiche de vie de l'instrument."
+  ]
+ },
+ {
+  "id": "chronometre",
+  "icone": "⏱️",
+  "nom": "Chronomètre",
+  "calculateur": "direct",
+  "norme": "Comparaison directe à une base de temps certifiée (horloge atomique, signal GPS/UTC) — traçabilité temps-fréquence, pas de norme produit dédiée.",
+  "compatibilite": "Chronomètres mécaniques et numériques, compteurs d'impulsions à main.",
+  "conditions": [
+   "Base de temps de référence certifiée (horloge atomique, récepteur GPS, signal horaire officiel).",
+   "Déclenchement et arrêt simultanés du chronomètre et de la référence.",
+   "Répéter la mesure pour limiter l'incertitude de déclenchement manuel."
+  ],
+  "demarche": [
+   "Choisir au moins 3 durées de référence couvrant l'usage habituel du chronomètre.",
+   "Déclencher simultanément la référence et le chronomètre, relever les deux valeurs.",
+   "Saisir dans le module « Vérifier la conformité » : la durée de référence et la durée lue, pour chaque point.",
+   "L'app calcule l'écart et le compare à l'EMT que vous saisissez.",
+   "Archiver le résultat comme intervention dans la fiche de vie de l'instrument."
+  ]
+ },
+ {
+  "id": "oscilloscope",
+  "icone": "📈",
+  "nom": "Oscilloscope",
+  "calculateur": "direct",
+  "norme": "Comparaison directe à un générateur de signaux de référence certifié — traçabilité NF EN ISO/CEI 17025, pas de norme produit dédiée.",
+  "compatibilite": "Oscilloscopes numériques et analogiques.",
+  "conditions": [
+   "Générateur de signaux de référence certifié (amplitude et fréquence connues).",
+   "Câbles et sondes en bon état, compensation des sondes vérifiée au préalable.",
+   "Vérifier séparément amplitude (axe Y) et base de temps (axe X)."
+  ],
+  "demarche": [
+   "Choisir au moins 3 points de vérification (amplitude ou fréquence selon le paramètre testé).",
+   "Appliquer chaque signal de référence et relever la valeur lue sur l'oscilloscope.",
+   "Saisir dans le module « Vérifier la conformité » : la valeur de référence et la valeur lue, pour chaque point.",
+   "L'app calcule l'écart et le compare à l'EMT que vous saisissez.",
+   "Archiver le résultat comme intervention dans la fiche de vie de l'instrument."
+  ]
+ },
+ {
+  "id": "ph_metre",
+  "icone": "🧫",
+  "nom": "pH-mètre",
+  "calculateur": "direct",
+  "norme": "Comparaison directe à des solutions tampons certifiées (étalonnage multi-points) — pas de norme produit dédiée.",
+  "compatibilite": "pH-mètres de paillasse ou portables.",
+  "conditions": [
+   "Solutions tampons certifiées (généralement pH 4, 7 et 10), non périmées.",
+   "Électrode propre, rincée à l'eau distillée entre chaque solution.",
+   "Température des solutions stabilisée (le pH varie avec la température)."
+  ],
+  "demarche": [
+   "Choisir au moins 3 solutions tampons couvrant la plage utile de l'instrument.",
+   "Plonger l'électrode dans chaque solution et relever la valeur affichée.",
+   "Saisir dans le module « Vérifier la conformité » : le pH de la solution (référence) et la valeur lue, pour chaque point.",
+   "L'app calcule l'écart et le compare à l'EMT que vous saisissez.",
+   "Archiver le résultat comme intervention dans la fiche de vie de l'instrument."
+  ]
+ },
+ {
+  "id": "conductivimetre",
+  "icone": "💦",
+  "nom": "Conductivimètre",
+  "calculateur": "direct",
+  "norme": "Comparaison directe à des solutions étalons de conductivité certifiées — pas de norme produit dédiée.",
+  "compatibilite": "Conductivimètres de paillasse ou portables.",
+  "conditions": [
+   "Solutions étalons de conductivité certifiées, non périmées.",
+   "Cellule de mesure propre, rincée à l'eau distillée entre chaque solution.",
+   "Température des solutions stabilisée (la conductivité varie avec la température)."
+  ],
+  "demarche": [
+   "Choisir au moins 3 solutions étalons couvrant la plage utile de l'instrument.",
+   "Plonger la cellule dans chaque solution et relever la valeur affichée.",
+   "Saisir dans le module « Vérifier la conformité » : la conductivité de la solution (référence) et la valeur lue, pour chaque point.",
+   "L'app calcule l'écart et le compare à l'EMT que vous saisissez.",
+   "Archiver le résultat comme intervention dans la fiche de vie de l'instrument."
+  ]
+ },
+ {
+  "id": "luxmetre",
+  "icone": "💡",
+  "nom": "Luxmètre",
+  "calculateur": "direct",
+  "norme": "Comparaison directe à une source lumineuse de référence certifiée — traçabilité NF EN ISO/CEI 17025, pas de norme produit dédiée.",
+  "compatibilite": "Luxmètres numériques portables ou de paillasse.",
+  "conditions": [
+   "Source lumineuse de référence certifiée (banc photométrique étalonné).",
+   "Cellule photosensible propre, positionnée perpendiculairement au faisceau.",
+   "Mesure réalisée à l'abri de toute lumière parasite."
+  ],
+  "demarche": [
+   "Choisir au moins 3 niveaux d'éclairement couvrant la plage utile de l'instrument.",
+   "Générer chaque niveau de référence et relever la valeur affichée par le luxmètre.",
+   "Saisir dans le module « Vérifier la conformité » : la valeur de référence et la valeur lue, pour chaque point.",
+   "L'app calcule l'écart et le compare à l'EMT que vous saisissez.",
+   "Archiver le résultat comme intervention dans la fiche de vie de l'instrument."
+  ]
+ },
+ {
+  "id": "sonometre",
+  "icone": "🔊",
+  "nom": "Sonomètre",
+  "calculateur": "direct",
+  "norme": "Comparaison directe à un calibreur acoustique certifié (pistonphone) — traçabilité NF EN ISO/CEI 17025, pas de norme produit dédiée.",
+  "compatibilite": "Sonomètres intégrateurs, dosimètres de bruit.",
+  "conditions": [
+   "Calibreur acoustique certifié (pistonphone), généralement à 94 dB ou 114 dB à 1 kHz.",
+   "Microphone propre, correctement inséré dans la cavité du calibreur.",
+   "Mesure réalisée dans un environnement calme, sans bruit parasite."
+  ],
+  "demarche": [
+   "Insérer le microphone dans le calibreur acoustique de référence.",
+   "Relever le niveau sonore de référence et celui affiché par le sonomètre.",
+   "Saisir dans le module « Vérifier la conformité » : la valeur de référence et la valeur lue.",
+   "L'app calcule l'écart et le compare à l'EMT que vous saisissez (souvent ± 0,5 dB).",
+   "Archiver le résultat comme intervention dans la fiche de vie de l'instrument."
+  ]
+ },
+ {
+  "id": "barometre",
+  "icone": "🌡️",
+  "nom": "Baromètre",
+  "calculateur": "direct",
+  "norme": "Comparaison directe à un baromètre de référence certifié — traçabilité NF EN ISO/CEI 17025, pas de norme produit dédiée.",
+  "compatibilite": "Baromètres mécaniques, numériques, manomètres absolus de pression atmosphérique.",
+  "conditions": [
+   "Baromètre de référence (étalon) certifié, placé dans la même zone de pression.",
+   "Absence de courants d'air ou de variation brutale de pression pendant la mesure.",
+   "Température ambiante stable pendant les relevés."
+  ],
+  "demarche": [
+   "Relever simultanément la pression atmosphérique sur l'étalon et sur l'instrument testé, à plusieurs moments si possible.",
+   "Saisir dans le module « Vérifier la conformité » : la valeur de référence et la valeur lue, pour chaque point.",
+   "L'app calcule l'écart et le compare à l'EMT que vous saisissez.",
+   "Archiver le résultat comme intervention dans la fiche de vie de l'instrument."
+  ]
+ },
+ {
+  "id": "autre",
+  "icone": "🔬",
+  "nom": "Autre instrument",
+  "calculateur": null,
+  "norme": "",
+  "compatibilite": "Tout autre instrument non couvert ci-dessus.",
+  "conditions": [],
+  "demarche": []
+ }
+]
