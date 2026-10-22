@@ -73,9 +73,12 @@ export async function createCompany(_: FormState, formData: FormData): Promise<F
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
-  const { error } = await supabase.rpc("create_tenant", {
+  const { error } = await supabase.rpc("register_tenant", {
     p_name: parsed.data.company,
     p_display_name: parsed.data.displayName,
+    p_sector: parsed.data.sector,
+    p_phone: parsed.data.phone,
+    p_buildings: parsed.data.buildings,
   });
   if (error) return { error: "Création de l'entreprise impossible (compte déjà rattaché ?).", values: echoValues(formData) };
   redirect("/mfa");

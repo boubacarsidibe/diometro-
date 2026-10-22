@@ -18,6 +18,7 @@ export function InterventionForm({ action, prestataires = [] }: { action: (s: Fo
       <Notice error={state.error} ok={state.ok} />
       <div className="grid cols-3">
         <Field label="Date *" name="date" error={e.date}><input id="date" name="date" type="date" className="input" defaultValue={state.values?.date ?? ""} required /></Field>
+        <Field label="Mode" name="mode"><select id="mode" name="mode" className="input" defaultValue={state.values?.mode ?? "Externe"}><option>Externe</option><option>Interne</option></select></Field>
         <Field label="Type" name="type"><select id="type" name="type" className="input" defaultValue={state.values?.type}>{INTERVENTION_TYPES.map((x) => <option key={x}>{x}</option>)}</select></Field>
         <Field label="Résultat" name="resultat"><select id="resultat" name="resultat" className="input" defaultValue={state.values?.resultat}>{RESULTATS.map((x) => <option key={x}>{x}</option>)}</select></Field>
         <Field label="Prestataire du carnet" name="prestataire_id">

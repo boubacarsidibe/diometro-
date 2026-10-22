@@ -10,7 +10,7 @@ export default async function NewPrestatairePage() {
   return (
     <>
       <Topbar title="Nouveau prestataire" subtitle="Renseignez la fiche du prestataire." />
-      <div className="content"><div className="card"><PrestataireForm action={createPrestataire} submit="Créer le prestataire" /></div></div>
+      <div className="content"><div className="card"><PrestataireForm action={createPrestataire} submit="Créer le prestataire" accreditation={s.tenant.accreditation_label} defaultCurrency={s.tenant.currency} /></div></div>
     </>
   );
 }

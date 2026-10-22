@@ -5,6 +5,7 @@ import { Topbar } from "@/components/Topbar";
 import { canWrite, requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import type { Prestataire } from "@/lib/types";
+import { money } from "@/lib/money";
 import { archivePrestataire, updatePrestataire } from "../actions";
 
 export default async function PrestatairePage({ params }: { params: Promise<{ id: string }> }) {
@@ -19,11 +20,11 @@ export default async function PrestatairePage({ params }: { params: Promise<{ id
   const write = canWrite(s.role);
   return (
     <>
-      <Topbar title={p.nom} subtitle={`${p.type} · ${count ?? 0} intervention${(count ?? 0) > 1 ? "s" : ""}`} actions={p.cofrac ? <span className="tag green">COFRAC {p.ref_cofrac}</span> : undefined} />
+      <Topbar title={p.nom} subtitle={`${p.type} · ${count ?? 0} intervention${(count ?? 0) > 1 ? "s" : ""}`} actions={p.cofrac ? <span className="tag green">{s.tenant.accreditation_label} {p.ref_cofrac}</span> : undefined} />
       <div className="content stack">
         <div className="card">
           {write ? (
-            <PrestataireForm action={updatePrestataire.bind(null, id)} prestataire={p} submit="Enregistrer" />
+            <PrestataireForm action={updatePrestataire.bind(null, id)} prestataire={p} submit="Enregistrer" accreditation={s.tenant.accreditation_label} defaultCurrency={s.tenant.currency} />
           ) : (
             <dl className="details">
               <dt>Domaines</dt><dd>{p.domaines.join(", ") || "—"}</dd>
@@ -31,6 +32,7 @@ export default async function PrestatairePage({ params }: { params: Promise<{ id
               <dt>Téléphone</dt><dd>{p.telephone || "—"}</dd>
               <dt>Email</dt><dd>{p.email || "—"}</dd>
               <dt>Adresse</dt><dd>{p.adresse || "—"}</dd>
+              <dt>Tarif horaire</dt><dd>{p.tarif_horaire != null ? money(p.tarif_horaire, p.devise) : "—"}</dd>
               <dt>Délai moyen</dt><dd>{p.delai_moyen_jours != null ? `${p.delai_moyen_jours} jours` : "—"}</dd>
               <dt>Commentaires</dt><dd>{p.commentaires || "—"}</dd>
             </dl>

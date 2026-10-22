@@ -7,7 +7,7 @@ const LABEL: Record<string, string> = { admin: "Administrateur", responsable: "C
 
 export function MemberRow({
   action, member, self, canAssignAdmin, locked,
-}: { action: (s: FormState, f: FormData) => Promise<FormState>; member: { user_id: string; display_name: string; role: string; active: boolean }; self: boolean; canAssignAdmin: boolean; locked: boolean }) {
+}: { action: (s: FormState, f: FormData) => Promise<FormState>; member: { user_id: string; display_name: string; role: string; active: boolean; phone: string }; self: boolean; canAssignAdmin: boolean; locked: boolean }) {
   const [state, formAction] = useActionState(action, {});
   if (locked) {
     return (
@@ -29,6 +29,7 @@ export function MemberRow({
           <select name="active" className="input" defaultValue={String(member.active)} style={{ maxWidth: 120 }} aria-label={`Accès de ${member.display_name}`}>
             <option value="true">Actif</option><option value="false">Désactivé</option>
           </select>
+          <input name="phone" className="input" defaultValue={member.phone} placeholder="Téléphone" style={{ maxWidth: 150 }} aria-label={`Téléphone de ${member.display_name}`} maxLength={40} />
           <button className="btn small soft">Appliquer</button>
           {state.error && <span className="field-error" role="alert">{state.error}</span>}
           {state.ok && <span className="helper" role="status">{state.ok}</span>}

@@ -10,7 +10,7 @@ export type Session = {
   email: string;
   displayName: string;
   role: Role;
-  tenant: { id: string; name: string; accent: string; logo_data: string | null };
+  tenant: { id: string; name: string; accent: string; logo_data: string | null; accreditation_label: string; currency: string; buildings: string[] };
   isPlatformAdmin: boolean;
 };
 
@@ -37,7 +37,7 @@ export const requireSession = cache(async (): Promise<Session> => {
   if (aal?.currentLevel !== "aal2") redirect("/mfa");
 
   // Entreprise bloquée ou abonnement expiré : la base masque ses données, on affiche un message clair.
-  const { data: tenant } = await supabase.from("tenants").select("id, name, accent, logo_data").eq("id", profile.tenant_id).maybeSingle();
+  const { data: tenant } = await supabase.from("tenants").select("id, name, accent, logo_data, accreditation_label, currency, buildings").eq("id", profile.tenant_id).maybeSingle();
   if (!tenant) redirect("/suspendu");
   const { data: platform } = await supabase.rpc("is_platform_admin");
 

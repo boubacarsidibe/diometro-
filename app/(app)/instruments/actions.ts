@@ -7,6 +7,12 @@ import { echoValues, parseForm, type FormState } from "@/lib/form";
 import { instrumentSchema, interventionSchema } from "@/lib/schemas";
 import { canWrite, requireSession } from "@/lib/session";
 import { addMonths } from "@/lib/status";
+
+const LIMIT_MSG = "Limite d'instruments atteinte pour votre formule. Contactez votre fournisseur DIOMETRO pour l'augmenter.";
+// Si seule la date d'étalonnage et la fréquence sont connues, l'échéance est calculée.
+function withNextDate<T extends { date_etalonnage: string | null; date_prochaine: string | null; frequence_mois: number | null }>(d: T): T {
+  return !d.date_prochaine && d.date_etalonnage && d.frequence_mois ? { ...d, date_prochaine: addMonths(d.date_etalonnage, d.frequence_mois) } : d;
+}
 import { createClient } from "@/lib/supabase/server";
 
 const idSchema = z.uuid();
@@ -19,10 +25,11 @@ export async function createInstrument(_: FormState, formData: FormData): Promis
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("instruments")
-    .insert({ ...parsed.data, tenant_id: s.tenant.id })
+    .insert({ ...withNextDate(parsed.data), tenant_id: s.tenant.id })
     .select("id")
     .single();
   if (error) {
+    if (error.message.includes("Limite d'instruments")) return { error: LIMIT_MSG, values: echoValues(formData) };
     return error.code === "23505" ? { fieldErrors: { ref: "Cette référence existe déjà." }, error: "Référence déjà utilisée.", values: echoValues(formData) } : { error: "Enregistrement impossible.", values: echoValues(formData) };
   }
   revalidatePath("/", "layout");
@@ -35,7 +42,7 @@ export async function updateInstrument(id: string, _: FormState, formData: FormD
   const parsed = parseForm(instrumentSchema, formData);
   if ("state" in parsed) return parsed.state;
   const supabase = await createClient();
-  const { error } = await supabase.from("instruments").update(parsed.data).eq("id", id);
+  const { error } = await supabase.from("instruments").update(withNextDate(parsed.data)).eq("id", id);
   if (error) return error.code === "23505" ? { fieldErrors: { ref: "Cette référence existe déjà." }, error: "Référence déjà utilisée.", values: echoValues(formData) } : { error: "Mise à jour impossible.", values: echoValues(formData) };
   revalidatePath("/", "layout");
   return { ok: "Instrument mis à jour." };

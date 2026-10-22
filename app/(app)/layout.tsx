@@ -30,6 +30,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <NavLink href="/dashboard" badge={rows.length}>Tableau de bord</NavLink>
           <NavLink href="/instruments">Instruments</NavLink>
           <NavLink href="/planning">Planning</NavLink>
+          {s.role !== "consultation" && <NavLink href="/etalonnage">Étalonnage</NavLink>}
           <NavLink href="/alerts" badge={alerts} alert>Alertes</NavLink>
           <NavLink href="/prestataires">Prestataires</NavLink>
           <NavLink href="/inventaire">Inventaire</NavLink>

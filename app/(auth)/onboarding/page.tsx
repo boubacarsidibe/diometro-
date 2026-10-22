@@ -18,6 +18,9 @@ export default async function OnboardingPage() {
         inputs={[
           { name: "company", label: "Nom de l'entreprise" },
           { name: "displayName", label: "Votre nom affiché", autoComplete: "name" },
+          { name: "sector", label: "Secteur d'activité (facultatif)", required: false },
+          { name: "phone", label: "Téléphone (facultatif)", type: "tel", autoComplete: "tel", required: false },
+          { name: "buildings", label: "Bâtiments (facultatif)", required: false, hint: "Séparés par des virgules : Atelier A, Laboratoire, Magasin" },
         ]}
       />
     </>

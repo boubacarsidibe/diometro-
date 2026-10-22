@@ -15,7 +15,7 @@ export async function updateMember(_: FormState, formData: FormData): Promise<Fo
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("profiles")
-    .update({ role: parsed.data.role, active: parsed.data.active })
+    .update({ role: parsed.data.role, active: parsed.data.active, phone: parsed.data.phone })
     .eq("user_id", parsed.data.user_id)
     .eq("tenant_id", s.tenant.id)
     .select("user_id");
@@ -35,7 +35,7 @@ export async function inviteMember(_: FormState, formData: FormData): Promise<Fo
     const { data, error } = await admin.auth.admin.inviteUserByEmail(parsed.data.email);
     if (error || !data.user) return { error: "Invitation impossible (adresse déjà utilisée ?)." };
     const { error: pErr } = await admin.from("profiles").insert({
-      user_id: data.user.id, tenant_id: s.tenant.id, display_name: parsed.data.displayName, role: parsed.data.role,
+      user_id: data.user.id, tenant_id: s.tenant.id, display_name: parsed.data.displayName, role: parsed.data.role, phone: parsed.data.phone,
     });
     if (pErr) {
       await admin.auth.admin.deleteUser(data.user.id);

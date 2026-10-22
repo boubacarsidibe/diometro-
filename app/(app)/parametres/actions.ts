@@ -11,7 +11,7 @@ export async function saveBranding(_: FormState, formData: FormData): Promise<Fo
   const s = await requireAdmin();
   const parsed = parseForm(brandingSchema, formData);
   if ("state" in parsed) return parsed.state;
-  const update: Record<string, unknown> = { name: parsed.data.name, accent: parsed.data.accent, alerts_enabled: parsed.data.alerts_enabled };
+  const update: Record<string, unknown> = { name: parsed.data.name, accent: parsed.data.accent, alerts_enabled: parsed.data.alerts_enabled, accreditation_label: parsed.data.accreditation_label, currency: parsed.data.currency, sector: parsed.data.sector, phone: parsed.data.phone, buildings: parsed.data.buildings };
 
   const file = formData.get("logo");
   if (file instanceof File && file.size > 0) {

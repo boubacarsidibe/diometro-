@@ -11,8 +11,8 @@ export async function setTenant(_: FormState, formData: FormData): Promise<FormS
   const parsed = parseForm(platformTenantSchema, formData);
   if ("state" in parsed) return parsed.state;
   const supabase = await createClient();
-  const { error } = await supabase.rpc("platform_set_tenant", {
-    p_tenant: parsed.data.tenant_id, p_status: parsed.data.status, p_plan: parsed.data.plan, p_expires: parsed.data.expires,
+  const { error } = await supabase.rpc("platform_update_tenant", {
+    p_tenant: parsed.data.tenant_id, p_status: parsed.data.status, p_plan: parsed.data.plan, p_expires: parsed.data.expires, p_max: parsed.data.max_instruments,
   });
   if (error) return { error: "Mise à jour refusée." };
   revalidatePath("/admin");

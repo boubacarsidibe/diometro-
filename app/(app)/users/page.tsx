@@ -9,7 +9,7 @@ export default async function UsersPage() {
   const s = await requireManager();
   const isAdmin = s.role === "admin";
   const supabase = await createClient();
-  const { data } = await supabase.from("profiles").select("user_id, display_name, role, active").order("display_name");
+  const { data } = await supabase.from("profiles").select("user_id, display_name, role, active, phone").order("display_name");
   return (
     <>
       <Topbar title="Utilisateurs" subtitle="Gérez les accès et les rôles de votre entreprise." />

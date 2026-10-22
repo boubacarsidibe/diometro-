@@ -30,13 +30,40 @@ export const registerSchema = z.object({
   password: passwordSchema,
 });
 
+const buildingList = z
+  .string()
+  .max(1500)
+  .transform((v) => [...new Set(v.split(/[,\n]/).map((b) => b.trim()).filter(Boolean))])
+  .pipe(z.array(z.string().max(100)).max(50, "50 bâtiments maximum"));
+
 export const onboardingSchema = z.object({
   company: text(120).min(2, "Nom d'entreprise trop court"),
   displayName: text(120).min(2, "Nom trop court"),
+  sector: text(100),
+  phone: text(40),
+  buildings: buildingList,
 });
+
+export const CONFORMITES = ["Oui", "Non", "À vérifier"] as const;
+export const ETALONNAGE_TYPES = ["Interne", "Externe", "Interne et externe", "À définir"] as const;
+const emptyOrHttp = z.string().trim().max(500).refine((v) => v === "" || /^https?:\/\/[^\s]+$/i.test(v), "Adresse web invalide (http:// ou https://)");
 
 export const instrumentSchema = z
   .object({
+    conformite: z.enum(CONFORMITES).default("À vérifier"),
+    mode_utilisation: text(200).default(""),
+    graduation: text(100).default(""),
+    tolerance: text(100).default(""),
+    proprietaire: text(120).default(""),
+    stockage: text(200).default(""),
+    etalonnage_type: z.enum(ETALONNAGE_TYPES).default("À définir"),
+    origine_frequence: text(200).default(""),
+    raccordement: text(200).default(""),
+    fiche_link: emptyOrHttp.default(""),
+    certificat_link: emptyOrHttp.default(""),
+    procedure_link: emptyOrHttp.default(""),
+    prestataire_id: z.union([z.literal("").transform(() => null), z.uuid()]).optional().transform((v) => v ?? null),
+    catalog_id: text(60).default(""),
     ref: text(60).min(1, "Référence requise"),
     designation: text(200).min(1, "Désignation requise"),
     type_mesure: text(100),
@@ -58,6 +85,7 @@ export const instrumentSchema = z
   });
 
 export const interventionSchema = z.object({
+  mode: z.enum(["Interne", "Externe"]).default("Externe"),
   instrument_id: z.uuid(),
   prestataire_id: z.union([z.literal("").transform(() => null), z.uuid()]).optional().transform((v) => v ?? null),
   date: z.iso.date(),
@@ -69,12 +97,14 @@ export const interventionSchema = z.object({
 });
 
 export const memberSchema = z.object({
+  phone: text(40).default(""),
   user_id: z.uuid(),
   role: z.enum(ROLES),
   active: z.enum(["true", "false"]).transform((v) => v === "true"),
 });
 
 export const inviteSchema = z.object({
+  phone: text(40).default(""),
   email: z.email("Email invalide").max(254),
   displayName: text(120).min(2, "Nom trop court"),
   role: z.enum(ROLES),
@@ -123,6 +153,30 @@ export const prestataireSchema = z.object({
   site_web: emptyOrUrl,
   contact_nom: text(120),
   contact_fonction: text(120),
+  tarif_horaire: z
+    .string()
+    .trim()
+    .transform((v) => (v === "" ? null : Number(v.replace(",", "."))))
+    .pipe(z.union([z.null(), z.number().min(0).max(99999999)])),
+  devise: z.enum(["XOF", "EUR", "USD"]).default("XOF"),
+  grille_tarifs: z
+    .string()
+    .max(4000)
+    .transform((v, ctx) => {
+      // Une ligne par tarif : « type de mesure ; prix ; unité »
+      const out: { typeMesure: string; prix: number; unite: string }[] = [];
+      for (const line of v.split("\n").map((l) => l.trim()).filter(Boolean)) {
+        const [typeMesure = "", prix = "", unite = ""] = line.split(";").map((x) => x.trim());
+        const n = Number(prix.replace(",", "."));
+        if (!typeMesure || !Number.isFinite(n) || n < 0) {
+          ctx.addIssue({ code: "custom", message: `Ligne invalide : « ${line.slice(0, 40)} »` });
+          return z.NEVER;
+        }
+        out.push({ typeMesure: typeMesure.slice(0, 100), prix: n, unite: unite.slice(0, 40) });
+      }
+      return out;
+    })
+    .pipe(z.array(z.object({ typeMesure: z.string(), prix: z.number(), unite: z.string() })).max(50, "50 lignes maximum")),
   delai_moyen_jours: z
     .string()
     .trim()
@@ -137,6 +191,11 @@ export const brandingSchema = z.object({
   name: text(120).min(2, "Nom trop court"),
   accent: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Couleur invalide"),
   alerts_enabled: checkbox,
+  accreditation_label: text(60).min(1, "Organisme requis"),
+  currency: z.enum(["XOF", "EUR", "USD"]),
+  sector: text(100),
+  phone: text(40),
+  buildings: buildingList,
 });
 
 export const inventoryNoteSchema = z.object({ note: text(500) });
@@ -155,10 +214,26 @@ export const registerAttachmentSchema = z.object({
   kind: z.enum(ATTACHMENT_KINDS),
 });
 
+export const PLANS = [
+  { id: "essai", nom: "Essai", instruments: 50 },
+  { id: "starter", nom: "Starter", instruments: 50 },
+  { id: "standard", nom: "Standard", instruments: 200 },
+  { id: "pro", nom: "Pro", instruments: 500 },
+  { id: "entreprise", nom: "Entreprise", instruments: 1000 },
+  { id: "grandcompte", nom: "Grand Compte", instruments: 2000 },
+  { id: "custom", nom: "Sur-mesure", instruments: null },
+] as const;
+export const PLAN_IDS = PLANS.map((p) => p.id) as unknown as [string, ...string[]];
+
 export const platformTenantSchema = z.object({
   tenant_id: z.uuid(),
   status: z.enum(["active", "blocked"]),
-  plan: z.enum(["essai", "standard", "premium"]),
+  plan: z.enum(PLAN_IDS),
+  max_instruments: z
+    .string()
+    .trim()
+    .transform((v) => (v === "" ? null : Number(v)))
+    .pipe(z.union([z.null(), z.number().int().min(0).max(1000000)])),
   expires: z
     .string()
     .trim()

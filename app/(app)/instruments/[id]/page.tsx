@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { InstrumentForm } from "@/components/InstrumentForm";
+import { CalculDetail } from "@/components/CalculDetail";
 import { AttachmentList } from "@/components/AttachmentList";
 import { AttachmentUploader } from "@/components/AttachmentUploader";
 import { InterventionForm } from "@/components/InterventionForm";
@@ -22,18 +24,20 @@ export default async function InstrumentPage({ params }: { params: Promise<{ id:
   const instrument = data as Instrument;
   const { data: ints } = await supabase.from("interventions").select("*").eq("instrument_id", id).order("date", { ascending: false });
   const interventions = (ints ?? []) as Intervention[];
+  const { data: calcRows } = await supabase.from("interventions").select("id, calcul").eq("instrument_id", id).not("calcul", "is", null);
+  const calculs = new Map((calcRows ?? []).map((c) => [c.id as string, c.calcul as unknown]));
   const { data: atts } = await supabase.from("attachments").select("id, kind, filename, mime, size_bytes, created_at").eq("instrument_id", id).order("created_at", { ascending: false });
   const { data: prest } = await supabase.from("prestataires").select("id, nom").is("deleted_at", null).eq("actif", true).order("nom");
   const write = canWrite(s.role);
 
   return (
     <>
-      <Topbar title={`${instrument.ref} — ${instrument.designation}`} subtitle="Fiche de vie de l'instrument" actions={<><a className="btn small soft" href={`/export/fiche/${id}`}>Fiche de vie PDF</a><UrgencyTag urgency={urgencyOf(instrument.date_prochaine)} /></>} />
+      <Topbar title={`${instrument.ref} — ${instrument.designation}`} subtitle="Fiche de vie de l'instrument" actions={<>{write && <Link className="btn small primary" href={`/instruments/${id}/etalonnage`}>Étalonner</Link>}<a className="btn small soft" href={`/export/fiche/${id}`}>Fiche de vie PDF</a><UrgencyTag urgency={urgencyOf(instrument.date_prochaine)} /></>} />
       <div className="content stack">
         <div className="card">
           <h2>Informations</h2>
           {write ? (
-            <InstrumentForm action={updateInstrument.bind(null, id)} instrument={instrument} submit="Enregistrer" />
+            <InstrumentForm action={updateInstrument.bind(null, id)} instrument={instrument} submit="Enregistrer" buildings={s.tenant.buildings} prestataires={prest ?? []} />
           ) : (
             <dl className="details">
               <dt>Statut</dt><dd>{instrument.statut}</dd>
@@ -41,6 +45,10 @@ export default async function InstrumentPage({ params }: { params: Promise<{ id:
               <dt>Localisation</dt><dd>{[instrument.batiment, instrument.zone].filter(Boolean).join(" · ") || "—"}</dd>
               <dt>Dernier étalonnage</dt><dd>{instrument.date_etalonnage ?? "—"}</dd>
               <dt>Prochaine échéance</dt><dd>{instrument.date_prochaine ?? "—"}</dd>
+              <dt>Conformité</dt><dd>{instrument.conformite}</dd>
+              <dt>Type d'étalonnage</dt><dd>{instrument.etalonnage_type}</dd>
+              <dt>Tolérance / EMT</dt><dd>{instrument.tolerance || "—"}</dd>
+              <dt>Propriétaire</dt><dd>{instrument.proprietaire || "—"}</dd>
               <dt>Commentaires</dt><dd>{instrument.commentaires || "—"}</dd>
             </dl>
           )}
@@ -53,13 +61,13 @@ export default async function InstrumentPage({ params }: { params: Promise<{ id:
           ) : (
             <div className="table-wrap">
               <table>
-                <thead><tr><th>Date</th><th>Type</th><th>Résultat</th><th>Prestataire</th><th>Certificat</th><th>Observation</th></tr></thead>
+                <thead><tr><th>Date</th><th>Type</th><th>Mode</th><th>Résultat</th><th>Prestataire</th><th>Certificat</th><th>Observation</th></tr></thead>
                 <tbody>
                   {interventions.map((i) => (
                     <tr key={i.id}>
-                      <td>{i.date}</td><td>{i.type}</td>
+                      <td>{i.date}</td><td>{i.type}</td><td>{i.mode ?? "—"}</td>
                       <td><span className={`tag ${i.resultat === "Conforme" ? "green" : i.resultat === "Non conforme" ? "red" : "yellow"}`}>{i.resultat}</span></td>
-                      <td>{i.prestataire || "—"}</td><td>{i.ref_certificat || "—"}</td><td>{i.observation || "—"}</td>
+                      <td>{i.prestataire || "—"}</td><td>{i.ref_certificat || "—"}</td><td>{i.observation || "—"}{i.calcul_type && <CalculDetail kind={i.calcul_type} data={(calculs.get(i.id) ?? null)} />}</td>
                     </tr>
                   ))}
                 </tbody>

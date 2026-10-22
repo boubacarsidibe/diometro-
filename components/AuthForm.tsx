@@ -4,7 +4,7 @@ import { Field, Notice } from "@/components/Field";
 import { SubmitButton } from "@/components/SubmitButton";
 import type { FormState } from "@/lib/form";
 
-type Input = { name: string; label: string; type?: string; autoComplete?: string; hint?: string };
+type Input = { name: string; label: string; type?: string; autoComplete?: string; hint?: string; required?: boolean };
 
 export function AuthForm({
   action, inputs, submit, initialError,
@@ -15,7 +15,7 @@ export function AuthForm({
       <Notice error={state.error} ok={state.ok} />
       {inputs.map((i) => (
         <Field key={i.name} label={i.label} name={i.name} error={state.fieldErrors?.[i.name]}>
-          <input id={i.name} name={i.name} type={i.type ?? "text"} className="input" autoComplete={i.autoComplete} defaultValue={state.values?.[i.name] ?? ""} required />
+          <input id={i.name} name={i.name} type={i.type ?? "text"} className="input" autoComplete={i.autoComplete} defaultValue={state.values?.[i.name] ?? ""} required={i.required !== false} />
           {i.hint && <span className="helper">{i.hint}</span>}
         </Field>
       ))}

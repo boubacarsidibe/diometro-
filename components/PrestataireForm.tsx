@@ -7,8 +7,8 @@ import { PRESTATAIRE_TYPES } from "@/lib/schemas";
 import type { Prestataire } from "@/lib/types";
 
 export function PrestataireForm({
-  action, prestataire, submit,
-}: { action: (s: FormState, f: FormData) => Promise<FormState>; prestataire?: Prestataire; submit: string }) {
+  action, prestataire, submit, accreditation = "COFRAC", defaultCurrency = "XOF",
+}: { action: (s: FormState, f: FormData) => Promise<FormState>; prestataire?: Prestataire; submit: string; accreditation?: string; defaultCurrency?: string }) {
   const [state, formAction] = useActionState(action, {});
   const e = state.fieldErrors ?? {};
   const v = (k: keyof Prestataire, fb: string | number = "") => (state.values?.[k] ?? (prestataire?.[k] as string | number | undefined) ?? fb) as string | number;
@@ -24,7 +24,7 @@ export function PrestataireForm({
         <Field label="Domaines (séparés par des virgules)" name="domaines" error={e.domaines} full>
           <input id="domaines" name="domaines" className="input" defaultValue={state.values?.domaines ?? prestataire?.domaines.join(", ") ?? ""} placeholder="Température, Pression, Dimensionnel" maxLength={600} />
         </Field>
-        <Field label="Accrédité COFRAC" name="cofrac"><label><input id="cofrac" name="cofrac" type="checkbox" defaultChecked={checked("cofrac", false)} /> Oui</label></Field>
+        <Field label={`Accrédité ${accreditation}`} name="cofrac"><label><input id="cofrac" name="cofrac" type="checkbox" defaultChecked={checked("cofrac", false)} /> Oui</label></Field>
         <Field label="N° d'accréditation" name="ref_cofrac" error={e.ref_cofrac}><input id="ref_cofrac" name="ref_cofrac" className="input" defaultValue={v("ref_cofrac")} maxLength={100} /></Field>
         <Field label="Contact" name="contact_nom" error={e.contact_nom}><input id="contact_nom" name="contact_nom" className="input" defaultValue={v("contact_nom")} maxLength={120} /></Field>
         <Field label="Fonction" name="contact_fonction" error={e.contact_fonction}><input id="contact_fonction" name="contact_fonction" className="input" defaultValue={v("contact_fonction")} maxLength={120} /></Field>
@@ -35,6 +35,13 @@ export function PrestataireForm({
         <Field label="Délai moyen (jours)" name="delai_moyen_jours" error={e.delai_moyen_jours}><input id="delai_moyen_jours" name="delai_moyen_jours" type="number" min={0} max={365} className="input" defaultValue={v("delai_moyen_jours")} /></Field>
         <Field label="Note interne (0 à 5)" name="note_interne" error={e.note_interne}><input id="note_interne" name="note_interne" type="number" min={0} max={5} className="input" defaultValue={v("note_interne", 0)} /></Field>
         <Field label="Actif" name="actif"><label><input id="actif" name="actif" type="checkbox" defaultChecked={checked("actif", true)} /> Prestataire utilisable</label></Field>
+        <Field label="Tarif horaire" name="tarif_horaire" error={e.tarif_horaire}><input id="tarif_horaire" name="tarif_horaire" inputMode="decimal" className="input" defaultValue={v("tarif_horaire")} placeholder="Ex. 15000" /></Field>
+        <Field label="Devise" name="devise" error={e.devise}>
+          <select id="devise" name="devise" className="input" defaultValue={String(v("devise", defaultCurrency))}><option value="XOF">FCFA (XOF)</option><option value="EUR">Euro (EUR)</option><option value="USD">Dollar (USD)</option></select>
+        </Field>
+        <Field label="Grille de tarifs (une ligne par tarif : type de mesure ; prix ; unité)" name="grille_tarifs" error={e.grille_tarifs} full>
+          <textarea id="grille_tarifs" name="grille_tarifs" className="input" rows={3} placeholder={"Pression ; 25000 ; point\nTempérature ; 18000 ; point"} defaultValue={state.values?.grille_tarifs ?? (prestataire?.grille_tarifs ?? []).map((g) => `${g.typeMesure} ; ${g.prix} ; ${g.unite}`).join("\n")} />
+        </Field>
         <Field label="Commentaires" name="commentaires" error={e.commentaires} full><textarea id="commentaires" name="commentaires" className="input" rows={3} maxLength={2000} defaultValue={v("commentaires")} /></Field>
       </div>
       <div className="form-actions"><SubmitButton>{submit}</SubmitButton></div>

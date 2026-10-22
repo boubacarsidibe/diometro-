@@ -7,7 +7,7 @@ import { setTenant } from "./actions";
 export default async function PlatformPage() {
   await requirePlatformAdmin();
   const supabase = await createClient();
-  const { data } = await supabase.rpc("platform_tenants");
+  const { data } = await supabase.rpc("platform_overview");
   const tenants = ((data ?? []) as (Omit<TenantRowData, "users" | "instruments"> & { users: number | string; instruments: number | string })[]).map((t) => ({ ...t, users: Number(t.users), instruments: Number(t.instruments) }));
   const active = tenants.filter((t) => t.status === "active").length;
   return (
