@@ -13,6 +13,9 @@ Solution numérique de gestion et de suivi métrologique des instruments de mesu
 - **Instruments et fiches de vie :** tous les champs métier (conformité, graduation, tolérance/EMT, propriétaire, stockage, type d'étalonnage, origine de la fréquence, raccordement, liens documents, prestataire habituel), interventions internes/externes, historique.
 - **Calculateurs métrologiques** (repris de l'ancienne version, résultats identiques vérifiés par tests) : pipettes (ISO 8655, incertitude GUM), thermomètres Pt100 (X 07-016, GUM), comparaison directe à un étalon ; **catalogue de 28 types d'instruments** avec normes et procédures. Le résultat est enregistré dans la fiche de vie, la conformité et l'échéance sont mises à jour.
 - **Prestataires :** carnet, contacts, domaines, organisme d'accréditation configurable (COFRAC, SENAC…), tarifs en FCFA, **comparateur par domaine**.
+- **Page d'accueil publique** avec présentation et formules, **mentions légales, CGU et politique de confidentialité** (à compléter via les variables `LEGAL_*`), case de consentement à l'inscription (preuve datée conservée).
+- **Essai de 30 jours puis lecture seule** : sans formule gratuite ; les données ne sont jamais supprimées, l'écriture est rétablie au paiement.
+- **Liste des instruments** filtrable (statut, conformité, bâtiment, zone, type, échéance), triable par colonne, paginée, avec filtres dans l'adresse.
 - **Planning** mensuel + charge de travail sur 12 mois ; **alertes** d'échéance (écran, notifications du navigateur, email quotidien).
 - **QR codes et étiquettes** imprimables ; **lien public QR en lecture seule** (désactivé par défaut, révocable, données minimales).
 - **Inventaire physique** avec historique, **pièces jointes** (PDF, images, Excel, Word, 10 Mo, aperçu), **corbeille** avec restauration.
@@ -57,6 +60,13 @@ Déploiement : importez le dépôt dans Vercel (offre Hobby) et définissez les 
 | Redirections | Liste blanche (`/auth/confirm`) |
 | Secrets | Aucun secret dans le code ; clé `service_role` serveur uniquement |
 | CI | `npm audit`, typage, tests et build à chaque push |
+
+## Alertes email : mise en service et vérification
+
+1. Variables Vercel (Settings > Environment Variables) : `CRON_SECRET` (au moins 32 caractères aléatoires), `SUPABASE_SERVICE_ROLE_KEY`, `APP_URL`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`. Puis redéployer.
+2. **Paramètres > Alertes par email > « Envoyer un email de test »** : vérifie l'envoi vers votre propre adresse et affiche le code d'erreur du serveur SMTP en cas de refus.
+3. Test complet de la route : `curl -H "Authorization: Bearer <CRON_SECRET>" "https://<votre-site>/api/cron/alerts?force=1"` (`force=1` ignore les jalons et la limite d'un envoi par jour, sans écrire au journal). La réponse indique les variables manquantes, l'erreur SMTP éventuelle, ou `sent`/`recipients`.
+4. Vercel appelle ensuite la route chaque jour à 07:00 UTC (`vercel.json`).
 
 ## Variables d'environnement
 

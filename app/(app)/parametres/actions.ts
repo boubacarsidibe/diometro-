@@ -5,6 +5,7 @@ import { echoValues, parseForm, type FormState } from "@/lib/form";
 import { logoToDataUri } from "@/lib/image";
 import { brandingSchema } from "@/lib/schemas";
 import { requireAdmin } from "@/lib/session";
+import { mailer, missingMailVars, smtpErrorInfo } from "@/lib/mail";
 import { createClient } from "@/lib/supabase/server";
 
 export async function saveBranding(_: FormState, formData: FormData): Promise<FormState> {
@@ -27,4 +28,21 @@ export async function saveBranding(_: FormState, formData: FormData): Promise<Fo
   if (error) return { error: "Enregistrement impossible.", values: echoValues(formData) };
   revalidatePath("/", "layout");
   return { ok: "Paramètres enregistrés." };
+}
+
+// Vérifie la configuration d'envoi : un email de test part vers l'adresse de l'administrateur connecté (jamais ailleurs).
+export async function sendTestEmail(): Promise<FormState> {
+  const s = await requireAdmin();
+  const missing = missingMailVars();
+  if (missing.length) return { error: `Configuration email incomplète : ${missing.join(", ")}.` };
+  try {
+    await mailer().sendMail({
+      from: process.env.MAIL_FROM, to: s.email, subject: "DIOMETRO - email de test",
+      text: `Bonjour ${s.displayName},\n\nSi vous recevez ce message, l'envoi d'emails de DIOMETRO (alertes d'échéance) fonctionne.`,
+    });
+    return { ok: `Email de test envoyé à ${s.email}. Vérifiez votre boîte de réception (et les spams).` };
+  } catch (e) {
+    const { code, message } = smtpErrorInfo(e);
+    return { error: `Envoi refusé par le serveur (${code}) : ${message}` };
+  }
 }

@@ -28,6 +28,8 @@ export const loginSchema = z.object({
 export const registerSchema = z.object({
   email: z.email("Email invalide").max(254),
   password: passwordSchema,
+  accept: z.literal("on", { error: "Vous devez accepter les conditions d'utilisation et la politique de confidentialité." }),
+  formule: z.enum(["", "starter", "standard", "pro", "entreprise", "grandcompte", "custom"]).default(""),
 });
 
 const buildingList = z

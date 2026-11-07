@@ -28,8 +28,13 @@ export async function register(_: FormState, formData: FormData): Promise<FormSt
   if ("state" in parsed) return parsed.state;
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
-    ...parsed.data,
-    options: { emailRedirectTo: `${await siteUrl()}/auth/confirm?next=/onboarding` },
+    email: parsed.data.email,
+    password: parsed.data.password,
+    options: {
+      emailRedirectTo: `${await siteUrl()}/auth/confirm?next=/onboarding`,
+      // Preuve d'acceptation des conditions (date et version) conservée avec le compte.
+      data: { cgu_accepted_at: new Date().toISOString(), cgu_version: "2026-11-07", formule_choisie: parsed.data.formule },
+    },
   });
   if (error && error.status !== 422) {
     // Cause technique dans les logs serveur (jamais d'email ni de mot de passe).

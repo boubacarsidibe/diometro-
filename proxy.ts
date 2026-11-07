@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC = ["/login", "/register", "/forgot-password", "/auth/confirm", "/api/cron", "/p"];
+const PUBLIC = ["/login", "/register", "/forgot-password", "/auth/confirm", "/api/cron", "/p", "/mentions-legales", "/cgu", "/confidentialite", "/robots.txt", "/sitemap.xml"];
 
 function buildCsp(nonce: string): string {
   const dev = process.env.NODE_ENV === "development";
@@ -56,7 +56,7 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-  const isPublic = PUBLIC.some((p) => path === p || path.startsWith(`${p}/`));
+  const isPublic = path === "/" || PUBLIC.some((p) => path === p || path.startsWith(`${p}/`));
 
   if (!user && !isPublic) {
     const redirect = NextResponse.redirect(new URL("/login", request.url));
