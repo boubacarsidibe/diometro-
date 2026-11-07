@@ -8,8 +8,8 @@ import { CONFORMITE_OF, RESULTAT_OF, describeDirect, describePipette, describePt
 import { computePipette } from "@/lib/calc/pipette";
 import { computePt100, type Verdict } from "@/lib/calc/pt100";
 import { CALC_KINDS, directSchema, pipetteSchema, pt100Schema } from "@/lib/calc/schemas";
-import { canWrite, requireSession } from "@/lib/session";
-import { addMonths } from "@/lib/status";
+import { canEdit, requireSession } from "@/lib/session";
+import { addDuration, type FrequenceUnite } from "@/lib/status";
 import { createClient } from "@/lib/supabase/server";
 
 type SaveResult = { ok: true; verdict: Verdict } | { ok: false; error: string };
@@ -17,11 +17,11 @@ type SaveResult = { ok: true; verdict: Verdict } | { ok: false; error: string };
 // Le navigateur n'envoie que les SAISIES : le résultat est recalculé ici, jamais accepté tel quel.
 export async function saveCalculation(instrumentId: string, kind: string, payload: unknown): Promise<SaveResult> {
   const s = await requireSession();
-  if (!canWrite(s.role)) return { ok: false, error: "Droits insuffisants." };
+  if (!canEdit(s)) return { ok: false, error: "Droits insuffisants." };
   if (!z.uuid().safeParse(instrumentId).success || !(CALC_KINDS as readonly string[]).includes(kind)) return { ok: false, error: "Requête invalide." };
 
   const supabase = await createClient();
-  const { data: inst } = await supabase.from("instruments").select("id, statut, frequence_mois, catalog_id").eq("id", instrumentId).is("deleted_at", null).maybeSingle();
+  const { data: inst } = await supabase.from("instruments").select("id, statut, frequence_valeur, frequence_unite, catalog_id").eq("id", instrumentId).is("deleted_at", null).maybeSingle();
   if (!inst) return { ok: false, error: "Instrument introuvable." };
 
   let verdict: Verdict;
@@ -63,9 +63,9 @@ export async function saveCalculation(instrumentId: string, kind: string, payloa
   // Conformité mise à jour automatiquement (sauf instrument réformé) ; dates replanifiées si le résultat n'est pas « non conforme ».
   const update: Record<string, unknown> = {};
   if (inst.statut !== "Réformé") update.conformite = CONFORMITE_OF[verdict];
-  if (verdict !== "no" && inst.frequence_mois) {
+  if (verdict !== "no" && inst.frequence_valeur && inst.frequence_unite) {
     update.date_etalonnage = today;
-    update.date_prochaine = addMonths(today, inst.frequence_mois);
+    update.date_prochaine = addDuration(today, inst.frequence_valeur, inst.frequence_unite as FrequenceUnite);
   }
   if (Object.keys(update).length) await supabase.from("instruments").update(update).eq("id", inst.id);
 

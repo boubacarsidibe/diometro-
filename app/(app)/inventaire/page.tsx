@@ -2,7 +2,7 @@ import Link from "next/link";
 import { InventoryChecklist, type CheckRow } from "@/components/InventoryChecklist";
 import { StartInventoryForm } from "@/components/StartInventoryForm";
 import { Topbar } from "@/components/Topbar";
-import { canWrite, requireSession } from "@/lib/session";
+import { canEdit, requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { closeInventory, startInventory } from "./actions";
 
@@ -11,7 +11,7 @@ type RawCheck = { instrument_id: string; found: boolean; instruments: { ref: str
 
 export default async function InventairePage() {
   const s = await requireSession();
-  const write = canWrite(s.role);
+  const write = canEdit(s);
   const supabase = await createClient();
   const [{ data: runsData }, { data: members }] = await Promise.all([
     supabase.from("inventory_runs").select("id, status, note, created_at, closed_at, total_count, found_count, created_by").order("created_at", { ascending: false }).limit(50),

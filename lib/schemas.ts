@@ -72,16 +72,21 @@ export const instrumentSchema = z
     statut: z.enum(STATUTS),
     date_etalonnage: optionalDate,
     date_prochaine: optionalDate,
-    frequence_mois: z
+    frequence_valeur: z
       .string()
       .trim()
       .transform((v) => (v === "" ? null : Number(v)))
-      .pipe(z.union([z.null(), z.number().int().min(1).max(120)])),
+      .pipe(z.union([z.null(), z.number().int().min(1).max(3650)])),
+    frequence_unite: z.enum(["", "jour", "semaine", "mois", "annee"]).transform((v) => (v === "" ? null : v)),
     commentaires: text(2000),
   })
   .refine((v) => !v.date_etalonnage || !v.date_prochaine || v.date_prochaine >= v.date_etalonnage, {
     message: "La prochaine échéance doit suivre le dernier étalonnage",
     path: ["date_prochaine"],
+  })
+  .refine((v) => (v.frequence_valeur === null) === (v.frequence_unite === null), {
+    message: "Indiquez la valeur ET l'unité de la fréquence (ou aucune des deux)",
+    path: ["frequence_valeur"],
   });
 
 export const interventionSchema = z.object({

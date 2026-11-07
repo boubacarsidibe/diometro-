@@ -5,13 +5,13 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { echoValues, parseForm, type FormState } from "@/lib/form";
 import { instrumentSchema, interventionSchema } from "@/lib/schemas";
-import { canWrite, requireSession } from "@/lib/session";
-import { addMonths } from "@/lib/status";
+import { canEdit, requireSession } from "@/lib/session";
+import { addDuration, type FrequenceUnite } from "@/lib/status";
 
 const LIMIT_MSG = "Limite d'instruments atteinte pour votre formule. Contactez votre fournisseur DIOMETRO pour l'augmenter.";
 // Si seule la date d'étalonnage et la fréquence sont connues, l'échéance est calculée.
-function withNextDate<T extends { date_etalonnage: string | null; date_prochaine: string | null; frequence_mois: number | null }>(d: T): T {
-  return !d.date_prochaine && d.date_etalonnage && d.frequence_mois ? { ...d, date_prochaine: addMonths(d.date_etalonnage, d.frequence_mois) } : d;
+function withNextDate<T extends { date_etalonnage: string | null; date_prochaine: string | null; frequence_valeur: number | null; frequence_unite: string | null }>(d: T): T {
+  return !d.date_prochaine && d.date_etalonnage && d.frequence_valeur && d.frequence_unite ? { ...d, date_prochaine: addDuration(d.date_etalonnage, d.frequence_valeur, d.frequence_unite as FrequenceUnite) } : d;
 }
 import { createClient } from "@/lib/supabase/server";
 
@@ -19,7 +19,7 @@ const idSchema = z.uuid();
 
 export async function createInstrument(_: FormState, formData: FormData): Promise<FormState> {
   const s = await requireSession();
-  if (!canWrite(s.role)) return { error: "Droits insuffisants." };
+  if (!canEdit(s)) return { error: "Droits insuffisants." };
   const parsed = parseForm(instrumentSchema, formData);
   if ("state" in parsed) return parsed.state;
   const supabase = await createClient();
@@ -33,12 +33,13 @@ export async function createInstrument(_: FormState, formData: FormData): Promis
     return error.code === "23505" ? { fieldErrors: { ref: "Cette référence existe déjà." }, error: "Référence déjà utilisée.", values: echoValues(formData) } : { error: "Enregistrement impossible.", values: echoValues(formData) };
   }
   revalidatePath("/", "layout");
-  redirect(`/instruments/${data.id}`);
+  // Pas de redirection ici : le navigateur envoie d'abord les fichiers choisis, puis ouvre la fiche.
+  return { ok: "Instrument créé.", id: data.id };
 }
 
 export async function updateInstrument(id: string, _: FormState, formData: FormData): Promise<FormState> {
   const s = await requireSession();
-  if (!canWrite(s.role) || !idSchema.safeParse(id).success) return { error: "Droits insuffisants." };
+  if (!canEdit(s) || !idSchema.safeParse(id).success) return { error: "Droits insuffisants." };
   const parsed = parseForm(instrumentSchema, formData);
   if ("state" in parsed) return parsed.state;
   const supabase = await createClient();
@@ -59,7 +60,7 @@ export async function archiveInstrument(id: string) {
 
 export async function addIntervention(instrumentId: string, _: FormState, formData: FormData): Promise<FormState> {
   const s = await requireSession();
-  if (!canWrite(s.role)) return { error: "Droits insuffisants." };
+  if (!canEdit(s)) return { error: "Droits insuffisants." };
   const parsed = parseForm(interventionSchema, withInstrument(formData, instrumentId));
   if ("state" in parsed) return parsed.state;
   const supabase = await createClient();
@@ -72,9 +73,9 @@ export async function addIntervention(instrumentId: string, _: FormState, formDa
 
   // Un étalonnage conforme replanifie automatiquement la prochaine échéance.
   if (parsed.data.type === "Étalonnage" && parsed.data.resultat !== "Non conforme") {
-    const { data: inst } = await supabase.from("instruments").select("frequence_mois, date_etalonnage").eq("id", instrumentId).single();
-    if (inst?.frequence_mois && (!inst.date_etalonnage || parsed.data.date >= inst.date_etalonnage)) {
-      await supabase.from("instruments").update({ date_etalonnage: parsed.data.date, date_prochaine: addMonths(parsed.data.date, inst.frequence_mois) }).eq("id", instrumentId);
+    const { data: inst } = await supabase.from("instruments").select("frequence_valeur, frequence_unite, date_etalonnage").eq("id", instrumentId).single();
+    if (inst?.frequence_valeur && inst.frequence_unite && (!inst.date_etalonnage || parsed.data.date >= inst.date_etalonnage)) {
+      await supabase.from("instruments").update({ date_etalonnage: parsed.data.date, date_prochaine: addDuration(parsed.data.date, inst.frequence_valeur, inst.frequence_unite as FrequenceUnite) }).eq("id", instrumentId);
     }
   }
   revalidatePath("/", "layout");

@@ -32,6 +32,23 @@ export function addMonths(iso: string, months: number): string {
   return target.toISOString().slice(0, 10);
 }
 
+export type FrequenceUnite = "jour" | "semaine" | "mois" | "annee";
+export const UNITE_LABEL: Record<FrequenceUnite, string> = { jour: "jour(s)", semaine: "semaine(s)", mois: "mois", annee: "an(s)" };
+
+// dernier étalonnage + fréquence = prochaine échéance (fin de mois respectée pour mois/années).
+export function addDuration(iso: string, value: number, unit: FrequenceUnite): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso) || !Number.isInteger(value) || value < 1) throw new Error("durée invalide");
+  if (unit === "mois") return addMonths(iso, value);
+  if (unit === "annee") return addMonths(iso, value * 12);
+  const [y, m, d] = iso.split("-").map(Number);
+  const days = unit === "semaine" ? value * 7 : value;
+  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+}
+
+export function describeFrequence(value: number | null | undefined, unit: string | null | undefined): string {
+  return value && unit ? `${value} ${UNITE_LABEL[unit as FrequenceUnite] ?? unit}` : "—";
+}
+
 export const URGENCY_LABEL: Record<Urgency, string> = {
   expire: "Expiré",
   urgent: "Urgent",

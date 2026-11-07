@@ -10,7 +10,7 @@ import type { Instrument } from "@/lib/types";
 
 const inst = (o: Partial<Instrument>): Instrument => ({
   id: "i", ref: "R", designation: "D", type_mesure: "", batiment: "", zone: "", statut: "En service",
-  date_etalonnage: null, date_prochaine: null, frequence_mois: null, commentaires: "", deleted_at: null, created_at: "", updated_at: "",
+  date_etalonnage: null, date_prochaine: null, frequence_valeur: null, frequence_unite: null, commentaires: "", deleted_at: null, created_at: "", updated_at: "",
   conformite: "À vérifier", mode_utilisation: "", graduation: "", tolerance: "", proprietaire: "", stockage: "", etalonnage_type: "À définir",
   origine_frequence: "", raccordement: "", fiche_link: "", certificat_link: "", procedure_link: "", prestataire_id: null, catalog_id: "", public_token: null, ...o,
 });

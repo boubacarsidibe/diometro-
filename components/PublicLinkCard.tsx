@@ -10,7 +10,7 @@ export function PublicLinkCard({ instrumentId, url, qr }: { instrumentId: string
   async function copy() { if (url) { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 1500); } }
   return (
     <div>
-      <p className="helper" style={{ marginBottom: 10 }}>Un lien public permet à toute personne qui scanne le QR code de voir, <strong>sans connexion</strong>, uniquement : référence, désignation, type, statut, conformité et dates d&apos;étalonnage. Aucun commentaire, document ni lieu. Désactivé par défaut ; la désactivation coupe le lien immédiatement.</p>
+      <p className="helper" style={{ marginBottom: 10 }}>Ce lien, utilisé par les étiquettes QR, affiche <strong>sans connexion</strong> uniquement : référence, désignation, statut, dernier étalonnage, prochaine échéance, conformité et lieu — toujours à jour. Actif par défaut. Si vous le désactivez, les étiquettes déjà imprimées cessent de fonctionner ; en le réactivant vous obtenez un nouveau lien (il faut alors réimprimer l'étiquette).</p>
       {error && <div className="notice err" role="alert">{error}</div>}
       {url ? (
         <div style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>

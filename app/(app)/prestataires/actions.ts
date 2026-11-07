@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { echoValues, parseForm, type FormState } from "@/lib/form";
 import { prestataireSchema } from "@/lib/schemas";
-import { canWrite, requireSession } from "@/lib/session";
+import { canEdit, requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 
 const idSchema = z.uuid();
@@ -16,7 +16,7 @@ function dupMessage(code: string | undefined, formData: FormData): FormState | n
 
 export async function createPrestataire(_: FormState, formData: FormData): Promise<FormState> {
   const s = await requireSession();
-  if (!canWrite(s.role)) return { error: "Droits insuffisants." };
+  if (!canEdit(s)) return { error: "Droits insuffisants." };
   const parsed = parseForm(prestataireSchema, formData);
   if ("state" in parsed) return parsed.state;
   const supabase = await createClient();
@@ -28,7 +28,7 @@ export async function createPrestataire(_: FormState, formData: FormData): Promi
 
 export async function updatePrestataire(id: string, _: FormState, formData: FormData): Promise<FormState> {
   const s = await requireSession();
-  if (!canWrite(s.role) || !idSchema.safeParse(id).success) return { error: "Droits insuffisants." };
+  if (!canEdit(s) || !idSchema.safeParse(id).success) return { error: "Droits insuffisants." };
   const parsed = parseForm(prestataireSchema, formData);
   if ("state" in parsed) return parsed.state;
   const supabase = await createClient();
@@ -40,7 +40,7 @@ export async function updatePrestataire(id: string, _: FormState, formData: Form
 
 export async function archivePrestataire(id: string) {
   const s = await requireSession();
-  if (!canWrite(s.role) || !idSchema.safeParse(id).success) redirect("/prestataires");
+  if (!canEdit(s) || !idSchema.safeParse(id).success) redirect("/prestataires");
   const supabase = await createClient();
   await supabase.from("prestataires").update({ deleted_at: new Date().toISOString() }).eq("id", id);
   revalidatePath("/prestataires");

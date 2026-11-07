@@ -33,11 +33,11 @@ describe("validation", () => {
     const base = {
       ref: "TH-01", designation: "Thermomètre", type_mesure: "", batiment: "", zone: "",
       statut: "En service", date_etalonnage: "2026-05-01", date_prochaine: "2027-05-01",
-      frequence_mois: "12", commentaires: "",
+      frequence_valeur: "12", frequence_unite: "mois", commentaires: "",
     };
     expect(instrumentSchema.safeParse(base).success).toBe(true);
     expect(instrumentSchema.safeParse({ ...base, date_prochaine: "2026-01-01" }).success).toBe(false);
     expect(instrumentSchema.safeParse({ ...base, statut: "Inconnu" }).success).toBe(false);
-    expect(instrumentSchema.safeParse({ ...base, frequence_mois: "0" }).success).toBe(false);
+    expect(instrumentSchema.safeParse({ ...base, frequence_valeur: "0", frequence_unite: "mois" }).success).toBe(false);
   });
 });

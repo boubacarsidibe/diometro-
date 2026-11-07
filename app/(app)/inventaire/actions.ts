@@ -5,14 +5,14 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { parseForm, type FormState } from "@/lib/form";
 import { inventoryNoteSchema } from "@/lib/schemas";
-import { canWrite, requireSession } from "@/lib/session";
+import { canEdit, requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 
 const uuid = z.uuid();
 
 export async function startInventory(_: FormState, formData: FormData): Promise<FormState> {
   const s = await requireSession();
-  if (!canWrite(s.role)) return { error: "Droits insuffisants." };
+  if (!canEdit(s)) return { error: "Droits insuffisants." };
   const parsed = parseForm(inventoryNoteSchema, formData);
   if ("state" in parsed) return parsed.state;
   const supabase = await createClient();
@@ -24,7 +24,7 @@ export async function startInventory(_: FormState, formData: FormData): Promise<
 
 export async function setFound(runId: string, instrumentId: string, found: boolean): Promise<{ ok: boolean }> {
   const s = await requireSession();
-  if (!canWrite(s.role) || !uuid.safeParse(runId).success || !uuid.safeParse(instrumentId).success) return { ok: false };
+  if (!canEdit(s) || !uuid.safeParse(runId).success || !uuid.safeParse(instrumentId).success) return { ok: false };
   const supabase = await createClient();
   const { data, error } = await supabase.from("inventory_checks").update({ found }).eq("run_id", runId).eq("instrument_id", instrumentId).select("instrument_id");
   return { ok: !error && (data?.length ?? 0) === 1 };
@@ -32,7 +32,7 @@ export async function setFound(runId: string, instrumentId: string, found: boole
 
 export async function closeInventory(runId: string) {
   const s = await requireSession();
-  if (!canWrite(s.role) || !uuid.safeParse(runId).success) redirect("/inventaire");
+  if (!canEdit(s) || !uuid.safeParse(runId).success) redirect("/inventaire");
   const supabase = await createClient();
   const { error } = await supabase.rpc("close_inventory", { p_run: runId });
   revalidatePath("/inventaire");

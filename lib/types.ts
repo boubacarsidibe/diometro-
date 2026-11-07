@@ -1,6 +1,6 @@
 export type Instrument = {
   id: string; ref: string; designation: string; type_mesure: string; batiment: string; zone: string;
-  statut: string; date_etalonnage: string | null; date_prochaine: string | null; frequence_mois: number | null;
+  statut: string; date_etalonnage: string | null; date_prochaine: string | null; frequence_valeur: number | null; frequence_unite: string | null;
   commentaires: string; deleted_at: string | null; created_at: string; updated_at: string;
   conformite: string; mode_utilisation: string; graduation: string; tolerance: string; proprietaire: string; stockage: string;
   etalonnage_type: string; origine_frequence: string; raccordement: string; fiche_link: string; certificat_link: string;

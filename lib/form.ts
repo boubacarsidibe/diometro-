@@ -1,6 +1,6 @@
 import type { ZodType } from "zod";
 
-export type FormState = { error?: string; fieldErrors?: Record<string, string>; ok?: string; values?: Record<string, string> };
+export type FormState = { error?: string; fieldErrors?: Record<string, string>; ok?: string; values?: Record<string, string>; id?: string };
 
 // Valeurs à réafficher après une erreur : React vide les champs non contrôlés après chaque action.
 // Les champs sensibles ne sont jamais renvoyés.

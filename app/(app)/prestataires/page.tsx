@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Topbar } from "@/components/Topbar";
-import { canWrite, requireSession } from "@/lib/session";
+import { canEdit, requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import type { Prestataire } from "@/lib/types";
 
@@ -15,7 +15,7 @@ export default async function PrestatairesPage({ searchParams }: { searchParams:
   );
   return (
     <>
-      <Topbar title="Prestataires" subtitle={`${rows.length} prestataire${rows.length > 1 ? "s" : ""}`} actions={<><Link className="btn small soft" href="/prestataires/comparateur">Comparateur</Link>{canWrite(s.role) && <Link className="btn small primary" href="/prestataires/new">Ajouter un prestataire</Link>}</>} />
+      <Topbar title="Prestataires" subtitle={`${rows.length} prestataire${rows.length > 1 ? "s" : ""}`} actions={<><Link className="btn small soft" href="/prestataires/comparateur">Comparateur</Link>{canEdit(s) && <Link className="btn small primary" href="/prestataires/new">Ajouter un prestataire</Link>}</>} />
       <div className="content">
         <form className="toolbar" role="search">
           <input className="input" name="q" defaultValue={q} placeholder="Rechercher (nom, contact, domaine…)" aria-label="Rechercher" maxLength={100} />

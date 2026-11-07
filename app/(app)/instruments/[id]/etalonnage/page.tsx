@@ -6,7 +6,7 @@ import { PipetteCalc } from "@/components/calc/PipetteCalc";
 import { Pt100Calc } from "@/components/calc/Pt100Calc";
 import { Topbar } from "@/components/Topbar";
 import { CATALOG, catalogById } from "@/lib/calc/catalog";
-import { canWrite, requireSession } from "@/lib/session";
+import { canEdit, requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function InstrumentEtalonnagePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ type?: string }> }) {
@@ -14,7 +14,7 @@ export default async function InstrumentEtalonnagePage({ params, searchParams }:
   const { type } = await searchParams;
   if (!z.uuid().safeParse(id).success) notFound();
   const s = await requireSession();
-  if (!canWrite(s.role)) redirect(`/instruments/${id}`);
+  if (!canEdit(s)) redirect(`/instruments/${id}`);
   const supabase = await createClient();
   const { data: inst } = await supabase.from("instruments").select("id, ref, designation, catalog_id").eq("id", id).is("deleted_at", null).maybeSingle();
   if (!inst) notFound();

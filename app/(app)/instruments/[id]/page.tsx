@@ -11,7 +11,7 @@ import { AttachmentUploader } from "@/components/AttachmentUploader";
 import { InterventionForm } from "@/components/InterventionForm";
 import { Topbar } from "@/components/Topbar";
 import { UrgencyTag } from "@/components/UrgencyTag";
-import { canWrite, requireSession } from "@/lib/session";
+import { canEdit, requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { urgencyOf } from "@/lib/status";
 import type { Attachment, Instrument, Intervention } from "@/lib/types";
@@ -31,7 +31,7 @@ export default async function InstrumentPage({ params }: { params: Promise<{ id:
   const calculs = new Map((calcRows ?? []).map((c) => [c.id as string, c.calcul as unknown]));
   const { data: atts } = await supabase.from("attachments").select("id, kind, filename, mime, size_bytes, created_at").eq("instrument_id", id).order("created_at", { ascending: false });
   const { data: prest } = await supabase.from("prestataires").select("id, nom").is("deleted_at", null).eq("actif", true).order("nom");
-  const write = canWrite(s.role);
+  const write = canEdit(s);
   const publicUrl = instrument.public_token ? `${await appOrigin()}/p/${instrument.public_token}` : null;
   const publicQr = publicUrl ? await qrDataUri(publicUrl) : null;
 
@@ -89,7 +89,7 @@ export default async function InstrumentPage({ params }: { params: Promise<{ id:
 
         {write && (
           <div className="card">
-            <h2>QR code public (lecture seule)</h2>
+            <h2>QR code de l'instrument (fiche publique)</h2>
             <PublicLinkCard instrumentId={id} url={publicUrl} qr={publicQr} />
           </div>
         )}

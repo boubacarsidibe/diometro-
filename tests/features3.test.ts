@@ -6,7 +6,7 @@ import { fmt, parseNumber } from "@/lib/calc/parse";
 import { directSchema, pipetteSchema, pt100Schema } from "@/lib/calc/schemas";
 import { instrumentSchema, onboardingSchema, platformTenantSchema, prestataireSchema, PLANS } from "@/lib/schemas";
 
-const base = { ref: "R", designation: "D", type_mesure: "", batiment: "", zone: "", statut: "En service", date_etalonnage: "", date_prochaine: "", frequence_mois: "", commentaires: "" };
+const base = { ref: "R", designation: "D", type_mesure: "", batiment: "", zone: "", statut: "En service", date_etalonnage: "", date_prochaine: "", frequence_valeur: "", frequence_unite: "", commentaires: "" };
 
 describe("saisies", () => {
   it("parseNumber accepte virgule, espaces fins et refuse le reste", () => {

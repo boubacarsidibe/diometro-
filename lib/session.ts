@@ -12,6 +12,10 @@ export type Session = {
   role: Role;
   tenant: { id: string; name: string; accent: string; logo_data: string | null; accreditation_label: string; currency: string; buildings: string[] };
   isPlatformAdmin: boolean;
+  plan: string;
+  planExpiresAt: string | null;
+  // Essai ou abonnement terminé : consultation seulement, les données sont conservées.
+  readOnly: boolean;
 };
 
 // Contrôle d'accès côté serveur (défense en profondeur : la base applique aussi la RLS).
@@ -37,7 +41,7 @@ export const requireSession = cache(async (): Promise<Session> => {
   if (aal?.currentLevel !== "aal2") redirect("/mfa");
 
   // Entreprise bloquée ou abonnement expiré : la base masque ses données, on affiche un message clair.
-  const { data: tenant } = await supabase.from("tenants").select("id, name, accent, logo_data, accreditation_label, currency, buildings").eq("id", profile.tenant_id).maybeSingle();
+  const { data: tenant } = await supabase.from("tenants").select("id, name, accent, logo_data, accreditation_label, currency, buildings, plan, plan_expires_at").eq("id", profile.tenant_id).maybeSingle();
   if (!tenant) redirect("/suspendu");
   const { data: platform } = await supabase.rpc("is_platform_admin");
 
@@ -48,8 +52,16 @@ export const requireSession = cache(async (): Promise<Session> => {
     role: profile.role as Role,
     tenant,
     isPlatformAdmin: platform === true,
+    plan: tenant.plan,
+    planExpiresAt: tenant.plan_expires_at,
+    readOnly: Boolean(tenant.plan_expires_at && tenant.plan_expires_at < new Date().toISOString().slice(0, 10)),
   };
 });
+
+// Droit d'écrire = bon rôle ET abonnement valide (la base applique la même règle).
+export function canEdit(s: Pick<Session, "role" | "readOnly">): boolean {
+  return canWrite(s.role) && !s.readOnly;
+}
 
 export function canWrite(role: Role): boolean {
   return role === "admin" || role === "responsable";

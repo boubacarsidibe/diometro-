@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { registerAttachmentSchema, uploadRequestSchema } from "@/lib/schemas";
-import { canWrite, requireSession } from "@/lib/session";
+import { canEdit, requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 
 type Result<T> = ({ ok: true } & T) | { ok: false; error: string };
@@ -11,7 +11,7 @@ type Result<T> = ({ ok: true } & T) | { ok: false; error: string };
 // Étape 1 : autorisation. Le fichier part ensuite directement du navigateur vers le stockage (lien signé à usage unique).
 export async function requestUpload(input: unknown): Promise<Result<{ path: string; token: string; objectId: string }>> {
   const s = await requireSession();
-  if (!canWrite(s.role)) return { ok: false, error: "Droits insuffisants." };
+  if (!canEdit(s)) return { ok: false, error: "Droits insuffisants." };
   const parsed = uploadRequestSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Fichier refusé : type non autorisé ou taille supérieure à 10 Mo." };
   const supabase = await createClient();
@@ -27,7 +27,7 @@ export async function requestUpload(input: unknown): Promise<Result<{ path: stri
 // Étape 2 : on relit la taille et le type RÉELS dans le stockage (jamais ceux annoncés par le navigateur).
 export async function registerAttachment(input: unknown): Promise<Result<object>> {
   const s = await requireSession();
-  if (!canWrite(s.role)) return { ok: false, error: "Droits insuffisants." };
+  if (!canEdit(s)) return { ok: false, error: "Droits insuffisants." };
   const parsed = registerAttachmentSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Données invalides." };
   const { instrument_id, object_id, filename, kind } = parsed.data;
@@ -52,7 +52,7 @@ export async function registerAttachment(input: unknown): Promise<Result<object>
 
 export async function deleteAttachment(id: string, instrumentId: string) {
   const s = await requireSession();
-  if (!canWrite(s.role) || !z.uuid().safeParse(id).success) return;
+  if (!canEdit(s) || !z.uuid().safeParse(id).success) return;
   const supabase = await createClient();
   const { data: att } = await supabase.from("attachments").select("storage_path").eq("id", id).maybeSingle();
   if (!att) return;

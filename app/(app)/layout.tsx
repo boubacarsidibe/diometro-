@@ -52,7 +52,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <NotificationOptIn alertCount={alerts} />
         </div>
       </aside>
-      <div className="main">{children}</div>
+      <div className="main">
+        {s.readOnly && (
+          <div className="notice err" role="status" style={{ margin: 0, borderRadius: 0, padding: "10px 24px" }}>
+            {s.plan === "essai" ? "Votre période d'essai est terminée" : "Votre abonnement a expiré"} : le compte est en <strong>lecture seule</strong>.
+            Vos données sont conservées ; contactez votre fournisseur DIOMETRO pour réactiver l&apos;écriture.
+          </div>
+        )}
+        {children}
+      </div>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Topbar } from "@/components/Topbar";
 import { UrgencyTag, rowClass } from "@/components/UrgencyTag";
-import { canWrite, requireSession } from "@/lib/session";
+import { canEdit, requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { daysUntil, urgencyOf } from "@/lib/status";
 import type { Instrument } from "@/lib/types";
@@ -23,7 +23,7 @@ export default async function DashboardPage() {
       <Topbar
         title="Tableau de bord"
         subtitle="Vue d'ensemble du parc d'instruments."
-        actions={canWrite(s.role) && <Link className="btn small primary" href="/instruments/new">Ajouter un instrument</Link>}
+        actions={canEdit(s) && <Link className="btn small primary" href="/instruments/new">Ajouter un instrument</Link>}
       />
       <div className="content">
         <section className="dash-hero">

@@ -106,9 +106,10 @@ describe("plateforme SaaS", () => {
     const audit = await c.db.query<{ n: string }>(`select count(*) n from public.audit_log where action='platform_update' and tenant_id='${c.tenantA}'`);
     expect(Number(audit.rows[0].n)).toBe(1);
   });
-  it("un abonnement expiré coupe l'accès, une prolongation le rétablit", async () => {
+  it("un abonnement expiré passe en lecture seule (données conservées), une prolongation rétablit l'écriture", async () => {
     await as(c.db, ID.PLATFORM, "aal2", () => c.db.exec(`select public.platform_update_tenant('${c.tenantA}','active','standard', current_date - 1)`));
-    expect(await count(c.db, "select * from public.instruments", A())).toBe(0);
+    expect(await count(c.db, "select * from public.instruments", A())).toBe(1);
+    expect(await fails(c.db, `insert into public.instruments(tenant_id,ref,designation) values ('${c.tenantA}','EXP','x')`, A())).toBe(true);
     await as(c.db, ID.PLATFORM, "aal2", () => c.db.exec(`select public.platform_update_tenant('${c.tenantA}','active','standard', current_date + 365)`));
     expect(await count(c.db, "select * from public.instruments", A())).toBe(1);
     expect(await fails(c.db, `select public.platform_update_tenant('${c.tenantA}','nimporte','standard',null)`, P)).toBe(true);

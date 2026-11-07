@@ -1,6 +1,6 @@
 import ExcelJS from "exceljs";
 import { PDFDocument, PDFFont, PDFPage, StandardFonts, rgb } from "pdf-lib";
-import { URGENCY_LABEL, daysUntil, urgencyOf } from "@/lib/status";
+import { URGENCY_LABEL, daysUntil, describeFrequence, urgencyOf } from "@/lib/status";
 import type { Instrument, Intervention } from "@/lib/types";
 
 // Anti « injection de formule » : une cellule qui commence par = + - @ est neutralisée.
@@ -124,7 +124,7 @@ export async function buildFichePdf(instrument: Instrument, interventions: Inter
   line("Référence", instrument.ref); line("Désignation", instrument.designation); line("Type de mesure", instrument.type_mesure);
   line("Localisation", [instrument.batiment, instrument.zone].filter(Boolean).join(" / ")); line("Statut", instrument.statut);
   line("Dernier étalonnage", instrument.date_etalonnage ?? ""); line("Prochaine échéance", instrument.date_prochaine ?? "");
-  line("Fréquence (mois)", instrument.frequence_mois ? String(instrument.frequence_mois) : ""); line("Commentaires", instrument.commentaires);
+  line("Fréquence d'étalonnage", describeFrequence(instrument.frequence_valeur, instrument.frequence_unite)); line("Commentaires", instrument.commentaires);
   c.y -= 14;
   c.page.drawText("Historique des interventions", { x: 40, y: c.y, size: 12, font: c.bold });
   c.y -= 20;

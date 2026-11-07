@@ -1,12 +1,12 @@
 import { redirect } from "next/navigation";
 import { PrestataireForm } from "@/components/PrestataireForm";
 import { Topbar } from "@/components/Topbar";
-import { canWrite, requireSession } from "@/lib/session";
+import { canEdit, requireSession } from "@/lib/session";
 import { createPrestataire } from "../actions";
 
 export default async function NewPrestatairePage() {
   const s = await requireSession();
-  if (!canWrite(s.role)) redirect("/prestataires");
+  if (!canEdit(s)) redirect("/prestataires");
   return (
     <>
       <Topbar title="Nouveau prestataire" subtitle="Renseignez la fiche du prestataire." />
