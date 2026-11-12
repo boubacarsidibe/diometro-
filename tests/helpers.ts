@@ -10,7 +10,8 @@ export const AUTH_STUB = `
     $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
   create function auth.jwt() returns jsonb language sql stable as
     $$ select jsonb_build_object('sub', current_setting('request.jwt.claim.sub', true),
-                                 'aal', current_setting('request.jwt.claim.aal', true)) $$;
+                                 'aal', current_setting('request.jwt.claim.aal', true),
+                                 'session_id', current_setting('request.jwt.claim.session_id', true)) $$;
   grant usage on schema auth to anon, authenticated;
   grant usage on schema public to anon, authenticated;
 

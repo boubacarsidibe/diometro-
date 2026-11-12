@@ -37,8 +37,9 @@ export const requireSession = cache(async (): Promise<Session> => {
     redirect("/login?error=inactive");
   }
 
-  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-  if (aal?.currentLevel !== "aal2") redirect("/mfa");
+  // Second facteur validé pour cette session : application d'authentification (aal2) ou code e-mail (même règle que la base).
+  const { data: mfaOk } = await supabase.rpc("mfa_ok");
+  if (mfaOk !== true) redirect("/mfa");
 
   // Entreprise bloquée ou abonnement expiré : la base masque ses données, on affiche un message clair.
   const { data: tenant } = await supabase.from("tenants").select("id, name, accent, logo_data, accreditation_label, currency, buildings, plan, plan_expires_at").eq("id", profile.tenant_id).maybeSingle();

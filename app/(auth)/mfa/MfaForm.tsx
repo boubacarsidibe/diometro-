@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { mfaCodeSchema } from "@/lib/schemas";
 import { Notice } from "@/components/Field";
+import { rememberTotp } from "./actions";
 
 type Enrollment = { factorId: string; qr: string; secret: string };
 
@@ -40,6 +41,7 @@ export function MfaForm() {
     const { error } = await supabase.auth.mfa.challengeAndVerify({ factorId, code });
     setBusy(false);
     if (error) return setError("Code incorrect ou expiré.");
+    await rememberTotp();
     router.replace("/dashboard");
     router.refresh();
   }
