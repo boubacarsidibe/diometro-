@@ -57,7 +57,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         {s.readOnly && (
           <div className="notice err" role="status" style={{ margin: 0, borderRadius: 0, padding: "10px 24px" }}>
             {s.plan === "essai" ? "Votre période d'essai est terminée" : "Votre abonnement a expiré"} : le compte est en <strong>lecture seule</strong>.
-            Vos données sont conservées ; contactez votre fournisseur DIOMETRO pour réactiver l&apos;écriture.
+            Vos données sont conservées. {s.role === "admin" ? <>Choisissez une formule dans <a href="/parametres">Paramètres &gt; Abonnement</a> pour réactiver l&apos;écriture.</> : "Votre administrateur peut choisir une formule pour réactiver l'écriture."}
           </div>
         )}
         {children}

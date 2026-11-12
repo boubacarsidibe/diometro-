@@ -15,7 +15,7 @@ export default async function EtiquettesPage() {
   const { data } = await supabase.from("instruments").select("id, ref, designation, batiment, zone, public_token").is("deleted_at", null).order("ref").limit(MAX);
   const list = (data ?? []) as Pick<Instrument, "id" | "ref" | "designation" | "batiment" | "zone" | "public_token">[];
   const items: LabelItem[] = await Promise.all(
-    list.map(async (i) => ({ id: i.id, ref: i.ref, designation: i.designation, location: [i.batiment, i.zone].filter(Boolean).join(" · "), qr: i.public_token ? await qrDataUri(`${origin}/p/${i.public_token}`) : null })),
+    list.map(async (i) => ({ id: i.id, ref: i.ref, designation: i.designation, location: [i.batiment, i.zone].filter(Boolean).join(" · "), building: i.batiment ?? "", qr: i.public_token ? await qrDataUri(`${origin}/p/${i.public_token}`) : null })),
   );
   return (
     <>

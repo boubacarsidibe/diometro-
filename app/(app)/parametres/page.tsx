@@ -1,18 +1,31 @@
 import { BrandingForm } from "@/components/BrandingForm";
+import { PlanPicker } from "@/components/PlanPicker";
 import { Topbar } from "@/components/Topbar";
 import { requireAdmin } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { TestEmailButton } from "@/components/TestEmailButton";
-import { saveBranding, sendTestEmail } from "./actions";
+import { requestPlan, saveBranding, sendTestEmail } from "./actions";
 import { fmtDate } from "@/lib/dates";
+import { money } from "@/lib/money";
+import { OFFERS } from "@/lib/plans";
+import { PLANS } from "@/lib/schemas";
+import { daysUntil } from "@/lib/status";
 
 export default async function ParametresPage() {
   const s = await requireAdmin();
   const supabase = await createClient();
-  const { data } = await supabase.from("tenants").select("plan, plan_expires_at, alerts_enabled, max_instruments, sector, phone").eq("id", s.tenant.id).single();
+  const [{ data }, { count: used }] = await Promise.all([
+    supabase.from("tenants").select("plan, plan_expires_at, alerts_enabled, max_instruments, sector, phone").eq("id", s.tenant.id).single(),
+    supabase.from("instruments").select("id", { count: "exact", head: true }).is("deleted_at", null),
+  ]);
+  const plan = data?.plan ?? "essai";
+  const planName = PLANS.find((p) => p.id === plan)?.nom ?? plan;
+  const left = daysUntil(data?.plan_expires_at);
+  const max = data?.max_instruments ?? null;
+  const offers = OFFERS.map((o) => ({ id: o.id, nom: o.nom, cible: o.cible, instruments: o.instruments, prix: o.prix ? `${money(o.prix.mensuel, "XOF")} / mois` : null }));
   return (
     <>
-      <Topbar title="Paramètres de l'entreprise" subtitle="Nom, couleur, logo et alertes." />
+      <Topbar title="Paramètres de l'entreprise" subtitle="Nom, couleur, logo, alertes et abonnement." />
       <div className="content stack">
         <div className="card">
           <h2>Identité visuelle et alertes</h2>
@@ -25,12 +38,21 @@ export default async function ParametresPage() {
         </div>
         <div className="card">
           <h2>Abonnement</h2>
-          <dl className="details">
-            <dt>Formule</dt><dd style={{ textTransform: "capitalize" }}>{data?.plan ?? "—"}</dd>
-            <dt>Instruments autorisés</dt><dd>{data?.max_instruments ?? "Illimité"}</dd>
+          {plan === "essai" && left !== null && (
+            <div className={`notice ${left < 0 ? "err" : "ok"}`} role="status">
+              {left < 0
+                ? <>Votre essai gratuit est terminé depuis {-left} jour{-left > 1 ? "s" : ""} : le compte est en lecture seule. Choisissez une formule ci-dessous pour réactiver l&apos;écriture. Vos données sont conservées.</>
+                : <><strong>Essai gratuit : {left} jour{left > 1 ? "s" : ""} restant{left > 1 ? "s" : ""}</strong> (jusqu&apos;au {fmtDate(data?.plan_expires_at)}). Toutes les fonctionnalités, jusqu&apos;à {max ?? 50} instruments.</>}
+            </div>
+          )}
+          <dl className="details" style={{ marginBottom: 16 }}>
+            <dt>Formule</dt><dd>{planName}</dd>
+            <dt>Instruments</dt><dd>{used ?? 0}{max !== null ? ` sur ${max} autorisés` : " (illimité)"}</dd>
             <dt>Valable jusqu&apos;au</dt><dd>{fmtDate(data?.plan_expires_at, "Sans limite")}</dd>
           </dl>
-          <p className="helper" style={{ marginTop: 10 }}>Pour changer de formule ou renouveler, contactez votre fournisseur DIOMETRO.</p>
+          <h3 style={{ fontSize: 15, marginBottom: 6 }}>Changer de formule</h3>
+          <p className="helper" style={{ marginBottom: 10 }}>Votre demande est transmise à l&apos;équipe DIOMETRO, qui vous recontacte pour le règlement (virement, Wave, Orange Money…). La nouvelle formule est activée dès réception.</p>
+          <PlanPicker action={requestPlan} offers={offers} current={plan} />
         </div>
       </div>
     </>

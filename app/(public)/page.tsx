@@ -50,7 +50,7 @@ export default async function HomePage() {
           <Link href="/register" className="h-btn primary">Démarrer l&apos;essai gratuit de {TRIAL_DAYS} jours</Link>
           <Link href="/login" className="h-btn light">Se connecter</Link>
         </div>
-        <p className="h-fine">Sans carte bancaire. Toutes les fonctionnalités pendant l&apos;essai.</p>
+        <p className="h-fine">Sans carte bancaire. Toutes les fonctionnalités pendant l&apos;essai, jusqu&apos;à 50 instruments.</p>
         <div className="h-ech">
           <div className="h-ech-cap"><span>Exemple : un parc de 31 instruments, du retard aux 90 prochains jours</span><span>Trait blanc : aujourd&apos;hui</span></div>
           <Echeancier />
@@ -84,7 +84,7 @@ export default async function HomePage() {
         <div className="h-wrap">
           <h2>Formules</h2>
           <p className="h-sub">Toutes les formules incluent l&apos;ensemble des fonctionnalités ; seule la capacité d&apos;instruments change.</p>
-          <p className="h-note"><strong>Essai gratuit de {TRIAL_DAYS} jours</strong>, puis choix d&apos;une formule. Il n&apos;y a pas de formule gratuite : à la fin des {TRIAL_DAYS} jours, le compte passe en <strong>lecture seule</strong> jusqu&apos;au paiement. <strong>Vos données ne sont jamais supprimées.</strong></p>
+          <p className="h-note"><strong>Essai gratuit de {TRIAL_DAYS} jours, jusqu&apos;à 50 instruments</strong>, avec toutes les fonctionnalités, puis choix d&apos;une formule. Il n&apos;y a pas de formule gratuite : à la fin des {TRIAL_DAYS} jours, le compte passe en <strong>lecture seule</strong> jusqu&apos;au paiement. <strong>Vos données ne sont jamais supprimées.</strong></p>
           <div className="h-plans">
             {OFFERS.map((o) => (
               <div className="h-plan" key={o.id}>

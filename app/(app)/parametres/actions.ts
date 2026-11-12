@@ -7,6 +7,9 @@ import { brandingSchema } from "@/lib/schemas";
 import { requireAdmin } from "@/lib/session";
 import { mailer, missingMailVars, smtpErrorInfo } from "@/lib/mail";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { LEGAL } from "@/lib/legal";
+import { offerById } from "@/lib/plans";
 
 export async function saveBranding(_: FormState, formData: FormData): Promise<FormState> {
   const s = await requireAdmin();
@@ -49,4 +52,39 @@ export async function sendTestEmail(): Promise<FormState> {
     const { code, message } = smtpErrorInfo(e);
     return { error: `Envoi refusé par le serveur (${code}) : ${message}` };
   }
+}
+
+// Choix de formule depuis l'application : la demande part par e-mail à l'équipe DIOMETRO, qui l'active
+// depuis la page Plateforme après paiement (pas de paiement en ligne). Aucun changement direct de formule ici.
+export async function requestPlan(_: FormState, formData: FormData): Promise<FormState> {
+  const s = await requireAdmin();
+  const offer = offerById(String(formData.get("plan") ?? ""));
+  if (!offer) return { error: "Formule inconnue." };
+  if (missingMailVars().length) return { error: "La demande n'a pas pu être envoyée : l'envoi d'e-mails n'est pas encore disponible. Réessayez plus tard." };
+  const to = new Set<string>();
+  if (LEGAL.email) to.add(LEGAL.email);
+  try {
+    const admin = createAdminClient();
+    const { data: admins } = await admin.from("platform_admins").select("user_id");
+    for (const a of admins ?? []) {
+      const { data } = await admin.auth.admin.getUserById(a.user_id);
+      if (data.user?.email) to.add(data.user.email);
+    }
+  } catch { /* clé service absente : on se contente de l'adresse de contact */ }
+  if (to.size === 0 && process.env.MAIL_FROM) to.add(process.env.MAIL_FROM);
+  try {
+    await mailer().sendMail({
+      from: process.env.MAIL_FROM, to: [...to], replyTo: s.email,
+      subject: `DIOMETRO - demande de formule ${offer.nom} - ${s.tenant.name}`,
+      text: `Entreprise : ${s.tenant.name}
+Demandeur : ${s.displayName} (${s.email})
+Formule demandée : ${offer.nom} (${offer.instruments ? `jusqu'à ${offer.instruments} instruments` : "sur devis"})
+
+Activez la formule depuis la page Plateforme une fois le paiement reçu.`,
+    });
+  } catch (e) {
+    console.error("Demande de formule : envoi refusé", smtpErrorInfo(e).code);
+    return { error: "La demande n'a pas pu être envoyée. Réessayez plus tard." };
+  }
+  return { ok: `Demande de formule ${offer.nom} envoyée. Nous vous recontactons pour le règlement ; la formule est activée dès réception.` };
 }
