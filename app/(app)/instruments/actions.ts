@@ -8,7 +8,7 @@ import { instrumentSchema, interventionSchema } from "@/lib/schemas";
 import { canEdit, requireSession } from "@/lib/session";
 import { addDuration, type FrequenceUnite } from "@/lib/status";
 
-const LIMIT_MSG = "Limite d'instruments atteinte pour votre formule. Contactez votre fournisseur DIOMETRO pour l'augmenter.";
+const LIMIT_MSG = "Limite d'instruments atteinte pour votre formule. Choisissez une formule plus grande dans Paramètres > Abonnement.";
 // Si seule la date d'étalonnage et la fréquence sont connues, l'échéance est calculée.
 function withNextDate<T extends { date_etalonnage: string | null; date_prochaine: string | null; frequence_valeur: number | null; frequence_unite: string | null }>(d: T): T {
   return !d.date_prochaine && d.date_etalonnage && d.frequence_valeur && d.frequence_unite ? { ...d, date_prochaine: addDuration(d.date_etalonnage, d.frequence_valeur, d.frequence_unite as FrequenceUnite) } : d;

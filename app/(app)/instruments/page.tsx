@@ -57,7 +57,7 @@ export default async function InstrumentsPage({ searchParams }: { searchParams: 
       <Topbar
         title="Instruments"
         subtitle={`${total} instrument${total > 1 ? "s" : ""}${filters ? ` (${filters} filtre${filters > 1 ? "s" : ""})` : ""}`}
-        actions={<><a className="btn small soft" href="/export/instruments.xlsx">Excel</a><a className="btn small soft" href="/export/instruments.pdf">PDF</a>{canEdit(s) && <Link className="btn small primary" href="/instruments/new">Ajouter un instrument</Link>}</>}
+        actions={<><a className="btn small soft" href="/export/instruments.xlsx">Excel</a><a className="btn small soft" href="/export/instruments.pdf">PDF</a>{canEdit(s) && <Link className="btn small soft" href="/instruments/import">Importer (Excel)</Link>}{canEdit(s) && <Link className="btn small primary" href="/instruments/new">Ajouter un instrument</Link>}</>}
       />
       <div className="content stack">
         {sp.archive === "1" && <div className="notice ok" role="status">Instrument archivé. Un administrateur peut le restaurer depuis la Corbeille.</div>}

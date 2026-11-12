@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const config: NextConfig = {
   poweredByHeader: false,
+  // Import Excel du parc : fichiers jusqu'à 5 Mo (limite par défaut des actions serveur : 1 Mo).
+  experimental: { serverActions: { bodySizeLimit: "6mb" } },
   reactStrictMode: true,
   // Dev uniquement : permet d'ouvrir l'application par l'IP du réseau local (ex. 192.168.56.1)
   // en plus de localhost, sinon la page ne s'anime pas (hydratation bloquée).

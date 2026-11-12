@@ -10,6 +10,8 @@ export function InventoryChecklist({ runId, rows, canEdit }: { runId: string; ro
   const [pending, start] = useTransition();
   const found = [...state.values()].filter(Boolean).length;
   const pct = rows.length ? Math.round((found / rows.length) * 100) : 0;
+  // Regroupement par lieu (bâtiment · zone) : on fait le tour du site zone par zone.
+  const groups = [...rows.reduce((m, r) => m.set(r.location || "Lieu non renseigné", [...(m.get(r.location || "Lieu non renseigné") ?? []), r]), new Map<string, CheckRow[]>())].sort((x, y) => x[0].localeCompare(y[0], "fr"));
 
   function toggle(id: string, value: boolean) {
     setError(undefined);
@@ -27,12 +29,14 @@ export function InventoryChecklist({ runId, rows, canEdit }: { runId: string; ro
       <div className="table-wrap" style={{ marginTop: 14 }}>
         <table>
           <thead><tr><th style={{ width: 70 }}>Présent</th><th>Référence</th><th>Désignation</th><th>Localisation</th></tr></thead>
-          <tbody>{rows.map((r) => (
+          <tbody>{groups.map(([place, list]) => [
+            <tr key={`g-${place}`} className="inv-group"><td colSpan={4}><strong>{place}</strong> <span className="helper">{list.filter((r) => state.get(r.instrument_id)).length} / {list.length} retrouvé{list.length > 1 ? "s" : ""}</span></td></tr>,
+            ...list.map((r) => (
             <tr key={r.instrument_id}>
               <td><input type="checkbox" checked={state.get(r.instrument_id) ?? false} disabled={!canEdit || pending} onChange={(e) => toggle(r.instrument_id, e.target.checked)} aria-label={`Instrument ${r.ref} retrouvé`} /></td>
               <td><strong>{r.ref}</strong></td><td>{r.designation}</td><td>{r.location || "—"}</td>
             </tr>
-          ))}</tbody>
+          ))])}</tbody>
         </table>
       </div>
     </div>
