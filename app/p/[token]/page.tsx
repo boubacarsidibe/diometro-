@@ -3,7 +3,8 @@ import Link from "next/link";
 import { z } from "zod";
 import { UrgencyTag } from "@/components/UrgencyTag";
 import { createClient } from "@/lib/supabase/server";
-import { urgencyOf } from "@/lib/status";
+import { conformityWarning, urgencyOf } from "@/lib/status";
+import { fmtDate } from "@/lib/dates";
 
 // Toujours à jour : aucune mise en cache, la page relit la base à chaque scan.
 export const dynamic = "force-dynamic";
@@ -11,7 +12,7 @@ export const revalidate = 0;
 export const metadata: Metadata = { title: "Fiche instrument · DIOMETRO", robots: { index: false, follow: false } };
 
 type Fiche = { ref: string; designation: string; statut: string; conformite: string; date_etalonnage: string | null; date_prochaine: string | null; lieu: string | null };
-const fmt = (d: string | null) => (d ? new Date(`${d}T00:00:00Z`).toLocaleDateString("fr-FR", { timeZone: "UTC" }) : "—");
+const fmt = (d: string | null) => fmtDate(d);
 
 // Page publique en lecture seule. Les 7 données ci-dessous viennent d'une fonction SQL dédiée (jamais d'accès direct aux tables).
 export default async function PublicFichePage({ params }: { params: Promise<{ token: string }> }) {
@@ -39,6 +40,7 @@ export default async function PublicFichePage({ params }: { params: Promise<{ to
               <dt>Prochaine échéance</dt><dd>{fmt(fiche.date_prochaine)} {fiche.date_prochaine && <UrgencyTag urgency={urgencyOf(fiche.date_prochaine)} />}</dd>
               <dt>Lieu</dt><dd>{fiche.lieu ?? "—"}</dd>
             </dl>
+            {conformityWarning(fiche.conformite, fiche.date_prochaine) && <div className="notice err" role="note" style={{ marginTop: 14, marginBottom: 0 }}>{conformityWarning(fiche.conformite, fiche.date_prochaine)}</div>}
             <p className="helper" style={{ marginTop: 14 }}>Informations à jour à la date de consultation.</p>
             <div className="auth-links"><Link href="/login">Connexion</Link></div>
           </>

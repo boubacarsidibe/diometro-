@@ -7,3 +7,6 @@ export type CatalogEntry = {
 
 export const CATALOG = raw as CatalogEntry[];
 export const catalogById = (id: string): CatalogEntry | undefined => CATALOG.find((c) => c.id === id);
+
+// Les textes du catalogue citent l'organisme d'accréditation via {organisme} : il est remplacé par celui configuré dans les paramètres.
+export const withOrganisme = (text: string, organisme: string) => text.replaceAll("{organisme}", organisme || "accrédité");

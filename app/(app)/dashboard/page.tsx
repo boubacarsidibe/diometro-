@@ -5,6 +5,7 @@ import { canEdit, requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { daysUntil, urgencyOf } from "@/lib/status";
 import type { Instrument } from "@/lib/types";
+import { fmtDate } from "@/lib/dates";
 
 export default async function DashboardPage() {
   const s = await requireSession();
@@ -62,7 +63,7 @@ export default async function DashboardPage() {
                       <tr key={i.id} className={rowClass(u)}>
                         <td><Link href={`/instruments/${i.id}`}>{i.ref}</Link></td>
                         <td>{i.designation}</td>
-                        <td>{i.date_prochaine} {d !== null && <span className="helper">({d < 0 ? `${-d} j de retard` : `dans ${d} j`})</span>}</td>
+                        <td>{fmtDate(i.date_prochaine)} {d !== null && <span className="helper">({d < 0 ? `${-d} j de retard` : `dans ${d} j`})</span>}</td>
                         <td><UrgencyTag urgency={u} /></td>
                       </tr>
                     );

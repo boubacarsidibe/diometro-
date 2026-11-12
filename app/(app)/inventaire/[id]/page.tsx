@@ -4,6 +4,7 @@ import { z } from "zod";
 import { Topbar } from "@/components/Topbar";
 import { requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
+import { fmtDate } from "@/lib/dates";
 
 type RawCheck = { instrument_id: string; found: boolean; instruments: { ref: string; designation: string } | { ref: string; designation: string }[] | null };
 
@@ -19,7 +20,7 @@ export default async function InventaireDetailPage({ params }: { params: Promise
   const missing = checks.filter((c) => !c.found).sort((a, b) => a.ref.localeCompare(b.ref));
   return (
     <>
-      <Topbar title={`Inventaire du ${new Date(run.closed_at ?? run.created_at).toLocaleDateString("fr-FR")}`} subtitle={`${run.found_count ?? checks.filter((c) => c.found).length} / ${run.total_count ?? checks.length} retrouvés${run.note ? ` — ${run.note}` : ""}`} />
+      <Topbar title={`Inventaire du ${fmtDate(run.closed_at ?? run.created_at)}`} subtitle={`${run.found_count ?? checks.filter((c) => c.found).length} / ${run.total_count ?? checks.length} retrouvés${run.note ? ` — ${run.note}` : ""}`} />
       <div className="content">
         <div className="card">
           <h2>Instruments non retrouvés</h2>

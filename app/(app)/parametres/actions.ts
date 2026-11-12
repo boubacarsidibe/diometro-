@@ -34,7 +34,11 @@ export async function saveBranding(_: FormState, formData: FormData): Promise<Fo
 export async function sendTestEmail(): Promise<FormState> {
   const s = await requireAdmin();
   const missing = missingMailVars();
-  if (missing.length) return { error: `Configuration email incomplète : ${missing.join(", ")}.` };
+  if (missing.length) {
+    // Détail technique réservé aux journaux du serveur : le client voit un message compréhensible.
+    console.error("Envoi d'emails non configuré : variables manquantes", missing);
+    return { error: "L'envoi d'emails n'est pas encore configuré sur le serveur. Les alertes d'échéance ne peuvent pas partir pour le moment : contactez le support DIOMETRO." };
+  }
   try {
     await mailer().sendMail({
       from: process.env.MAIL_FROM, to: s.email, subject: "DIOMETRO - email de test",

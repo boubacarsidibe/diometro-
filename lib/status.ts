@@ -24,6 +24,21 @@ export function urgencyOf(iso: string | null | undefined, now: Date = new Date()
   return "ok";
 }
 
+// Incohérence : déclaré conforme alors que l'échéance d'étalonnage est dépassée.
+export function conformityWarning(conformite: string | null | undefined, dateProchaine: string | null | undefined, now: Date = new Date()): string | null {
+  return conformite === "Oui" && urgencyOf(dateProchaine, now) === "expire"
+    ? "Échéance d'étalonnage dépassée : la conformité « Oui » n'est plus garantie tant que l'instrument n'est pas réétalonné."
+    : null;
+}
+
+// Échéance très ancienne (plus d'un an) sans dernier étalonnage saisi : probable erreur de saisie.
+export function staleDeadlineWarning(dateProchaine: string | null | undefined, dateEtalonnage: string | null | undefined, now: Date = new Date()): string | null {
+  const days = daysUntil(dateProchaine, now);
+  return days !== null && days < -365 && !dateEtalonnage
+    ? `Cette échéance date de plus d'un an (${-days} jours de retard) et aucun dernier étalonnage n'est saisi : vérifiez la date.`
+    : null;
+}
+
 export function addMonths(iso: string, months: number): string {
   const [y, m, d] = iso.split("-").map(Number);
   const target = new Date(Date.UTC(y, m - 1 + months, 1));

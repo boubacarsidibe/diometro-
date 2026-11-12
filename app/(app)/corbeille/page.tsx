@@ -2,6 +2,7 @@ import { Topbar } from "@/components/Topbar";
 import { requireAdmin } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { restoreItem } from "./actions";
+import { fmtDate } from "@/lib/dates";
 
 export default async function CorbeillePage() {
   await requireAdmin();
@@ -10,7 +11,7 @@ export default async function CorbeillePage() {
     supabase.from("instruments").select("id, ref, designation, deleted_at").not("deleted_at", "is", null).order("deleted_at", { ascending: false }),
     supabase.from("prestataires").select("id, nom, deleted_at").not("deleted_at", "is", null).order("deleted_at", { ascending: false }),
   ]);
-  const fmt = (d: string | null) => (d ? new Date(d).toLocaleDateString("fr-FR") : "");
+  const fmt = (d: string | null) => fmtDate(d, "");
   return (
     <>
       <Topbar title="Corbeille" subtitle="Éléments archivés : restaurez-les en un clic. Aucune suppression définitive n'est possible depuis l'application." />

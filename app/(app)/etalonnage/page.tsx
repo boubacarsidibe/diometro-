@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { Topbar } from "@/components/Topbar";
-import { CATALOG } from "@/lib/calc/catalog";
+import { CATALOG, withOrganisme } from "@/lib/calc/catalog";
 import { requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 
 const METHOD: Record<string, string> = { pipette: "Calculateur pipette (ISO 8655)", pt100: "Calculateur Pt100 (GUM)", direct: "Comparaison directe" };
 
 export default async function EtalonnagePage() {
-  await requireSession();
+  const s = await requireSession();
   const supabase = await createClient();
   const { data } = await supabase.from("instruments").select("id, ref, designation, catalog_id").is("deleted_at", null).eq("statut", "En service").order("ref");
   const instruments = data ?? [];
@@ -38,8 +38,8 @@ export default async function EtalonnagePage() {
                 <summary>{c.icone} {c.nom} <span className="tag" style={{ marginLeft: 8 }}>{c.calculateur ? METHOD[c.calculateur] : "Saisie manuelle"}</span></summary>
                 <p><strong>Norme :</strong> {c.norme}</p>
                 {c.compatibilite && <p>{c.compatibilite}</p>}
-                {c.conditions.length > 0 && (<><p><strong>Conditions et matériel</strong></p><ul style={{ margin: "6px 0 0 20px" }}>{c.conditions.map((x, k) => <li key={k}>{x}</li>)}</ul></>)}
-                {c.demarche.length > 0 && (<><p style={{ marginTop: 10 }}><strong>Démarche</strong></p><ol style={{ margin: "6px 0 0 20px" }}>{c.demarche.map((x, k) => <li key={k}>{x}</li>)}</ol></>)}
+                {c.conditions.length > 0 && (<><p><strong>Conditions et matériel</strong></p><ul style={{ margin: "6px 0 0 20px" }}>{c.conditions.map((x, k) => <li key={k}>{withOrganisme(x, s.tenant.accreditation_label)}</li>)}</ul></>)}
+                {c.demarche.length > 0 && (<><p style={{ marginTop: 10 }}><strong>Démarche</strong></p><ol style={{ margin: "6px 0 0 20px" }}>{c.demarche.map((x, k) => <li key={k}>{withOrganisme(x, s.tenant.accreditation_label)}</li>)}</ol></>)}
               </details>
             ))}
           </div>

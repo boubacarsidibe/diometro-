@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Topbar } from "@/components/Topbar";
 import { requireAdmin } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
+import { fmtDateTime } from "@/lib/dates";
 
 const PAGE_SIZE = 50;
 type Row = { id: number; user_id: string | null; action: string; entity: string; entity_id: string; created_at: string };
@@ -50,7 +51,7 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
             <thead><tr><th>Date</th><th>Utilisateur</th><th>Action</th><th>Objet</th></tr></thead>
             <tbody>{rows.map((r) => (
               <tr key={r.id}>
-                <td>{new Date(r.created_at).toLocaleString("fr-FR", { timeZone: "UTC" })} UTC</td>
+                <td>{fmtDateTime(r.created_at)}</td>
                 <td>{(r.user_id && names.get(r.user_id)) || "Système"}</td>
                 <td><span className="tag">{r.action}</span></td>
                 <td>{r.entity} <span className="helper">{r.entity_id.slice(0, 8)}</span></td>

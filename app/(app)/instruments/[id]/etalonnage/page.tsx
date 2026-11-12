@@ -5,7 +5,7 @@ import { DirectCalc } from "@/components/calc/DirectCalc";
 import { PipetteCalc } from "@/components/calc/PipetteCalc";
 import { Pt100Calc } from "@/components/calc/Pt100Calc";
 import { Topbar } from "@/components/Topbar";
-import { CATALOG, catalogById } from "@/lib/calc/catalog";
+import { CATALOG, catalogById, withOrganisme } from "@/lib/calc/catalog";
 import { canEdit, requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 
@@ -44,8 +44,8 @@ export default async function InstrumentEtalonnagePage({ params, searchParams }:
         <div className="card">
           <h2>Procédure</h2>
           <p className="helper"><strong>Norme :</strong> {entry.norme}</p>
-          {entry.conditions.length > 0 && (<><p style={{ marginTop: 10 }}><strong>Conditions et matériel</strong></p><ul style={{ margin: "6px 0 0 20px", fontSize: 14 }}>{entry.conditions.map((x, k) => <li key={k}>{x}</li>)}</ul></>)}
-          {entry.demarche.length > 0 && (<><p style={{ marginTop: 10 }}><strong>Démarche</strong></p><ol style={{ margin: "6px 0 0 20px", fontSize: 14 }}>{entry.demarche.map((x, k) => <li key={k}>{x}</li>)}</ol></>)}
+          {entry.conditions.length > 0 && (<><p style={{ marginTop: 10 }}><strong>Conditions et matériel</strong></p><ul style={{ margin: "6px 0 0 20px", fontSize: 14 }}>{entry.conditions.map((x, k) => <li key={k}>{withOrganisme(x, s.tenant.accreditation_label)}</li>)}</ul></>)}
+          {entry.demarche.length > 0 && (<><p style={{ marginTop: 10 }}><strong>Démarche</strong></p><ol style={{ margin: "6px 0 0 20px", fontSize: 14 }}>{entry.demarche.map((x, k) => <li key={k}>{withOrganisme(x, s.tenant.accreditation_label)}</li>)}</ol></>)}
         </div>
         {entry.calculateur === "pipette" && <PipetteCalc instrumentId={id} />}
         {entry.calculateur === "pt100" && <Pt100Calc instrumentId={id} />}

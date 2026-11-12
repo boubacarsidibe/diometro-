@@ -145,7 +145,7 @@
    "Opérateur formé à la méthode de comparaison et au calcul d'incertitude GUM."
   ],
   "demarche": [
-   "Récupérer les coefficients a, b, c de votre étalon depuis son dernier certificat COFRAC (équation Vrc = a·Vref² + b·Vref + c).",
+   "Récupérer les coefficients a, b, c de votre étalon depuis son dernier certificat d'étalonnage {organisme} (équation Vrc = a·Vref² + b·Vref + c).",
    "Définir les points de vérification (généralement 20 / 50 / 80 °C pour usage labo, à adapter à la plage d'usage).",
    "Régler le four au premier point. Attendre la stabilisation complète (étalon + sonde affichent une valeur stable).",
    "Relever 3 à 5 mesures successives à chaque point, pour la sonde et pour l'étalon (répétabilité).",

@@ -8,8 +8,9 @@ import {
 import { CONFORMITES, STATUTS } from "@/lib/schemas";
 import { canEdit, requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
-import { urgencyOf } from "@/lib/status";
+import { conformityWarning, urgencyOf } from "@/lib/status";
 import type { Instrument } from "@/lib/types";
+import { fmtDate } from "@/lib/dates";
 
 type SP = Record<string, string | string[] | undefined>;
 const COLUMNS: { key: SortColumn | "etat"; label: string }[] = [
@@ -19,7 +20,8 @@ const COLUMNS: { key: SortColumn | "etat"; label: string }[] = [
 
 export default async function InstrumentsPage({ searchParams }: { searchParams: Promise<SP> }) {
   const s = await requireSession();
-  const q = parseInstrumentQuery(await searchParams);
+  const sp = await searchParams;
+  const q = parseInstrumentQuery(sp);
   const supabase = await createClient();
   const today = new Date().toISOString().slice(0, 10);
 
@@ -58,6 +60,7 @@ export default async function InstrumentsPage({ searchParams }: { searchParams: 
         actions={<><a className="btn small soft" href="/export/instruments.xlsx">Excel</a><a className="btn small soft" href="/export/instruments.pdf">PDF</a>{canEdit(s) && <Link className="btn small primary" href="/instruments/new">Ajouter un instrument</Link>}</>}
       />
       <div className="content stack">
+        {sp.archive === "1" && <div className="notice ok" role="status">Instrument archivé. Un administrateur peut le restaurer depuis la Corbeille.</div>}
         <form className="card" role="search" style={{ padding: 14 }}>
           <input type="hidden" name="sort" value={q.sort} /><input type="hidden" name="dir" value={q.dir} />
           <div className="grid cols-4">
@@ -105,8 +108,8 @@ export default async function InstrumentsPage({ searchParams }: { searchParams: 
                       <td>{i.designation}</td>
                       <td>{[i.batiment, i.zone].filter(Boolean).join(" · ") || "—"}</td>
                       <td>{i.statut}</td>
-                      <td>{i.conformite}</td>
-                      <td>{i.date_prochaine ?? "—"}</td>
+                      <td>{i.conformite}{conformityWarning(i.conformite, i.date_prochaine) && <> <span className="tag orange" title="Échéance dépassée : conformité à revérifier">À revérifier</span></>}</td>
+                      <td>{fmtDate(i.date_prochaine)}</td>
                       <td><UrgencyTag urgency={u} /></td>
                     </tr>
                   );

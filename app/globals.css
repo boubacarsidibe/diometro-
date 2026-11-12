@@ -26,6 +26,11 @@ a:hover { text-decoration: underline; }
   padding: 20px 14px; display: flex; flex-direction: column; gap: 14px; position: sticky; top: 0; height: 100vh;
   border-right: 1px solid var(--sb-border);
 }
+.sidebar-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.sidebar-head .logo-wrap { flex: 1; min-width: 0; }
+.sidebar-body { display: flex; flex-direction: column; gap: 14px; flex: 1; min-height: 0; }
+.nav-toggle { display: none; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--sb-border); border-radius: 10px; background: rgba(255, 255, 255, .06); color: var(--sb-text); font-size: 13px; font-weight: 600; cursor: pointer; flex: none; }
+.nav-toggle .badge { margin-left: 2px; }
 .logo-wrap { padding: 8px 8px 16px; border-bottom: 1px solid var(--sb-border); display: flex; flex-direction: column; gap: 6px; }
 .logo-name { font-size: 18px; font-weight: 800; letter-spacing: -.01em; }
 .logo-name span { color: #93c5fd; }
@@ -79,6 +84,11 @@ a:hover { text-decoration: underline; }
 .grid.cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 @media (max-width: 960px) { .grid.cols-3, .grid.cols-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 720px) {
+  .sidebar { padding: 10px 14px; gap: 0; }
+  .sidebar-head .logo-wrap { border-bottom: 0; padding: 4px 0; }
+  .nav-toggle { display: inline-flex; }
+  .sidebar-body { display: none; }
+  .sidebar.open .sidebar-body { display: flex; margin-top: 10px; padding-top: 12px; border-top: 1px solid var(--sb-border); }
   .app { flex-direction: column; } .sidebar { width: 100%; height: auto; position: static; }
   .grid.cols-2, .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr; } .content { padding: 16px; }
 }
@@ -253,3 +263,8 @@ dl.details dt { color: var(--muted); font-weight: 600; font-size: 12.5px; }
 
 /* Cartes d'une grille : toutes alignées en haut (la règle « .card + .card » ne s'applique qu'aux cartes empilées). */
 .grid > .card + .card { margin-top: 0; }
+
+/* Indicateur d'action en cours (boutons et messages) */
+.spinner { display: inline-block; width: 13px; height: 13px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; vertical-align: -2px; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2s; } }

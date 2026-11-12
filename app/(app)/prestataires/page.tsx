@@ -4,9 +4,9 @@ import { canEdit, requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import type { Prestataire } from "@/lib/types";
 
-export default async function PrestatairesPage({ searchParams }: { searchParams: Promise<{ q?: string; cofrac?: string }> }) {
+export default async function PrestatairesPage({ searchParams }: { searchParams: Promise<{ q?: string; cofrac?: string; archive?: string }> }) {
   const s = await requireSession();
-  const { q = "", cofrac } = await searchParams;
+  const { q = "", cofrac, archive } = await searchParams;
   const supabase = await createClient();
   const { data } = await supabase.from("prestataires").select("*").is("deleted_at", null).order("nom");
   const term = q.trim().toLowerCase().slice(0, 100);
@@ -17,6 +17,7 @@ export default async function PrestatairesPage({ searchParams }: { searchParams:
     <>
       <Topbar title="Prestataires" subtitle={`${rows.length} prestataire${rows.length > 1 ? "s" : ""}`} actions={<><Link className="btn small soft" href="/prestataires/comparateur">Comparateur</Link>{canEdit(s) && <Link className="btn small primary" href="/prestataires/new">Ajouter un prestataire</Link>}</>} />
       <div className="content">
+        {archive === "1" && <div className="notice ok" role="status">Prestataire archivé. Un administrateur peut le restaurer depuis la Corbeille.</div>}
         <form className="toolbar" role="search">
           <input className="input" name="q" defaultValue={q} placeholder="Rechercher (nom, contact, domaine…)" aria-label="Rechercher" maxLength={100} />
           <label style={{ display: "flex", alignItems: "center", gap: 6 }}><input type="checkbox" name="cofrac" value="1" defaultChecked={cofrac === "1"} /> {s.tenant.accreditation_label} uniquement</label>

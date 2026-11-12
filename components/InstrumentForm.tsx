@@ -5,7 +5,7 @@ import { SubmitButton } from "@/components/SubmitButton";
 import type { FormState } from "@/lib/form";
 import { CONFORMITES, ETALONNAGE_TYPES, STATUTS } from "@/lib/schemas";
 import { CATALOG } from "@/lib/calc/catalog";
-import { addDuration, type FrequenceUnite } from "@/lib/status";
+import { addDuration, staleDeadlineWarning, type FrequenceUnite } from "@/lib/status";
 import type { Instrument } from "@/lib/types";
 
 export function InstrumentForm({
@@ -52,6 +52,7 @@ export function InstrumentForm({
         <Field label="Prochaine échéance" name="date_prochaine" error={e.date_prochaine}>
           <input id="date_prochaine" name="date_prochaine" type="date" className="input" value={prochaine} onChange={(ev) => { setProchaine(ev.target.value); setManuelle(ev.target.value !== ""); }} />
           <span className="helper">{manuelle ? "Saisie manuelle — vider le champ pour reprendre le calcul automatique." : "Calculée : dernier étalonnage + fréquence. Modifiable."}</span>
+          {staleDeadlineWarning(prochaine, dernier) && <span className="field-error" role="status">{staleDeadlineWarning(prochaine, dernier)}</span>}
         </Field>
         <Field label="Fréquence d'étalonnage" name="frequence_valeur" error={e.frequence_valeur}>
           <div style={{ display: "flex", gap: 8 }}>

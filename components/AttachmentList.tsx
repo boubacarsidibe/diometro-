@@ -1,5 +1,6 @@
 import { deleteAttachment } from "@/app/(app)/instruments/attachments";
 import type { Attachment } from "@/lib/types";
+import { fmtDate } from "@/lib/dates";
 
 const KIND_LABEL: Record<string, string> = { certificat: "Certificat", fiche_de_vie: "Fiche de vie", procedure: "Procédure", photo: "Photo", autre: "Autre" };
 const PREVIEW = new Set(["application/pdf", "image/png", "image/jpeg", "image/webp"]);
@@ -14,7 +15,7 @@ export function AttachmentList({ items, instrumentId, canDelete }: { items: Atta
         <tr key={a.id}>
           <td><span className="tag">{KIND_LABEL[a.kind] ?? a.kind}</span></td>
           <td><a href={`/api/attachments/${a.id}`}>{a.filename}</a>{PREVIEW.has(a.mime) && <> · <a href={`/api/attachments/${a.id}/view`} target="_blank" rel="noopener noreferrer">Aperçu</a></>}</td>
-          <td>{size(a.size_bytes)}</td><td>{new Date(a.created_at).toLocaleDateString("fr-FR")}</td>
+          <td>{size(a.size_bytes)}</td><td>{fmtDate(a.created_at)}</td>
           <td>{canDelete && <form action={deleteAttachment.bind(null, a.id, instrumentId)}><button className="btn small soft">Supprimer</button></form>}</td>
         </tr>
       ))}</tbody>

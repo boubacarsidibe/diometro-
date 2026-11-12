@@ -13,19 +13,23 @@ export function NewInstrument({
   const router = useRouter();
   const [files, setFiles] = useState<PendingFile[]>([]);
   const [failed, setFailed] = useState<{ id: string; errors: string[] } | null>(null);
+  const [progress, setProgress] = useState<string | null>(null);
 
   async function afterCreate(id: string) {
     const errors: string[] = [];
-    for (const p of files) {
+    for (const [n, p] of files.entries()) {
+      setProgress(`Instrument créé. Envoi des fichiers (${n + 1} sur ${files.length})…`);
       const err = await uploadAttachment(id, p.file, p.kind);
       if (err) errors.push(`${p.file.name} : ${err}`);
     }
-    if (errors.length === 0) { router.push(`/instruments/${id}`); return; }
+    if (errors.length === 0) { setProgress("Instrument créé. Ouverture de la fiche…"); router.push(`/instruments/${id}`); return; }
+    setProgress(null);
     setFailed({ id, errors }); // l'instrument existe : on propose de rejoindre la fiche pour renvoyer les fichiers manquants
   }
 
   return (
     <>
+      {progress && <div className="notice ok" role="status" aria-live="polite"><span className="spinner" aria-hidden="true" /> {progress}</div>}
       {failed && (
         <div className="notice err" role="alert">
           L&apos;instrument est créé, mais {failed.errors.length} fichier(s) n&apos;ont pas pu être envoyés :

@@ -44,5 +44,5 @@ export async function archivePrestataire(id: string) {
   const supabase = await createClient();
   await supabase.from("prestataires").update({ deleted_at: new Date().toISOString() }).eq("id", id);
   revalidatePath("/prestataires");
-  redirect("/prestataires");
+  redirect("/prestataires?archive=1");
 }

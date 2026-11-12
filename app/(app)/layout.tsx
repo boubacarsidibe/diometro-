@@ -1,4 +1,5 @@
 import { NavLink } from "@/components/NavLink";
+import { Sidebar } from "@/components/Sidebar";
 import { NotificationOptIn } from "@/components/NotificationOptIn";
 import { ROLE_LABEL, requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
@@ -16,7 +17,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="app" style={{ ["--accent" as string]: accent, ["--accent-soft" as string]: accent }}>
-      <aside className="sidebar">
+      <Sidebar alertCount={alerts} head={
         <div className="logo-wrap">
           {s.tenant.logo_data ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -25,10 +26,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <div className="logo-name">DIO<span>METRO</span></div>
           )}
           <div className="logo-sub">{s.tenant.name}</div>
-        </div>
+        </div>}>
         <nav className="navgroup" aria-label="Navigation principale" style={{ overflowY: "auto" }}>
           <div className="navlabel">Navigation</div>
-          <NavLink href="/dashboard" badge={rows.length}>Tableau de bord</NavLink>
+          <NavLink href="/dashboard">Tableau de bord</NavLink>
           <NavLink href="/instruments">Instruments</NavLink>
           <NavLink href="/planning">Planning</NavLink>
           {s.role !== "consultation" && <NavLink href="/etalonnage">Étalonnage</NavLink>}
@@ -51,7 +52,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <form action={logout}><button className="btn small soft">Déconnexion</button></form>
           <NotificationOptIn alertCount={alerts} />
         </div>
-      </aside>
+      </Sidebar>
       <div className="main">
         {s.readOnly && (
           <div className="notice err" role="status" style={{ margin: 0, borderRadius: 0, padding: "10px 24px" }}>

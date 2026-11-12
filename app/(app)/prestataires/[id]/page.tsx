@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Prestataire } from "@/lib/types";
 import { money } from "@/lib/money";
 import { archivePrestataire, updatePrestataire } from "../actions";
+import { ConfirmAction } from "@/components/ConfirmAction";
 
 export default async function PrestatairePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -38,7 +39,7 @@ export default async function PrestatairePage({ params }: { params: Promise<{ id
             </dl>
           )}
         </div>
-        {write && <form action={archivePrestataire.bind(null, id)}><button className="btn danger small">Archiver ce prestataire</button></form>}
+        {write && <div><ConfirmAction action={archivePrestataire.bind(null, id)} label="Archiver ce prestataire" confirmLabel="Oui, archiver" message={`Archiver ${p.nom} ? Il n'apparaît plus dans les listes. Un administrateur peut le restaurer depuis la Corbeille.`} /></div>}
       </div>
     </>
   );

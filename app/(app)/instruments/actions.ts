@@ -55,7 +55,7 @@ export async function archiveInstrument(id: string) {
   const supabase = await createClient();
   await supabase.from("instruments").update({ deleted_at: new Date().toISOString() }).eq("id", id);
   revalidatePath("/", "layout");
-  redirect("/instruments");
+  redirect("/instruments?archive=1");
 }
 
 export async function addIntervention(instrumentId: string, _: FormState, formData: FormData): Promise<FormState> {

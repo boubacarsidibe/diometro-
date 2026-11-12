@@ -13,9 +13,11 @@ import { Topbar } from "@/components/Topbar";
 import { UrgencyTag } from "@/components/UrgencyTag";
 import { canEdit, requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
-import { urgencyOf } from "@/lib/status";
+import { conformityWarning, staleDeadlineWarning, urgencyOf } from "@/lib/status";
+import { ConfirmAction } from "@/components/ConfirmAction";
 import type { Attachment, Instrument, Intervention } from "@/lib/types";
 import { addIntervention, archiveInstrument, updateInstrument } from "../actions";
+import { fmtDate } from "@/lib/dates";
 
 export default async function InstrumentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -39,6 +41,8 @@ export default async function InstrumentPage({ params }: { params: Promise<{ id:
     <>
       <Topbar title={`${instrument.ref} — ${instrument.designation}`} subtitle="Fiche de vie de l'instrument" actions={<>{write && <Link className="btn small primary" href={`/instruments/${id}/etalonnage`}>Étalonner</Link>}<a className="btn small soft" href={`/export/fiche/${id}`}>Fiche de vie PDF</a><UrgencyTag urgency={urgencyOf(instrument.date_prochaine)} /></>} />
       <div className="content stack">
+        {conformityWarning(instrument.conformite, instrument.date_prochaine) && <div className="notice err" role="note">{conformityWarning(instrument.conformite, instrument.date_prochaine)}</div>}
+        {staleDeadlineWarning(instrument.date_prochaine, instrument.date_etalonnage) && <div className="notice err" role="note">{staleDeadlineWarning(instrument.date_prochaine, instrument.date_etalonnage)}</div>}
         <div className="card">
           <h2>Informations</h2>
           {write ? (
@@ -48,8 +52,8 @@ export default async function InstrumentPage({ params }: { params: Promise<{ id:
               <dt>Statut</dt><dd>{instrument.statut}</dd>
               <dt>Type de mesure</dt><dd>{instrument.type_mesure || "—"}</dd>
               <dt>Localisation</dt><dd>{[instrument.batiment, instrument.zone].filter(Boolean).join(" · ") || "—"}</dd>
-              <dt>Dernier étalonnage</dt><dd>{instrument.date_etalonnage ?? "—"}</dd>
-              <dt>Prochaine échéance</dt><dd>{instrument.date_prochaine ?? "—"}</dd>
+              <dt>Dernier étalonnage</dt><dd>{fmtDate(instrument.date_etalonnage)}</dd>
+              <dt>Prochaine échéance</dt><dd>{fmtDate(instrument.date_prochaine)}</dd>
               <dt>Conformité</dt><dd>{instrument.conformite}</dd>
               <dt>Type d'étalonnage</dt><dd>{instrument.etalonnage_type}</dd>
               <dt>Tolérance / EMT</dt><dd>{instrument.tolerance || "—"}</dd>
@@ -70,7 +74,7 @@ export default async function InstrumentPage({ params }: { params: Promise<{ id:
                 <tbody>
                   {interventions.map((i) => (
                     <tr key={i.id}>
-                      <td>{i.date}</td><td>{i.type}</td><td>{i.mode ?? "—"}</td>
+                      <td>{fmtDate(i.date)}</td><td>{i.type}</td><td>{i.mode ?? "—"}</td>
                       <td><span className={`tag ${i.resultat === "Conforme" ? "green" : i.resultat === "Non conforme" ? "red" : "yellow"}`}>{i.resultat}</span></td>
                       <td>{i.prestataire || "—"}</td><td>{i.ref_certificat || "—"}</td><td>{i.observation || "—"}{i.calcul_type && <CalculDetail kind={i.calcul_type} data={(calculs.get(i.id) ?? null)} />}</td>
                     </tr>
@@ -102,9 +106,8 @@ export default async function InstrumentPage({ params }: { params: Promise<{ id:
         )}
 
         {s.role === "admin" && (
-          <form action={archiveInstrument.bind(null, id)}>
-            <button className="btn danger small">Archiver cet instrument</button>
-          </form>
+          <div><ConfirmAction action={archiveInstrument.bind(null, id)} label="Archiver cet instrument" confirmLabel="Oui, archiver"
+            message={`Archiver ${instrument.ref} ? Il disparaît des listes et des alertes. Un administrateur peut le restaurer depuis la Corbeille.`} /></div>
         )}
       </div>
     </>

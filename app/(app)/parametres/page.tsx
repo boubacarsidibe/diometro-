@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { TestEmailButton } from "@/components/TestEmailButton";
 import { saveBranding, sendTestEmail } from "./actions";
+import { fmtDate } from "@/lib/dates";
 
 export default async function ParametresPage() {
   const s = await requireAdmin();
@@ -27,7 +28,7 @@ export default async function ParametresPage() {
           <dl className="details">
             <dt>Formule</dt><dd style={{ textTransform: "capitalize" }}>{data?.plan ?? "—"}</dd>
             <dt>Instruments autorisés</dt><dd>{data?.max_instruments ?? "Illimité"}</dd>
-            <dt>Valable jusqu&apos;au</dt><dd>{data?.plan_expires_at ?? "Sans limite"}</dd>
+            <dt>Valable jusqu&apos;au</dt><dd>{fmtDate(data?.plan_expires_at, "Sans limite")}</dd>
           </dl>
           <p className="helper" style={{ marginTop: 10 }}>Pour changer de formule ou renouveler, contactez votre fournisseur DIOMETRO.</p>
         </div>

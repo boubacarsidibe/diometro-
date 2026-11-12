@@ -1,6 +1,13 @@
 const MONTHS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
 
+const MONTHS_SHORT = ["janv", "févr", "mars", "avr", "mai", "juin", "juil", "août", "sept", "oct", "nov", "déc"];
+
 export type MonthKey = string; // "YYYY-MM"
+
+// Abréviation distincte pour chaque mois (juin et juillet ne se confondent pas).
+export function monthShort(key: MonthKey): string {
+  return MONTHS_SHORT[Number(key.split("-")[1]) - 1] ?? "";
+}
 
 export function currentMonth(now: Date = new Date()): MonthKey {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;

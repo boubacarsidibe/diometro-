@@ -5,6 +5,7 @@ import { Topbar } from "@/components/Topbar";
 import { canEdit, requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { closeInventory, startInventory } from "./actions";
+import { fmtDate } from "@/lib/dates";
 
 type Run = { id: string; status: string; note: string; created_at: string; closed_at: string | null; total_count: number | null; found_count: number | null; created_by: string | null };
 type RawCheck = { instrument_id: string; found: boolean; instruments: { ref: string; designation: string; batiment: string; zone: string } | { ref: string; designation: string; batiment: string; zone: string }[] | null };
@@ -35,7 +36,7 @@ export default async function InventairePage() {
       <div className="content stack">
         {open ? (
           <>
-            <div className="notice ok">Inventaire en cours depuis le {new Date(open.created_at).toLocaleDateString("fr-FR")}{open.note ? ` — ${open.note}` : ""}.</div>
+            <div className="notice ok">Inventaire en cours depuis le {fmtDate(open.created_at)}{open.note ? ` — ${open.note}` : ""}.</div>
             <InventoryChecklist runId={open.id} rows={rows} canEdit={write} />
           </>
         ) : write ? (
@@ -50,7 +51,7 @@ export default async function InventairePage() {
               <thead><tr><th>Date</th><th>Réalisé par</th><th>Retrouvés</th><th>Total</th><th>Taux</th><th /></tr></thead>
               <tbody>{closed.map((r) => (
                 <tr key={r.id}>
-                  <td>{new Date(r.closed_at ?? r.created_at).toLocaleDateString("fr-FR")}</td><td>{(r.created_by && names.get(r.created_by)) || "—"}</td>
+                  <td>{fmtDate(r.closed_at ?? r.created_at)}</td><td>{(r.created_by && names.get(r.created_by)) || "—"}</td>
                   <td>{r.found_count}</td><td>{r.total_count}</td><td>{r.total_count ? Math.round(((r.found_count ?? 0) / r.total_count) * 100) : 0} %</td>
                   <td><Link href={`/inventaire/${r.id}`}>Détail</Link></td>
                 </tr>

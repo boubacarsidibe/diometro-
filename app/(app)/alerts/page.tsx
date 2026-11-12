@@ -5,6 +5,7 @@ import { requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { daysUntil, urgencyOf } from "@/lib/status";
 import type { Instrument } from "@/lib/types";
+import { fmtDate } from "@/lib/dates";
 
 export default async function AlertsPage() {
   await requireSession();
@@ -28,7 +29,7 @@ export default async function AlertsPage() {
                   return (
                     <tr key={i.id} className={rowClass(u)}>
                       <td><Link href={`/instruments/${i.id}`}>{i.ref}</Link></td>
-                      <td>{i.designation}</td><td>{i.date_prochaine}</td>
+                      <td>{i.designation}</td><td>{fmtDate(i.date_prochaine)}</td>
                       <td>{d < 0 ? `${-d} j de retard` : `dans ${d} j`}</td>
                       <td><UrgencyTag urgency={u} /></td>
                     </tr>
