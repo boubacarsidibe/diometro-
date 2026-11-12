@@ -74,6 +74,11 @@ describe("plateforme SaaS", () => {
     const [t] = await rows<{ plan: string; ok: boolean }>(c.db, "select plan, (plan_expires_at > current_date + 25) as ok from public.tenants", A());
     expect(t).toMatchObject({ plan: "essai", ok: true });
   });
+  it("un essai a toujours une date de fin", async () => {
+    expect(await fails(c.db, `select public.platform_update_tenant('${c.tenantB}','active','essai',null)`, P)).toBe(true);
+    await as(c.db, ID.PLATFORM, "aal2", () => c.db.exec(`select public.platform_update_tenant('${c.tenantB}','active','custom',null)`));
+    expect(await count(c.db, "select * from public.platform_overview() where plan = 'custom'", P)).toBe(1);
+  });
   it("un admin d'entreprise ne peut ni changer statut/abonnement ni se promouvoir super-admin", async () => {
     expect(await fails(c.db, `update public.tenants set status='blocked'`, A())).toBe(true);
     expect(await fails(c.db, `update public.tenants set plan='pro'`, A())).toBe(true);
