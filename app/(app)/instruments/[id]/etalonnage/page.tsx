@@ -6,6 +6,7 @@ import { PipetteCalc } from "@/components/calc/PipetteCalc";
 import { Pt100Calc } from "@/components/calc/Pt100Calc";
 import { Topbar } from "@/components/Topbar";
 import { CATALOG, catalogById, withOrganisme } from "@/lib/calc/catalog";
+import { emtFromTolerance } from "@/lib/calc/parse";
 import { canEdit, requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 
@@ -16,7 +17,7 @@ export default async function InstrumentEtalonnagePage({ params, searchParams }:
   const s = await requireSession();
   if (!canEdit(s)) redirect(`/instruments/${id}`);
   const supabase = await createClient();
-  const { data: inst } = await supabase.from("instruments").select("id, ref, designation, catalog_id").eq("id", id).is("deleted_at", null).maybeSingle();
+  const { data: inst } = await supabase.from("instruments").select("id, ref, designation, catalog_id, tolerance").eq("id", id).is("deleted_at", null).maybeSingle();
   if (!inst) notFound();
   const entry = catalogById(type ?? "") ?? (inst.catalog_id ? catalogById(inst.catalog_id) : undefined);
   const title = `Étalonnage — ${inst.ref}`;
@@ -47,9 +48,9 @@ export default async function InstrumentEtalonnagePage({ params, searchParams }:
           {entry.conditions.length > 0 && (<><p style={{ marginTop: 10 }}><strong>Conditions et matériel</strong></p><ul style={{ margin: "6px 0 0 20px", fontSize: 14 }}>{entry.conditions.map((x, k) => <li key={k}>{withOrganisme(x, s.tenant.accreditation_label)}</li>)}</ul></>)}
           {entry.demarche.length > 0 && (<><p style={{ marginTop: 10 }}><strong>Démarche</strong></p><ol style={{ margin: "6px 0 0 20px", fontSize: 14 }}>{entry.demarche.map((x, k) => <li key={k}>{withOrganisme(x, s.tenant.accreditation_label)}</li>)}</ol></>)}
         </div>
-        {entry.calculateur === "pipette" && <PipetteCalc instrumentId={id} />}
-        {entry.calculateur === "pt100" && <Pt100Calc instrumentId={id} />}
-        {entry.calculateur === "direct" && <DirectCalc instrumentId={id} />}
+        {entry.calculateur === "pipette" && <PipetteCalc instrumentId={id} emt={/%/.test(inst.tolerance ?? "") ? emtFromTolerance(inst.tolerance) : ""} />}
+        {entry.calculateur === "pt100" && <Pt100Calc instrumentId={id} emt={emtFromTolerance(inst.tolerance)} organisme={s.tenant.accreditation_label} />}
+        {entry.calculateur === "direct" && <DirectCalc instrumentId={id} emt={emtFromTolerance(inst.tolerance)} />}
         {!entry.calculateur && <div className="card empty">Pas de calculateur pour ce type : enregistrez l&apos;intervention depuis la fiche de l&apos;instrument.</div>}
       </div>
     </>

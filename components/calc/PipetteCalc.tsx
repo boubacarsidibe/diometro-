@@ -4,8 +4,8 @@ import { computePipette } from "@/lib/calc/pipette";
 import { fmt, parseNumber } from "@/lib/calc/parse";
 import { NumField, Row, SaveBar, VerdictBadge, range } from "@/components/calc/ui";
 
-export function PipetteCalc({ instrumentId }: { instrumentId: string }) {
-  const [f, setF] = useState({ vnom: "10", ta: "21", p: "1009", te: "20,5", tv: "21", alpha: "0,000005", emt: "0,8", resBal: "0,001", resTh: "0,2", resBaro: "1", h: "38,5" });
+export function PipetteCalc({ instrumentId, emt = "" }: { instrumentId: string; emt?: string }) {
+  const [f, setF] = useState({ vnom: "10", ta: "21", p: "1009", te: "20,5", tv: "21", alpha: "0,000005", emt, resBal: "0,001", resTh: "0,2", resBaro: "1", h: "38,5" });
   const [useH, setUseH] = useState(false);
   const [nb, setNb] = useState(10);
   const [masses, setMasses] = useState<string[]>(Array(20).fill(""));

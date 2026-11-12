@@ -89,6 +89,11 @@ export const instrumentSchema = z
   .refine((v) => (v.frequence_valeur === null) === (v.frequence_unite === null), {
     message: "Indiquez la valeur ET l'unité de la fréquence (ou aucune des deux)",
     path: ["frequence_valeur"],
+  })
+  // Cohérence métier : un instrument réformé ne mesure plus rien, il ne peut pas être déclaré conforme.
+  .refine((v) => !(v.statut === "Réformé" && v.conformite === "Oui"), {
+    message: "Un instrument réformé ne peut pas être déclaré conforme : choisissez « Non » ou « À vérifier ».",
+    path: ["conformite"],
   });
 
 export const interventionSchema = z.object({

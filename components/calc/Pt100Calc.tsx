@@ -6,8 +6,10 @@ import { NumField, Row, SaveBar, VerdictBadge, range } from "@/components/calc/u
 
 const DEFAULT_T = ["20", "50", "80", "100", "25", "0", "60", "40", "75", "90"];
 
-export function Pt100Calc({ instrumentId }: { instrumentId: string }) {
-  const [f, setF] = useState({ a: "-0,000004", b: "1,0006", c: "0,0101", emt: "1", resLue: "0,01", resEt: "0,01", uEt: "0,05", uDerive: "0,05", uHomog: "0,10" });
+// Coefficients a, b, c vides : ils doivent venir du certificat de l'étalon de l'utilisateur, jamais d'un exemple.
+// EMT reprise de la fiche de l'instrument (champ « Tolérance / EMT »).
+export function Pt100Calc({ instrumentId, emt = "", organisme = "" }: { instrumentId: string; emt?: string; organisme?: string }) {
+  const [f, setF] = useState({ a: "", b: "", c: "", emt, resLue: "0,01", resEt: "0,01", uEt: "0,05", uDerive: "0,05", uHomog: "0,10" });
   const [rig, setRig] = useState(true);
   const [nb, setNb] = useState(3);
   const [nrep, setNrep] = useState(5);
@@ -33,6 +35,7 @@ export function Pt100Calc({ instrumentId }: { instrumentId: string }) {
     <div className="stack">
       <div className="card">
         <h2>Étalon et incertitudes</h2>
+        <p className="helper" style={{ marginBottom: 10 }}>Saisissez les coefficients a, b, c du dernier certificat d&apos;étalonnage{organisme ? ` ${organisme}` : ""} de <strong>votre</strong> étalon. L&apos;EMT est reprise de la fiche de l&apos;instrument (champ « Tolérance / EMT ») : vérifiez-la.</p>
         <div className="grid cols-3">
           <NumField id="a" label="Coeff. a" value={f.a} onChange={set("a")} />
           <NumField id="b" label="Coeff. b" value={f.b} onChange={set("b")} />

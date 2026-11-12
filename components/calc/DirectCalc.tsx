@@ -4,8 +4,8 @@ import { computeDirect } from "@/lib/calc/direct";
 import { fmt, parseNumber } from "@/lib/calc/parse";
 import { NumField, Row, SaveBar, VerdictBadge, range } from "@/components/calc/ui";
 
-export function DirectCalc({ instrumentId }: { instrumentId: string }) {
-  const [emt, setEmt] = useState("");
+export function DirectCalc({ instrumentId, emt: emtFiche = "" }: { instrumentId: string; emt?: string }) {
+  const [emt, setEmt] = useState(emtFiche);
   const [nb, setNb] = useState(3);
   const [ref, setRef] = useState<string[]>(Array(20).fill(""));
   const [lue, setLue] = useState<string[]>(Array(20).fill(""));
@@ -15,6 +15,7 @@ export function DirectCalc({ instrumentId }: { instrumentId: string }) {
     <div className="grid cols-2" style={{ alignItems: "start" }}>
       <div className="card">
         <h2>Points de vérification</h2>
+        <div className="notice err" role="note">Comparaison directe : méthode simplifiée, sans calcul d&apos;incertitude. Elle convient à une vérification interne mais ne remplace pas un étalonnage accrédité.</div>
         <div className="grid cols-2">
           <NumField id="emt" label="EMT (tolérance)" value={emt} onChange={setEmt} />
           <div className="field"><label htmlFor="nb">Nombre de points</label><select id="nb" className="input" value={nb} onChange={(e) => setNb(Number(e.target.value))}>{range(20).map((i) => <option key={i + 1}>{i + 1}</option>)}</select></div>

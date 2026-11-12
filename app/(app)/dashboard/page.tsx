@@ -18,6 +18,13 @@ export default async function DashboardPage() {
   const conformes = counts.ok;
   const pct = active.length ? Math.round((conformes / active.length) * 100) : 0;
   const upcoming = active.filter((i) => ["expire", "urgent", "bientot"].includes(urgencyOf(i.date_prochaine))).slice(0, 8);
+  // Répartitions du parc (instruments non archivés), triées du plus grand au plus petit.
+  const tally = (key: (i: Instrument) => string) => [...all.reduce((m, i) => m.set(key(i), (m.get(key(i)) ?? 0) + 1), new Map<string, number>())].sort((a, b) => b[1] - a[1]);
+  const breakdowns = [
+    { title: "Répartition par bâtiment", rows: tally((i) => i.batiment || "À renseigner") },
+    { title: "Statuts du parc", rows: tally((i) => i.statut) },
+    { title: "Type d'étalonnage", rows: tally((i) => i.etalonnage_type || "Non précisé") },
+  ];
 
   return (
     <>
@@ -46,6 +53,21 @@ export default async function DashboardPage() {
           <div className="kpi yellow"><div className="v">{counts.bientot}</div><div className="l">Bientôt (≤ 30 jours)</div></div>
           <div className="kpi green"><div className="v">{counts.ok}</div><div className="l">À jour</div></div>
         </div>
+
+        {all.length > 0 && (
+          <div className="grid cols-3" style={{ marginTop: 20 }}>
+            {breakdowns.map((b) => (
+              <div className="card" key={b.title}>
+                <h2>{b.title}</h2>
+                <ul className="hbars">
+                  {b.rows.map(([label, n]) => (
+                    <li key={label}><span className="hbar-label">{label}</span><span className="hbar" aria-hidden="true"><i style={{ width: `${Math.round((n / all.length) * 100)}%` }} /></span><span className="hbar-n">{n}</span></li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="card" style={{ marginTop: 20 }}>
           <h2>Prochaines échéances</h2>
