@@ -6,7 +6,8 @@ import { canEdit, requireSession } from "@/lib/session";
 import { addDuration, type FrequenceUnite } from "@/lib/status";
 import { createClient } from "@/lib/supabase/server";
 
-const MAX_BYTES = 5 * 1024 * 1024;
+// 4 Mo : Vercel refuse les requêtes de plus de 4,5 Mo avant même d'atteindre l'action.
+const MAX_BYTES = 4 * 1024 * 1024;
 const MAX_ROWS = 2000;
 
 export type ImportResult = ImportReport & { capacity?: string; inserted?: number; failed?: { line: number; ref: string; error: string }[] };
@@ -16,7 +17,7 @@ async function analyse(formData: FormData): Promise<{ report: ImportResult; supa
   if (!canEdit(s)) return { report: { total: 0, valid: 0, rows: [], fatal: "Droits insuffisants : l'import est réservé aux administrateurs et coordinateurs." } };
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) return { report: { total: 0, valid: 0, rows: [], fatal: "Choisissez un fichier Excel (.xlsx)." } };
-  if (file.size > MAX_BYTES) return { report: { total: 0, valid: 0, rows: [], fatal: "Fichier trop volumineux (5 Mo maximum)." } };
+  if (file.size > MAX_BYTES) return { report: { total: 0, valid: 0, rows: [], fatal: "Fichier trop volumineux (4 Mo maximum)." } };
   if (!/\.xlsx$/i.test(file.name)) return { report: { total: 0, valid: 0, rows: [], fatal: "Format non pris en charge : enregistrez le fichier au format Excel .xlsx." } };
   const supabase = await createClient();
   // Les références archivées comptent aussi : une référence reste unique dans l'entreprise.
