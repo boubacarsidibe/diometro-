@@ -23,7 +23,7 @@ export function BrandingForm({
         </Field>
         <Field label="Bâtiments (séparés par des virgules)" name="buildings" error={e.buildings} full><input id="buildings" name="buildings" className="input" defaultValue={state.values?.buildings ?? buildings.join(", ")} maxLength={1500} /></Field>
         <Field label="Logo (PNG, JPEG ou WebP, 150 Ko max)" name="logo" error={e.logo} full>
-          {logo && (<div style={{ marginBottom: 8 }}>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={logo} alt="Logo actuel" style={{ maxHeight: 48, background: "#0a0f1e", padding: 6, borderRadius: 8 }} /></div>)}
+          {logo && (<div style={{ marginBottom: 8 }}>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={logo} alt="Logo actuel" style={{ maxHeight: 48, background: "var(--sb-bg)", padding: 6, borderRadius: 8 }} /></div>)}
           <input id="logo" name="logo" type="file" accept="image/png,image/jpeg,image/webp" className="input" />
           {logo && <label style={{ marginTop: 6 }}><input type="checkbox" name="remove_logo" /> Supprimer le logo actuel</label>}
         </Field>

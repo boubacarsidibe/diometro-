@@ -13,10 +13,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const rows = data ?? [];
   const alerts = rows.filter((r) => r.statut === "En service" && ["expire", "urgent", "bientot"].includes(urgencyOf(r.date_prochaine))).length;
   // Couleur validée côté base (regex) et ici avant injection dans le style.
-  const accent = /^#[0-9a-fA-F]{6}$/.test(s.tenant.accent) ? s.tenant.accent : "#1d4ed8";
+  // L'ancien bleu par défaut (#1d4ed8, défaut de la colonne tenants.accent) est remplacé par l'accent de la palette ;
+  // une couleur choisie par le client dans Paramètres est conservée.
+  const DEFAULT_ACCENT = "#f2462e";
+  const chosen = /^#[0-9a-fA-F]{6}$/.test(s.tenant.accent) ? s.tenant.accent : DEFAULT_ACCENT;
+  const accent = chosen.toLowerCase() === "#1d4ed8" ? DEFAULT_ACCENT : chosen;
 
   return (
-    <div className="app" style={{ ["--accent" as string]: accent, ["--accent-soft" as string]: accent }}>
+    <div className="app" style={{ ["--c10" as string]: accent }}>
       <Sidebar alertCount={alerts} head={
         <div className="logo-wrap">
           {s.tenant.logo_data ? (
