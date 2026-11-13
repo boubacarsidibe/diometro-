@@ -6,6 +6,13 @@ import { createClient } from "@/lib/supabase/server";
 import { urgencyOf } from "@/lib/status";
 import { logout } from "../(auth)/actions";
 
+/** Texte blanc ou quasi noir selon ce qui se lit le mieux sur la couleur donnée (contraste WCAG). */
+function textOn(hex: string): string {
+  const lin = (i: number) => { const v = parseInt(hex.slice(i, i + 2), 16) / 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+  const l = 0.2126 * lin(1) + 0.7152 * lin(3) + 0.0722 * lin(5);
+  return 1.05 / (l + 0.05) >= (l + 0.05) / (0.0056 + 0.05) ? "#ffffff" : "#111111";
+}
+
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const s = await requireSession();
   const supabase = await createClient();
@@ -13,10 +20,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const rows = data ?? [];
   const alerts = rows.filter((r) => r.statut === "En service" && ["expire", "urgent", "bientot"].includes(urgencyOf(r.date_prochaine))).length;
   // Couleur validée côté base (regex) et ici avant injection dans le style.
-  const accent = /^#[0-9a-fA-F]{6}$/.test(s.tenant.accent) ? s.tenant.accent : "#1d4ed8";
+  // L'ancien bleu par défaut (#1d4ed8, défaut de la colonne tenants.accent) est remplacé par l'accent de la palette ;
+  // une couleur choisie par le client dans Paramètres est conservée.
+  const DEFAULT_ACCENT = "#ff6b1a";
+  const chosen = /^#[0-9a-fA-F]{6}$/.test(s.tenant.accent) ? s.tenant.accent : DEFAULT_ACCENT;
+  const accent = chosen.toLowerCase() === "#1d4ed8" ? DEFAULT_ACCENT : chosen;
+  const onAccent = textOn(accent);
 
   return (
-    <div className="app" style={{ ["--accent" as string]: accent, ["--accent-soft" as string]: accent }}>
+    <div className="app" style={{ ["--c10" as string]: accent, ["--on-accent" as string]: onAccent }}>
       <Sidebar alertCount={alerts} head={
         <div className="logo-wrap">
           {s.tenant.logo_data ? (
