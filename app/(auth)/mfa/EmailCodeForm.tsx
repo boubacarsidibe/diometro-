@@ -1,17 +1,28 @@
 "use client";
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
-import { Notice } from "@/components/Field";
-import { SubmitButton } from "@/components/SubmitButton";
+import { useFormStatus } from "react-dom";
+import { OtpInput, OtpResend, OtpShell, OtpSubmit } from "@/components/auth/Otp";
 import { sendEmailCode, verifyEmailCode, type CodeState } from "./actions";
 
+const RESEND_DELAY_MS = 60_000; // identique au serveur (RESEND_DELAY_S)
+
+function Submit({ complete, verifying }: { complete: boolean; verifying: boolean }) {
+  const { pending } = useFormStatus();
+  return <OtpSubmit pending={pending || verifying} disabled={!complete} />;
+}
+
 // Le code part automatiquement à l'arrivée sur la page (une seule fois), puis l'utilisateur le saisit.
+// Au 6e chiffre, le formulaire est envoyé tout seul.
 export function EmailCodeForm({ email, hasTotp }: { email: string; hasTotp: boolean }) {
   const [sent, setSent] = useState<CodeState>({});
   const [sending, startSend] = useTransition();
-  const [state, formAction] = useActionState(verifyEmailCode, {});
+  const [state, formAction, pending] = useActionState(verifyEmailCode, {});
+  const [code, setCode] = useState("");
+  const [animating, setAnimating] = useState(false); // animation de vérification lancée au 6e chiffre
   const [now, setNow] = useState(() => Date.now());
   const started = useRef(false);
+  const form = useRef<HTMLFormElement>(null);
 
   const send = (force: boolean) => startSend(async () => setSent(await sendEmailCode(force)));
   useEffect(() => {
@@ -23,26 +34,32 @@ export function EmailCodeForm({ email, hasTotp }: { email: string; hasTotp: bool
     const t = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(t);
   }, []);
+  // Code refusé : fin de l'animation, les cases tremblent et se vident pour une nouvelle saisie.
+  useEffect(() => { setAnimating(false); if (state.error) setCode(""); }, [state]);
+  const verifying = animating || pending;
 
   const left = sent.expiresAt ? Math.max(0, Math.round((sent.expiresAt - now) / 1000)) : null;
-  const canResend = !sending && (!sent.sentAt || now - sent.sentAt > 60_000);
+  const resendIn = sent.sentAt ? Math.max(0, Math.ceil((sent.sentAt + RESEND_DELAY_MS - now) / 1000)) : 0;
+  const error = state.error ?? sent.error;
 
   return (
-    <form action={formAction} noValidate>
-      <p className="lead">Un code à 6 chiffres est envoyé à <strong>{email}</strong>. Il est valable 10 minutes.</p>
-      <Notice error={state.error ?? sent.error} />
-      {sending && <div className="notice ok" role="status"><span className="spinner" aria-hidden="true" /> Envoi du code…</div>}
-      <div className="field">
-        <label htmlFor="code">Code reçu par e-mail</label>
-        <input id="code" name="code" className="input" inputMode="numeric" autoComplete="one-time-code" maxLength={6} pattern="[0-9]{6}" required autoFocus
-          style={{ fontSize: 22, letterSpacing: "0.4em", textAlign: "center" }} />
-        {left !== null && <span className="helper" aria-live="polite">{left > 0 ? `Code valable encore ${Math.floor(left / 60)} min ${String(left % 60).padStart(2, "0")} s. 5 essais au maximum.` : "Ce code a expiré : demandez-en un nouveau."}</span>}
-      </div>
-      <div className="form-actions"><SubmitButton>Valider</SubmitButton></div>
-      <div className="auth-links">
-        <button type="button" className="btn small soft" disabled={!canResend} onClick={() => send(true)}>Renvoyer un code</button>
+    <OtpShell title="Vérifier le" em="code" subtitle={<>Saisissez le code à 6 chiffres envoyé à <strong>{email}</strong>.</>}>
+      <form ref={form} action={formAction} noValidate className="otp-form" onSubmit={() => setAnimating(true)}>
+        {error && <div className="otp-alert" role="alert">{error}</div>}
+        <OtpInput name="code" value={code} onChange={setCode} invalid={Boolean(state.error)} verifying={verifying}
+          onComplete={() => {
+            if (verifying) return;
+            // L'animation démarre tout de suite ; l'envoi suit pour qu'on la voie tourner.
+            setAnimating(true);
+            setTimeout(() => form.current?.requestSubmit(), 650);
+          }} />
+        {left !== null && <p className="otp-hint">{left > 0 ? `Valable encore ${Math.floor(left / 60)} min ${String(left % 60).padStart(2, "0")} s · 5 essais au maximum` : "Ce code a expiré : demandez-en un nouveau."}</p>}
+        <OtpResend secondsLeft={resendIn} sending={sending} onResend={() => send(true)} />
+        <Submit complete={code.length === 6} verifying={verifying} />
+      </form>
+      <div className="otp-alt">
         <Link href="/mfa?via=totp">{hasTotp ? "Utiliser l'application d'authentification" : "Configurer une application d'authentification"}</Link>
       </div>
-    </form>
+    </OtpShell>
   );
 }

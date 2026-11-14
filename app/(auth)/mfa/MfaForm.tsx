@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { mfaCodeSchema } from "@/lib/schemas";
-import { Notice } from "@/components/Field";
+import { OtpInput, OtpShell, OtpSubmit } from "@/components/auth/Otp";
 import { rememberTotp } from "./actions";
 
 type Enrollment = { factorId: string; qr: string; secret: string };
@@ -32,40 +32,37 @@ export function MfaForm() {
     })();
   }, []);
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
+  async function verify(value: string) {
     setError(undefined);
-    if (!mfaCodeSchema.safeParse(code).success || !factorId) return setError("Saisissez le code à 6 chiffres.");
+    if (!mfaCodeSchema.safeParse(value).success || !factorId) return setError("Saisissez le code à 6 chiffres.");
     setBusy(true);
     const supabase = createClient();
-    const { error } = await supabase.auth.mfa.challengeAndVerify({ factorId, code });
-    setBusy(false);
-    if (error) return setError("Code incorrect ou expiré.");
+    // Durée minimale pour que l'animation de vérification soit visible.
+    const [{ error }] = await Promise.all([
+      supabase.auth.mfa.challengeAndVerify({ factorId, code: value }),
+      new Promise((r) => setTimeout(r, 900)),
+    ]);
+    if (error) { setBusy(false); setCode(""); return setError("Code incorrect ou expiré."); }
     await rememberTotp();
     router.replace("/dashboard");
     router.refresh();
   }
 
   return (
-    <form onSubmit={submit} noValidate>
-      <p className="lead">
-        {enroll ? "Scannez ce QR code avec votre application d'authentification, puis saisissez le code." : "Saisissez le code de votre application d'authentification."}
-      </p>
-      <Notice error={error} />
-      {enroll && (
-        <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="qr" src={enroll.qr} alt="QR code d'enrôlement TOTP" width={180} height={180} />
-          <p className="helper">Saisie manuelle : <span className="secret">{enroll.secret}</span></p>
-        </>
-      )}
-      <div className="field" style={{ marginTop: 14 }}>
-        <label htmlFor="code">Code à 6 chiffres</label>
-        <input id="code" className="input" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} required />
-      </div>
-      <div className="form-actions">
-        <button className="btn primary" disabled={busy || !factorId}>{busy ? "Vérification…" : "Valider"}</button>
-      </div>
-    </form>
+    <OtpShell title="Vérifier le" em="code"
+      subtitle={enroll ? "Scannez ce QR code avec votre application d'authentification, puis saisissez le code à 6 chiffres affiché." : "Saisissez le code à 6 chiffres affiché par votre application d'authentification."}>
+      <form onSubmit={(e) => { e.preventDefault(); void verify(code); }} noValidate className="otp-form">
+        {error && <div className="otp-alert" role="alert">{error}</div>}
+        {enroll && (
+          <div className="otp-enroll">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="qr" src={enroll.qr} alt="QR code d'enrôlement TOTP" width={160} height={160} />
+            <p className="otp-hint">Saisie manuelle : <span className="secret">{enroll.secret}</span></p>
+          </div>
+        )}
+        <OtpInput value={code} onChange={setCode} invalid={Boolean(error)} disabled={!factorId} verifying={busy} onComplete={(v) => { if (!busy) void verify(v); }} />
+        <OtpSubmit pending={busy} disabled={!factorId || code.length !== 6} />
+      </form>
+    </OtpShell>
   );
 }
