@@ -21,7 +21,7 @@ const MAX_INSTRUMENTS = Math.max(...OFFERS.map((o) => o.instruments ?? 0));
 
 const FAQ = [
   { q: "Que se passe-t-il à la fin de l'essai gratuit ?", a: "Le compte passe en lecture seule : vous consultez et exportez toujours vos données, mais vous ne pouvez plus les modifier. L'écriture est rétablie dès le paiement d'une formule. Vos données ne sont jamais supprimées." },
-  { q: "Faut-il une carte bancaire pour essayer ?", a: "Non. L'inscription prend environ 2 minutes et l'essai donne accès à toutes les fonctionnalités, jusqu'à 50 instruments." },
+  { q: "Faut-il une carte bancaire pour essayer ?", a: "Non. L'inscription prend environ 2 minutes et l'essai donne accès à toutes les fonctionnalités. Pendant l'essai, vous pouvez enregistrer jusqu'à 50 instruments ; les formules vont ensuite jusqu'à plus de 2 000." },
   { q: "Puis-je reprendre mon fichier Excel existant ?", a: "Oui. DIOMETRO fournit un modèle à télécharger, contrôle chaque ligne avant l'import, importe les lignes valides et vous remet un rapport des corrections à faire." },
   { q: "Le QR code fonctionne-t-il sans compte ?", a: "Oui. Un scan affiche la fiche à jour de l'instrument en lecture seule, limitée aux données utiles au terrain. Vous pouvez révoquer le lien d'un instrument à tout moment." },
   { q: "Quels calculs de conformité sont disponibles ?", a: `${NB_CALCULATEURS} calculateurs couvrent les vérifications les plus courantes, dont la comparaison directe à un étalon. Ils vous aident à décider et ne remplacent pas un certificat d'étalonnage accrédité. Le catalogue compte ${NB_TYPES} types d'instruments et s'enrichit en continu.` },
@@ -86,7 +86,7 @@ export default async function HomePage() {
                   <Link className="vt-btn vt-ghost-dark" href="/login">Se connecter</Link>
                 </div>
                 <div className="vt-hero-proof">
-                  <span><IconCheck />Jusqu&apos;à 50 instruments pendant l&apos;essai</span>
+                  <span><IconCheck />Toutes les fonctionnalités dès l&apos;essai</span>
                   <span><IconCheck />Vos données ne sont jamais supprimées</span>
                 </div>
               </div>
@@ -231,7 +231,7 @@ export default async function HomePage() {
               <p className="vt-lead">Toutes les fonctionnalités dans chaque formule : seule la capacité d&apos;instruments change. Indiquez la taille de votre parc, la formule adaptée s&apos;affiche.</p>
             </div>
             <PlanPicker offers={offers} contact={LEGAL.email} />
-            <div className="vt-trial vt-reveal"><div className="vt-n">{TRIAL_DAYS}<small>jours</small></div><p><b>Essai gratuit jusqu&apos;à 50 instruments</b>, avec toutes les fonctionnalités, puis choix d&apos;une formule. Il n&apos;y a pas de formule gratuite : à la fin de l&apos;essai, le compte passe en <b>lecture seule</b> jusqu&apos;au paiement. <b>Vos données ne sont jamais supprimées.</b></p></div>
+            <div className="vt-trial vt-reveal"><div className="vt-n">{TRIAL_DAYS}<small>jours</small></div><p><b>Essai gratuit avec toutes les fonctionnalités</b> (jusqu&apos;à 50 instruments le temps de l&apos;essai), puis choix de la formule adaptée à votre parc. Il n&apos;y a pas de formule gratuite : à la fin de l&apos;essai, le compte passe en <b>lecture seule</b> jusqu&apos;au paiement. <b>Vos données ne sont jamais supprimées.</b></p></div>
           </div>
         </section>
 
