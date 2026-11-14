@@ -1,4 +1,5 @@
 import { IBM_Plex_Sans } from "next/font/google";
+import { BackButton } from "@/components/BackButton";
 import { SiteFooter, SiteHeader } from "@/components/LegalLayout";
 
 // Police du site public (accueil et pages légales), hébergée par Next au build : compatible avec la CSP (font-src 'self').
@@ -8,7 +9,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
   return (
     <div className={`site ${plex.className}`}>
       <SiteHeader />
-      <main className="site-main">{children}</main>
+      <main className="site-main"><div className="site-back"><BackButton fallback="/" hideOn={[]} /></div>{children}</main>
       <SiteFooter />
     </div>
   );
