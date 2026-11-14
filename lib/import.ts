@@ -2,7 +2,7 @@
 // Les règles de validation sont exactement celles du formulaire « Nouvel instrument » (instrumentSchema).
 import ExcelJS from "exceljs";
 import { CATALOG } from "@/lib/calc/catalog";
-import { CONFORMITES, ETALONNAGE_TYPES, STATUTS, instrumentSchema } from "@/lib/schemas";
+import { CONFORMITES, ETALONNAGE_TYPES, STATUTS, instrumentSchema, statutLabel } from "@/lib/schemas";
 
 type Column = { key: string; header: string; width: number; help: string; list?: readonly string[] };
 
@@ -15,7 +15,7 @@ export const IMPORT_COLUMNS: Column[] = [
   { key: "designation", header: "Désignation *", width: 30, help: "Obligatoire (ex. Thermomètre Pt100)." },
   { key: "catalog_id", header: "Type d'instrument", width: 24, help: "Un type du catalogue (liste) : active la procédure et le calculateur.", list: CATALOG_NAMES },
   { key: "type_mesure", header: "Type de mesure", width: 18, help: "Ex. Température, Masse, Pression." },
-  { key: "statut", header: "Statut", width: 16, help: "En service (par défaut), Hors service, En réparation, Réformé.", list: STATUTS },
+  { key: "statut", header: "Statut", width: 16, help: "En service (par défaut), Hors service, En réparation, Mis au rebut.", list: STATUTS.map(statutLabel) },
   { key: "batiment", header: "Bâtiment", width: 16, help: "Ex. Laboratoire." },
   { key: "zone", header: "Zone", width: 16, help: "Ex. Paillasse 2." },
   { key: "stockage", header: "Lieu de stockage", width: 18, help: "Ex. Armoire C." },
@@ -134,6 +134,7 @@ export async function readImportFile(buffer: ArrayBuffer, existingRefs: Set<stri
     const rec: Record<string, string> = {};
     for (const c of IMPORT_COLUMNS) rec[c.key] = raw[c.key] ?? "";
     rec.statut ||= "En service";
+    if (["mis au rebut", "rebut", "reforme"].includes(norm(rec.statut))) rec.statut = "Réformé"; // libellé affiché → valeur en base
     rec.conformite ||= "À vérifier";
     rec.etalonnage_type ||= "À définir";
     rec.date_etalonnage = rec.date_etalonnage ? toIsoDate(rec.date_etalonnage) : "";

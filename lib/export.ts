@@ -1,6 +1,7 @@
 import ExcelJS from "exceljs";
 import { PDFDocument, PDFFont, PDFPage, StandardFonts, rgb } from "pdf-lib";
-import { URGENCY_LABEL, daysUntil, describeFrequence, urgencyOf } from "@/lib/status";
+import { URGENCY_LABEL, daysUntil, describeFrequence, instrumentUrgency, isRebut } from "@/lib/status";
+import { statutLabel } from "@/lib/schemas";
 import type { Instrument, Intervention } from "@/lib/types";
 import { fmtDate } from "@/lib/dates";
 
@@ -29,8 +30,8 @@ export function instrumentRows(instruments: Instrument[], now: Date = new Date()
   return instruments.map((i) => {
     const d = daysUntil(i.date_prochaine, now);
     return [
-      safeCell(i.ref), safeCell(i.designation), safeCell(i.type_mesure), safeCell(i.batiment), safeCell(i.zone), safeCell(i.statut),
-      i.date_etalonnage ?? "", i.date_prochaine ?? "", d ?? "", URGENCY_LABEL[urgencyOf(i.date_prochaine, now)],
+      safeCell(i.ref), safeCell(i.designation), safeCell(i.type_mesure), safeCell(i.batiment), safeCell(i.zone), safeCell(statutLabel(i.statut)),
+      i.date_etalonnage ?? "", i.date_prochaine ?? "", d ?? "", isRebut(i.statut) ? "Mis au rebut" : URGENCY_LABEL[instrumentUrgency(i, now)],
       safeCell(i.conformite), safeCell(i.etalonnage_type), safeCell(i.proprietaire), safeCell(i.tolerance), safeCell(i.stockage),
     ];
   });
@@ -102,8 +103,8 @@ export async function buildInstrumentsPdf(instruments: Instrument[], tenantName:
   header();
   for (const i of instruments) {
     if (c.y < 50) { c.page = c.doc.addPage([c.w, c.h]); c.y = c.h - 50; header(); }
-    const u = urgencyOf(i.date_prochaine, now);
-    const cells = [i.ref, i.designation, [i.batiment, i.zone].filter(Boolean).join(" / ") || "-", i.statut, i.date_prochaine ?? "-", URGENCY_LABEL[u]];
+    const u = instrumentUrgency(i, now);
+    const cells = [i.ref, i.designation, [i.batiment, i.zone].filter(Boolean).join(" / ") || "-", statutLabel(i.statut), i.date_prochaine ?? "-", isRebut(i.statut) ? "Mis au rebut" : URGENCY_LABEL[u]];
     let x = 40;
     cells.forEach((t, idx) => {
       const colour = idx === 5 && (u === "expire" || u === "urgent") ? rgb(0.78, 0.15, 0.15) : rgb(0.1, 0.12, 0.18);
@@ -170,7 +171,7 @@ export async function buildFichePdf(instrument: Instrument, interventions: Inter
   c.page.drawText(fit(c.bold, `${instrument.ref} - ${instrument.designation}`, 16, c.w - 2 * M), { x: M, y: c.y, size: 16, font: c.bold, color: blue });
   c.y -= 24;
 
-  const urgency = urgencyOf(instrument.date_prochaine);
+  const urgency = instrumentUrgency(instrument);
   const late = daysUntil(instrument.date_prochaine);
   const line = (label: string, value: string) => {
     const rows = wrap(c.font, value || "-", 10, c.w - 2 * M - 150);
@@ -191,7 +192,7 @@ export async function buildFichePdf(instrument: Instrument, interventions: Inter
   line("Localisation", [instrument.batiment, instrument.zone].filter(Boolean).join(" / "));
   line("Lieu de stockage", instrument.stockage);
   line("Propriétaire / responsable", instrument.proprietaire);
-  line("Statut", instrument.statut);
+  line("Statut", statutLabel(instrument.statut));
 
   section("Caractéristiques métrologiques");
   line("Tolérance / EMT", instrument.tolerance);

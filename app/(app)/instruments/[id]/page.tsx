@@ -13,12 +13,12 @@ import { Topbar } from "@/components/Topbar";
 import { UrgencyTag } from "@/components/UrgencyTag";
 import { canEdit, requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
-import { conformityWarning, staleDeadlineWarning, urgencyOf } from "@/lib/status";
+import { conformityWarning, instrumentUrgency, isRebut, staleDeadlineWarning } from "@/lib/status";
 import { ConfirmAction } from "@/components/ConfirmAction";
 import { CancelIntervention } from "@/components/CancelIntervention";
 import { Filterable } from "@/components/Filterable";
 import { suggestPrestataires } from "@/lib/suggest";
-import { INTERVENTION_TYPES, RESULTATS } from "@/lib/schemas";
+import { INTERVENTION_TYPES, RESULTATS, statutLabel } from "@/lib/schemas";
 import type { Attachment, Instrument, Intervention, Prestataire } from "@/lib/types";
 import { addIntervention, archiveInstrument, cancelIntervention, updateInstrument } from "../actions";
 import { fmtDate } from "@/lib/dates";
@@ -47,17 +47,17 @@ export default async function InstrumentPage({ params }: { params: Promise<{ id:
 
   return (
     <>
-      <Topbar title={`${instrument.ref} — ${instrument.designation}`} subtitle="Fiche de vie de l'instrument" actions={<>{write && <Link className="btn small primary" href={`/instruments/${id}/etalonnage`}>Étalonner</Link>}<a className="btn small soft" href="#documents">Documents ({(atts ?? []).length})</a><a className="btn small soft" href={`/export/fiche/${id}`}>Fiche de vie PDF</a><UrgencyTag urgency={urgencyOf(instrument.date_prochaine)} /></>} />
+      <Topbar title={`${instrument.ref} — ${instrument.designation}`} subtitle="Fiche de vie de l'instrument" actions={<>{write && <Link className="btn small primary" href={`/instruments/${id}/etalonnage`}>Étalonner</Link>}<a className="btn small soft" href="#documents">Documents ({(atts ?? []).length})</a><a className="btn small soft" href={`/export/fiche/${id}`}>Fiche de vie PDF</a><UrgencyTag urgency={instrumentUrgency(instrument)} statut={instrument.statut} /></>} />
       <div className="content stack">
-        {conformityWarning(instrument.conformite, instrument.date_prochaine) && <div className="notice err" role="note">{conformityWarning(instrument.conformite, instrument.date_prochaine)}</div>}
-        {staleDeadlineWarning(instrument.date_prochaine, instrument.date_etalonnage) && <div className="notice err" role="note">{staleDeadlineWarning(instrument.date_prochaine, instrument.date_etalonnage)}</div>}
+        {!isRebut(instrument.statut) && conformityWarning(instrument.conformite, instrument.date_prochaine) && <div className="notice err" role="note">{conformityWarning(instrument.conformite, instrument.date_prochaine)}</div>}
+        {!isRebut(instrument.statut) && staleDeadlineWarning(instrument.date_prochaine, instrument.date_etalonnage) && <div className="notice err" role="note">{staleDeadlineWarning(instrument.date_prochaine, instrument.date_etalonnage)}</div>}
         <div className="card">
           <h2>Informations</h2>
           {write ? (
             <InstrumentForm action={updateInstrument.bind(null, id)} instrument={instrument} submit="Enregistrer" buildings={s.tenant.buildings} prestataires={prest ?? []} />
           ) : (
             <dl className="details">
-              <dt>Statut</dt><dd>{instrument.statut}</dd>
+              <dt>Statut</dt><dd>{statutLabel(instrument.statut)}</dd>
               <dt>Type de mesure</dt><dd>{instrument.type_mesure || "—"}</dd>
               <dt>Localisation</dt><dd>{[instrument.batiment, instrument.zone].filter(Boolean).join(" · ") || "—"}</dd>
               <dt>Dernier étalonnage</dt><dd>{fmtDate(instrument.date_etalonnage)}</dd>

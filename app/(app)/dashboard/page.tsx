@@ -4,6 +4,7 @@ import { UrgencyTag, rowClass } from "@/components/UrgencyTag";
 import { canEdit, requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { daysUntil, urgencyOf } from "@/lib/status";
+import { statutLabel } from "@/lib/schemas";
 import type { Instrument } from "@/lib/types";
 import { fmtDate } from "@/lib/dates";
 
@@ -22,7 +23,7 @@ export default async function DashboardPage() {
   const tally = (key: (i: Instrument) => string) => [...all.reduce((m, i) => m.set(key(i), (m.get(key(i)) ?? 0) + 1), new Map<string, number>())].sort((a, b) => b[1] - a[1]);
   const breakdowns = [
     { title: "Répartition par bâtiment", rows: tally((i) => i.batiment || "À renseigner") },
-    { title: "Statuts du parc", rows: tally((i) => i.statut) },
+    { title: "Statuts du parc", rows: tally((i) => statutLabel(i.statut)) },
     { title: "Type d'étalonnage", rows: tally((i) => i.etalonnage_type || "Non précisé") },
   ];
 

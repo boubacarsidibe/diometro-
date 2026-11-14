@@ -3,7 +3,7 @@ import { useActionState, useEffect, useState, type ReactNode } from "react";
 import { Field, Notice } from "@/components/Field";
 import { SubmitButton } from "@/components/SubmitButton";
 import type { FormState } from "@/lib/form";
-import { CONFORMITES, ETALONNAGE_TYPES, STATUTS } from "@/lib/schemas";
+import { CONFORMITES, ETALONNAGE_TYPES, STATUTS, statutLabel } from "@/lib/schemas";
 import { CATALOG } from "@/lib/calc/catalog";
 import { addDuration, staleDeadlineWarning, type FrequenceUnite } from "@/lib/status";
 import type { Instrument } from "@/lib/types";
@@ -44,7 +44,7 @@ export function InstrumentForm({
         <Field label="Désignation *" name="designation" error={e.designation}><input id="designation" name="designation" className="input" defaultValue={v("designation")} maxLength={200} required /></Field>
         <Field label="Type de mesure" name="type_mesure" error={e.type_mesure}><input id="type_mesure" name="type_mesure" className="input" defaultValue={v("type_mesure")} maxLength={100} /></Field>
         <Field label="Statut" name="statut" error={e.statut}>
-          <select id="statut" name="statut" className="input" defaultValue={state.values?.statut ?? instrument?.statut ?? "En service"}>{STATUTS.map((x) => <option key={x}>{x}</option>)}</select>
+          <select id="statut" name="statut" className="input" defaultValue={state.values?.statut ?? instrument?.statut ?? "En service"}>{STATUTS.map((x) => <option key={x} value={x}>{statutLabel(x)}</option>)}</select>
         </Field>
         <Field label="Bâtiment" name="batiment" error={e.batiment}><input id="batiment" name="batiment" className="input" list="buildings-list" defaultValue={v("batiment")} maxLength={100} /><datalist id="buildings-list">{buildings.map((b) => <option key={b} value={b} />)}</datalist></Field>
         <Field label="Zone" name="zone" error={e.zone}><input id="zone" name="zone" className="input" defaultValue={v("zone")} maxLength={100} /></Field>

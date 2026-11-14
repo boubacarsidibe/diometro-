@@ -14,6 +14,12 @@ export function daysUntil(iso: string | null | undefined, now: Date = new Date()
   return Math.round((target - startOfDay(now)) / DAY);
 }
 
+// Instrument mis au rebut (statut « Réformé » en base) : plus d'échéance ni d'alerte.
+export const isRebut = (statut: string | null | undefined) => statut === "Réformé";
+export function instrumentUrgency(i: { statut?: string | null; date_prochaine: string | null | undefined }, now: Date = new Date()): Urgency {
+  return isRebut(i.statut) ? "none" : urgencyOf(i.date_prochaine, now);
+}
+
 // Mêmes seuils que l'ancienne version : <0 expiré, <15 j urgent, <=30 j bientôt.
 export function urgencyOf(iso: string | null | undefined, now: Date = new Date()): Urgency {
   const days = daysUntil(iso, now);
