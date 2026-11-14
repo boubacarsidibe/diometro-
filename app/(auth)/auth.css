@@ -1,0 +1,91 @@
+/* Pages de connexion DIOMETRO : carte en deux moitiés, volet bordeaux en biais (clip-path) avec liseré orange.
+   Sur /login et /register, le volet balaie la carte pour passer d'un formulaire à l'autre.
+   Toutes les classes sont préfixées au- ; les champs des formulaires gardent les classes de l'application (field, input, btn). */
+.au {
+  --sage: #d7ddd2; --paper: #f6f5f0; --line: #c5ccbf; --line2: #a9b2a2;
+  --wine: #4b1b27; --wine-deep: #2c0e16; --wine-mid: #6b2c3b;
+  --orange: #ff6b1a; --on-orange: #111111; --orange-soft: #ffb48a;
+  --ink: #1a0f12; --ink-soft: #3a2b2f; --au-muted: #6a5d60;
+  --cream: #f3efe8; --cream-mute: #cbbcbf;
+  --f-display: var(--font-archivo), "Archivo", "Arial Narrow", Arial, sans-serif;
+  --f-body: var(--font-plex-sans), "IBM Plex Sans", "Segoe UI", Roboto, Arial, sans-serif;
+  --f-mono: var(--font-plex-mono), "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  min-height: 100vh; display: grid; place-items: center; color: var(--ink); font-family: var(--f-body); -webkit-font-smoothing: antialiased;
+  padding-block: 32px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background-color: var(--sage);
+  background-image: repeating-linear-gradient(90deg, rgba(75, 27, 39, .07) 0 1px, transparent 1px 48px), repeating-linear-gradient(0deg, rgba(75, 27, 39, .05) 0 1px, transparent 1px 48px);
+}
+.au, .au * { box-sizing: border-box; }
+.au-inner { width: 100%; max-width: 1000px; display: grid; gap: 16px; justify-items: center; }
+.au-top { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.au-home { color: var(--wine); font-size: 14px; font-weight: 600; text-decoration: none; }
+.au-home:hover { text-decoration: underline; }
+.au :focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; border-radius: 6px; }
+
+.au-switch { display: inline-flex; padding: 4px; border-radius: 999px; background: var(--paper); border: 1px solid var(--line); box-shadow: 0 6px 18px rgba(44, 14, 22, .08); }
+.au-switch a { font-size: 14px; font-weight: 600; color: var(--au-muted); padding: 8px 18px; border-radius: 999px; text-decoration: none; }
+.au-switch a[aria-current="page"] { background: var(--wine); color: var(--cream); }
+
+/* Carte : deux colonnes ; les deux formulaires du sélecteur occupent chacun la sienne */
+.au-card { position: relative; width: 100%; display: grid; grid-template-columns: 1fr 1fr; min-height: 600px; border-radius: 26px; background: var(--paper); overflow: hidden; isolation: isolate;
+  box-shadow: 0 2px 4px rgba(44, 14, 22, .06), 0 30px 70px rgba(44, 14, 22, .22); border: 1px solid rgba(75, 27, 39, .12); }
+.au-pane { grid-row: 1; display: flex; flex-direction: column; justify-content: center; padding: 48px clamp(28px, 5vw, 60px); transition: opacity .25s; min-width: 0; }
+.au-pane.au-login, .au-static .au-pane { grid-column: 2; }
+.au-pane.au-signup { grid-column: 1; }
+.au-pane[inert] { opacity: 0; }
+
+.au-seam, .au-band { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.au-seam { background: linear-gradient(180deg, var(--orange), #ffb070 50%, var(--orange)); }
+.au-band { background: radial-gradient(120% 90% at 20% 10%, var(--wine-mid), var(--wine) 45%, var(--wine-deep)); color: var(--cream); pointer-events: auto; }
+.au-band::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, rgba(243, 239, 232, .05) 0 1px, transparent 1px 36px); }
+.au-welcome { position: absolute; top: 0; bottom: 0; width: 42%; display: flex; flex-direction: column; justify-content: center; gap: 16px; padding: 48px clamp(28px, 4vw, 52px); transition: opacity .35s, transform .5s cubic-bezier(.2, .7, .2, 1); }
+.au-welcome.au-w-login { left: 0; }
+.au-welcome.au-w-signup { right: 0; text-align: right; align-items: flex-end; }
+.au-welcome.au-off { opacity: 0; transform: translateY(10px); pointer-events: none; }
+.au-brand { display: flex; align-items: center; gap: 10px; position: absolute; top: 34px; text-decoration: none; }
+.au-w-login .au-brand { left: clamp(28px, 4vw, 52px); }
+.au-w-signup .au-brand { right: clamp(28px, 4vw, 52px); }
+.au-brand .au-mark { height: 28px; width: auto; } .au-brand .au-word { height: 15px; width: auto; }
+.au-kicker { font-family: var(--f-mono); font-size: 11.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--orange-soft); }
+.au-welcome h2 { margin: 0; font-family: var(--f-display); font-stretch: 108%; font-weight: 800; font-size: clamp(34px, 4.4vw, 52px); line-height: 1; letter-spacing: -.03em; text-wrap: balance; }
+.au-welcome h2 em { font-style: italic; font-weight: 600; color: var(--orange); font-stretch: 100%; }
+.au-welcome p { margin: 0; color: var(--cream-mute); font-size: 15.5px; line-height: 1.6; max-width: 34ch; }
+.au-ghost { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; padding: 10px 18px; border-radius: 999px; border: 1.5px solid rgba(243, 239, 232, .4); color: var(--cream); font-size: 14px; font-weight: 600; text-decoration: none; transition: background .2s, border-color .2s; }
+.au-w-signup .au-ghost { align-self: flex-end; }
+.au-ghost:hover { background: rgba(243, 239, 232, .1); border-color: var(--cream); }
+.au-ghost svg { width: 16px; height: 16px; }
+.au-cover { position: absolute; left: 50%; top: 50%; width: 64px; height: auto; transform: translate(-50%, -50%) scale(.8); opacity: 0; transition: opacity .2s, transform .4s; }
+.au-cover.au-on { opacity: .9; transform: translate(-50%, -50%) scale(1); }
+
+/* Contenu des formulaires (classes de l'application, restylées ici) */
+.au-pane h1 { margin: 0; font-family: var(--f-display); font-stretch: 108%; font-weight: 800; font-size: 30px; letter-spacing: -.02em; color: var(--ink); }
+.au-pane h1::after { content: ""; display: block; width: 46px; height: 3px; margin-top: 10px; border-radius: 2px; background: var(--orange); }
+.au-pane .lead { color: var(--au-muted); font-size: 14.5px; margin: 12px 0 22px; }
+.au-pane form { display: grid; gap: 16px; }
+.au-pane .field { display: grid; gap: 4px; }
+.au-pane .field label { font-size: 12.5px; font-weight: 600; color: var(--wine-mid); }
+.au-pane .input { width: 100%; border: 0; border-bottom: 1.5px solid var(--line2); border-radius: 0; background: transparent; padding: 8px 0 9px; font: inherit; font-size: 15.5px; color: var(--ink); box-shadow: none; outline: none; transition: border-color .2s, box-shadow .2s; }
+.au-pane .input:focus { border-bottom-color: var(--orange); box-shadow: 0 1.5px 0 var(--orange); }
+.au-pane .helper { font-size: 12px; color: var(--au-muted); margin-top: 4px; }
+.au-pane .field-error { color: #a61b1b; font-size: 12.5px; }
+.au-pane .consent { display: grid; grid-template-columns: 20px 1fr; gap: 10px; font-size: 13.5px; color: var(--ink-soft); align-items: start; }
+.au-pane .consent input { width: 18px; height: 18px; margin: 1px 0 0; accent-color: var(--wine); }
+.au-pane a { color: var(--wine); font-weight: 600; }
+.au-pane .form-actions { margin-top: 4px; }
+.au-pane .btn.primary { width: 100%; justify-content: center; padding: 14px 20px; border: 0; border-radius: 999px; background: var(--orange); color: var(--on-orange); font-size: 15px; font-weight: 700;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .4) inset, 0 12px 26px rgba(255, 107, 26, .35); transition: transform .2s, box-shadow .2s; }
+.au-pane .btn.primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 1px 0 rgba(255, 255, 255, .4) inset, 0 16px 32px rgba(255, 107, 26, .45); }
+.au-pane .auth-links { margin-top: 18px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 13.5px; }
+.au-pane .auth-links a { text-decoration: none; border-bottom: 1.5px solid var(--orange); }
+
+@media (max-width: 760px) {
+  .au-card { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+  .au-pane, .au-pane.au-login, .au-pane.au-signup, .au-static .au-pane { grid-column: 1; grid-row: 1; justify-content: flex-start; padding: 288px 22px 32px; }
+  .au-welcome { width: 100%; height: 262px; bottom: auto; justify-content: flex-end; gap: 8px; padding: 80px 22px 40px; }
+  .au-welcome.au-w-signup { text-align: left; align-items: flex-start; }
+  .au-w-signup .au-brand, .au-w-login .au-brand { left: 22px; right: auto; top: 22px; }
+  .au-welcome p { font-size: 14px; }
+  .au-welcome .au-ghost { display: none; }
+  .au-welcome h2 { font-size: 30px; }
+}
+@media (prefers-reduced-motion: reduce) { .au *, .au *::before, .au *::after { transition: none !important; animation: none !important; } }
