@@ -29,29 +29,40 @@ export function OtpShell({ title, em, subtitle, children }: { title: string; em:
 /**
  * Six cases d'un chiffre. Saisie, effacement et flèches passent d'une case à l'autre ; un code collé ou
  * proposé par le téléphone (one-time-code) remplit toutes les cases. `onComplete` est appelé au 6e chiffre.
- * `name` : ajoute un champ caché pour les formulaires envoyés au serveur.
+ * `verifying` : les cases se rassemblent au centre et les chiffres tournent en cercle autour d'un carré
+ * lumineux pendant la vérification. `name` : ajoute un champ caché pour les formulaires envoyés au serveur.
  */
-export function OtpInput({ value, onChange, onComplete, name, invalid = false, disabled = false, length = 6 }: {
-  value: string; onChange: (v: string) => void; onComplete?: (v: string) => void; name?: string; invalid?: boolean; disabled?: boolean; length?: number;
+export function OtpInput({ value, onChange, onComplete, name, invalid = false, disabled = false, verifying = false, length = 6 }: {
+  value: string; onChange: (v: string) => void; onComplete?: (v: string) => void; name?: string; invalid?: boolean; disabled?: boolean; verifying?: boolean; length?: number;
 }) {
   const refs = useRef<(HTMLInputElement | null)[]>([]);
+  // Valeur la plus récente : la case suivante reçoit le focus avant que React ait réaffiché le composant.
+  const latest = useRef(value);
+  latest.current = value;
   const digits = Array.from({ length }, (_, i) => value[i] ?? "");
 
   useEffect(() => { refs.current[0]?.focus(); }, []);
+  // Code refusé ou vidé : retour à la première case.
+  useEffect(() => { if (!value && !verifying) refs.current[0]?.focus(); }, [value, verifying]);
 
   const set = (next: string, focusAt?: number) => {
     const clean = next.replace(/\D/g, "").slice(0, length);
+    latest.current = clean;
     onChange(clean);
+    if (clean.length === length) { refs.current[length - 1]?.blur(); onComplete?.(clean); return; }
     if (focusAt !== undefined) refs.current[Math.min(focusAt, length - 1)]?.focus();
-    if (clean.length === length) onComplete?.(clean);
   };
 
   const onInput = (i: number, raw: string) => {
     const typed = raw.replace(/\D/g, "");
     if (!typed) return;
-    if (typed.length > 1) { set(value.slice(0, i) + typed, i + typed.length); return; } // remplissage automatique du téléphone
-    const arr = digits.slice(); arr[i] = typed;
-    set(arr.join("").slice(0, Math.max(i + 1, value.length)), i + 1);
+    const cur = digits[i];
+    // Plusieurs chiffres d'un coup : code proposé par le téléphone ou collé.
+    if (typed.length > (cur ? 2 : 1)) { set(latest.current.slice(0, i) + typed, i + typed.length); return; }
+    // Une case déjà remplie reçoit l'ancien et le nouveau chiffre : on garde le nouveau.
+    const ch = cur && typed.length === 2 ? (typed[0] === cur ? typed[1] : typed[0]) : typed.slice(-1);
+    const arr = digits.slice(); arr[i] = ch;
+    set(arr.join(""), i + 1);
   };
   const onKey = (i: number, e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Backspace") {
@@ -69,30 +80,46 @@ export function OtpInput({ value, onChange, onComplete, name, invalid = false, d
   };
 
   return (
-    <div className={`otp-boxes${invalid ? " otp-invalid" : ""}`} role="group" aria-label={`Code à ${length} chiffres`}>
-      {name && <input type="hidden" name={name} value={value} />}
-      {digits.map((d, i) => (
-        <input
-          key={i}
-          ref={(el) => { refs.current[i] = el; }}
-          className={`otp-box${d ? " filled" : ""}`}
-          value={d}
-          inputMode="numeric"
-          pattern="[0-9]*"
-          autoComplete={i === 0 ? "one-time-code" : "off"}
-          maxLength={i === 0 ? length : 1}
-          disabled={disabled}
-          aria-label={`Chiffre ${i + 1} sur ${length}`}
-          aria-invalid={invalid || undefined}
-          onChange={(e) => onInput(i, e.target.value)}
-          onKeyDown={(e) => onKey(i, e)}
-          onPaste={onPaste}
-          onFocus={(e) => {
-            // Les cases se remplissent dans l'ordre : un clic plus loin ramène à la première case vide.
-            if (i > value.length) refs.current[value.length]?.focus(); else e.target.select();
-          }}
-        />
-      ))}
+    <div className={`otp-stage${verifying ? " is-verifying" : ""}`}>
+      <div className={`otp-boxes${invalid && !verifying ? " otp-invalid" : ""}`} role="group" aria-label={`Code à ${length} chiffres`} aria-busy={verifying || undefined}>
+        {name && <input type="hidden" name={name} value={value} />}
+        {digits.map((d, i) => (
+          <input
+            key={i}
+            ref={(el) => { refs.current[i] = el; }}
+            className={`otp-box${d ? " filled" : ""}`}
+            style={{ ["--k" as string]: i - (length - 1) / 2 }}
+            value={d}
+            inputMode="numeric"
+            pattern="[0-9]*"
+            autoComplete={i === 0 ? "one-time-code" : "off"}
+            maxLength={i === 0 ? length : 2}
+            disabled={disabled || verifying}
+            aria-label={`Chiffre ${i + 1} sur ${length}`}
+            aria-invalid={invalid || undefined}
+            onChange={(e) => onInput(i, e.target.value)}
+            onKeyDown={(e) => onKey(i, e)}
+            onPaste={onPaste}
+            onFocus={(e) => {
+              // Les cases se remplissent dans l'ordre : un clic plus loin ramène à la première case vide.
+              const first = latest.current.length;
+              if (i > first) refs.current[first]?.focus(); else e.target.select();
+            }}
+          />
+        ))}
+      </div>
+      {verifying && (
+        // Animation de vérification : carré lumineux au centre, chiffres en orbite.
+        <div className="otp-orbit" aria-hidden="true">
+          <div className="otp-core" />
+          <div className="otp-ring">
+            {digits.map((d, i) => (
+              <span key={i} style={{ ["--i" as string]: i, ["--n" as string]: length }}><b>{d}</b></span>
+            ))}
+          </div>
+        </div>
+      )}
+      {verifying && <span className="sr-only" role="status">Vérification du code en cours</span>}
     </div>
   );
 }

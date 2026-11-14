@@ -37,7 +37,11 @@ export function MfaForm() {
     if (!mfaCodeSchema.safeParse(value).success || !factorId) return setError("Saisissez le code à 6 chiffres.");
     setBusy(true);
     const supabase = createClient();
-    const { error } = await supabase.auth.mfa.challengeAndVerify({ factorId, code: value });
+    // Durée minimale pour que l'animation de vérification soit visible.
+    const [{ error }] = await Promise.all([
+      supabase.auth.mfa.challengeAndVerify({ factorId, code: value }),
+      new Promise((r) => setTimeout(r, 900)),
+    ]);
     if (error) { setBusy(false); setCode(""); return setError("Code incorrect ou expiré."); }
     await rememberTotp();
     router.replace("/dashboard");
@@ -56,7 +60,7 @@ export function MfaForm() {
             <p className="otp-hint">Saisie manuelle : <span className="secret">{enroll.secret}</span></p>
           </div>
         )}
-        <OtpInput value={code} onChange={setCode} invalid={Boolean(error)} disabled={busy || !factorId} onComplete={(v) => { if (!busy) void verify(v); }} />
+        <OtpInput value={code} onChange={setCode} invalid={Boolean(error)} disabled={!factorId} verifying={busy} onComplete={(v) => { if (!busy) void verify(v); }} />
         <OtpSubmit pending={busy} disabled={!factorId || code.length !== 6} />
       </form>
     </OtpShell>
