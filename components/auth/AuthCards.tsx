@@ -132,7 +132,7 @@ export function AuthSwitcher({ initial, login, signup, trialDays }: { initial: M
             <Brand />
             <span className="au-kicker">Essai gratuit · {trialDays} jours</span>
             <h2>Votre parc, <em>sans tableur.</em></h2>
-            <p>Testez toutes les fonctionnalités sur votre propre parc, sans carte bancaire. Vos données restent à vous.</p>
+            <p>Testez toutes les fonctionnalités sur votre propre parc. Vos données restent à vous.</p>
             <a className="au-ghost" href="/login" data-au-go="login" tabIndex={welcome === "signup" ? 0 : -1}><Arrow back /> J&apos;ai déjà un compte</a>
           </div>
           <Image className={`au-cover${cover ? " au-on" : ""}`} src="/vitrine/logo-mark-clair.webp" width={107} height={96} alt="" aria-hidden="true" />
