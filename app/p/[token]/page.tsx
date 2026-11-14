@@ -3,7 +3,8 @@ import Link from "next/link";
 import { z } from "zod";
 import { UrgencyTag } from "@/components/UrgencyTag";
 import { createClient } from "@/lib/supabase/server";
-import { conformityWarning, urgencyOf } from "@/lib/status";
+import { conformityWarning, instrumentUrgency, isRebut } from "@/lib/status";
+import { statutLabel } from "@/lib/schemas";
 import { fmtDate } from "@/lib/dates";
 
 // Toujours à jour : aucune mise en cache, la page relit la base à chaque scan.
@@ -34,13 +35,13 @@ export default async function PublicFichePage({ params }: { params: Promise<{ to
             <h1 style={{ fontSize: 22, margin: "14px 0 2px" }}>{fiche.ref}</h1>
             <p style={{ color: "var(--text-soft)", marginBottom: 16 }}>{fiche.designation}</p>
             <dl className="details" style={{ gridTemplateColumns: "150px 1fr" }}>
-              <dt>Statut</dt><dd>{fiche.statut}</dd>
+              <dt>Statut</dt><dd>{statutLabel(fiche.statut)}</dd>
               <dt>Conformité</dt><dd>{fiche.conformite}</dd>
               <dt>Dernier étalonnage</dt><dd>{fmt(fiche.date_etalonnage)}</dd>
-              <dt>Prochaine échéance</dt><dd>{fmt(fiche.date_prochaine)} {fiche.date_prochaine && <UrgencyTag urgency={urgencyOf(fiche.date_prochaine)} />}</dd>
+              <dt>Prochaine échéance</dt><dd>{fmt(fiche.date_prochaine)} {(fiche.date_prochaine || isRebut(fiche.statut)) && <UrgencyTag urgency={instrumentUrgency(fiche)} statut={fiche.statut} />}</dd>
               <dt>Lieu</dt><dd>{fiche.lieu ?? "—"}</dd>
             </dl>
-            {conformityWarning(fiche.conformite, fiche.date_prochaine) && <div className="notice err" role="note" style={{ marginTop: 14, marginBottom: 0 }}>{conformityWarning(fiche.conformite, fiche.date_prochaine)}</div>}
+            {!isRebut(fiche.statut) && conformityWarning(fiche.conformite, fiche.date_prochaine) && <div className="notice err" role="note" style={{ marginTop: 14, marginBottom: 0 }}>{conformityWarning(fiche.conformite, fiche.date_prochaine)}</div>}
             <p className="helper" style={{ marginTop: 14 }}>Informations à jour à la date de consultation.</p>
             <div className="auth-links"><Link href="/login">Connexion</Link></div>
           </>

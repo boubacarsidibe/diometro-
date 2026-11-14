@@ -6,10 +6,10 @@ import { CATALOG } from "@/lib/calc/catalog";
 import {
   ECHEANCE_LABEL, ECHEANCES, PAGE_SIZE, activeFilterCount, echeanceRange, instrumentHref, parseInstrumentQuery, sanitizeSearch, type SortColumn,
 } from "@/lib/instrumentQuery";
-import { CONFORMITES, STATUTS } from "@/lib/schemas";
+import { CONFORMITES, STATUTS, statutLabel } from "@/lib/schemas";
 import { canEdit, requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
-import { conformityWarning, urgencyOf } from "@/lib/status";
+import { conformityWarning, instrumentUrgency, isRebut } from "@/lib/status";
 import type { Instrument } from "@/lib/types";
 import { fmtDate } from "@/lib/dates";
 
@@ -72,7 +72,7 @@ export default async function InstrumentsPage({ searchParams }: { searchParams: 
           <input type="hidden" name="sort" value={q.sort} /><input type="hidden" name="dir" value={q.dir} />
           <div className="grid cols-4">
             <input className="input" name="q" defaultValue={q.q} placeholder="Rechercher (référence, désignation…)" aria-label="Rechercher" maxLength={100} />
-            <select className="input" name="statut" defaultValue={q.statut} aria-label="Statut"><option value="">Tous les statuts</option>{STATUTS.map((x) => <option key={x}>{x}</option>)}</select>
+            <select className="input" name="statut" defaultValue={q.statut} aria-label="Statut"><option value="">Tous les statuts</option>{STATUTS.map((x) => <option key={x} value={x}>{statutLabel(x)}</option>)}</select>
             <select className="input" name="conformite" defaultValue={q.conformite} aria-label="Conformité"><option value="">Toutes conformités</option>{CONFORMITES.map((x) => <option key={x}>{x}</option>)}</select>
             <select className="input" name="echeance" defaultValue={q.echeance} aria-label="Échéance"><option value="">Toutes échéances</option>{ECHEANCES.map((x) => <option key={x} value={x}>{ECHEANCE_LABEL[x]}</option>)}</select>
             <select className="input" name="batiment" defaultValue={q.batiment} aria-label="Bâtiment"><option value="">Tous les bâtiments</option>{batiments.map((x) => <option key={x}>{x}</option>)}</select>
@@ -109,16 +109,16 @@ export default async function InstrumentsPage({ searchParams }: { searchParams: 
               </thead>
               <tbody>
                 {rows.map((i) => {
-                  const u = urgencyOf(i.date_prochaine);
+                  const u = instrumentUrgency(i);
                   return (
                     <tr key={i.id} className={rowClass(u)}>
                       <td><Link href={`/instruments/${i.id}`}>{i.ref}</Link></td>
                       <td>{i.designation}</td>
                       <td>{[i.batiment, i.zone].filter(Boolean).join(" · ") || "—"}</td>
-                      <td>{i.statut}</td>
-                      <td>{i.conformite}{conformityWarning(i.conformite, i.date_prochaine) && <> <span className="tag orange" title="Échéance dépassée : conformité à revérifier">À revérifier</span></>}</td>
+                      <td>{statutLabel(i.statut)}</td>
+                      <td>{i.conformite}{!isRebut(i.statut) && conformityWarning(i.conformite, i.date_prochaine) && <> <span className="tag orange" title="Échéance dépassée : conformité à revérifier">À revérifier</span></>}</td>
                       <td>{fmtDate(i.date_prochaine)}</td>
-                      <td><UrgencyTag urgency={u} /></td>
+                      <td><UrgencyTag urgency={u} statut={i.statut} /></td>
                       <td><InstrumentPreview id={i.id} label={`${i.ref} ${i.designation}`} count={docCount.get(i.id) ?? 0} /></td>
                     </tr>
                   );

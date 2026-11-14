@@ -2,7 +2,8 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fmtDate } from "@/lib/dates";
-import { urgencyOf } from "@/lib/status";
+import { instrumentUrgency } from "@/lib/status";
+import { statutLabel } from "@/lib/schemas";
 import { UrgencyTag } from "@/components/UrgencyTag";
 
 type Doc = { id: string; kind: string; filename: string; mime: string; size_bytes: number; created_at: string };
@@ -102,9 +103,9 @@ export function InstrumentPreview({ id, label, count }: { id: string; label: str
               {!data && !error && <div className="empty" role="status">Chargement…</div>}
               {data && <>
                 <dl className="details pv-details">
-                  <dt>Statut</dt><dd>{data.instrument.statut}</dd>
+                  <dt>Statut</dt><dd>{statutLabel(data.instrument.statut)}</dd>
                   <dt>Conformité</dt><dd>{data.instrument.conformite}</dd>
-                  <dt>Échéance</dt><dd>{fmtDate(data.instrument.date_prochaine)} <UrgencyTag urgency={urgencyOf(data.instrument.date_prochaine)} /></dd>
+                  <dt>Échéance</dt><dd>{fmtDate(data.instrument.date_prochaine)} <UrgencyTag urgency={instrumentUrgency(data.instrument)} statut={data.instrument.statut} /></dd>
                   <dt>Dernier étalonnage</dt><dd>{fmtDate(data.instrument.date_etalonnage)}</dd>
                   <dt>Localisation</dt><dd>{[data.instrument.batiment, data.instrument.zone].filter(Boolean).join(" · ") || "—"}</dd>
                   {data.instrument.type_mesure && <><dt>Type de mesure</dt><dd>{data.instrument.type_mesure}</dd></>}

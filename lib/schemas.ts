@@ -8,6 +8,9 @@ const optionalDate = z
   .pipe(z.union([z.null(), z.iso.date()]));
 
 export const STATUTS = ["En service", "Hors service", "En réparation", "Réformé"] as const;
+// Libellé affiché : « Réformé » (valeur enregistrée en base, inchangée) s'affiche « Mis au rebut » partout.
+const STATUT_LABEL: Record<string, string> = { "Réformé": "Mis au rebut" };
+export const statutLabel = (s: string | null | undefined): string => (s ? STATUT_LABEL[s] ?? s : "—");
 export const INTERVENTION_TYPES = ["Étalonnage", "Vérification", "Réparation", "Ajustage"] as const;
 export const RESULTATS = ["Conforme", "Non conforme", "Conforme avec réserve"] as const;
 export const ROLES = ["admin", "responsable", "consultation"] as const;
