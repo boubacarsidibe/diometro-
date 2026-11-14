@@ -1,5 +1,6 @@
 import { TenantRow, type TenantRowData } from "@/components/TenantRow";
 import { Topbar } from "@/components/Topbar";
+import { Filterable } from "@/components/Filterable";
 import { requirePlatformAdmin } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { setTenant } from "./actions";
@@ -15,10 +16,13 @@ export default async function PlatformPage() {
       <Topbar title="Plateforme" subtitle={`${tenants.length} entreprise${tenants.length > 1 ? "s" : ""} · ${active} active${active > 1 ? "s" : ""}`} />
       <div className="content stack">
         <div className="notice ok">Vous voyez uniquement des totaux par entreprise : le contenu métier de vos clients n&apos;est jamais accessible ici.</div>
+        <Filterable placeholder="Rechercher une entreprise" unit={["entreprise", "entreprises"]}
+          selects={[{ key: "statut", label: "Tous les statuts", options: [{ value: "active", label: "Actives" }, { value: "blocked", label: "Bloquées" }] }]}>
         <div className="table-wrap"><table>
           <thead><tr><th>Entreprise</th><th>Utilisateurs</th><th>Instruments</th><th>État</th><th>Statut, formule et fin d&apos;abonnement</th></tr></thead>
           <tbody>{tenants.map((t) => <TenantRow key={t.id} action={setTenant} t={t} />)}</tbody>
         </table></div>
+        </Filterable>
       </div>
     </>
   );

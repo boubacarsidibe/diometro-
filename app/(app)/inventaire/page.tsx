@@ -4,13 +4,23 @@ import { StartInventoryForm } from "@/components/StartInventoryForm";
 import { Topbar } from "@/components/Topbar";
 import { canEdit, requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
-import { closeInventory, startInventory } from "./actions";
+import { closeInventory, deleteInventoryRun, startInventory } from "./actions";
+import { ConfirmAction } from "@/components/ConfirmAction";
+import { Filterable } from "@/components/Filterable";
 import { fmtDate } from "@/lib/dates";
 
 type Run = { id: string; status: string; note: string; created_at: string; closed_at: string | null; total_count: number | null; found_count: number | null; created_by: string | null };
 type RawCheck = { instrument_id: string; found: boolean; instruments: { ref: string; designation: string; batiment: string; zone: string } | { ref: string; designation: string; batiment: string; zone: string }[] | null };
 
-export default async function InventairePage() {
+const SUPPRESSION: Record<string, ["ok" | "err", string]> = {
+  ok: ["ok", "Inventaire supprimé de l'historique."],
+  inactive: ["err", "Suppression pas encore activée : la mise à jour 0012 de la base de données doit d'abord être appliquée."],
+  echec: ["err", "Suppression impossible (inventaire introuvable ou encore en cours)."],
+};
+
+export default async function InventairePage({ searchParams }: { searchParams: Promise<{ suppression?: string }> }) {
+  const { suppression } = await searchParams;
+  const notice = suppression ? SUPPRESSION[suppression] : undefined;
   const s = await requireSession();
   const write = canEdit(s);
   const supabase = await createClient();
@@ -32,12 +42,16 @@ export default async function InventairePage() {
   return (
     <>
       <Topbar title="Inventaire" subtitle="Vérification physique de la présence des instruments."
-        actions={open && write ? <form action={closeInventory.bind(null, open.id)}><button className="btn small primary">Clôturer l&apos;inventaire</button></form> : undefined} />
+        actions={open && write ? <ConfirmAction action={closeInventory.bind(null, open.id)} label="Clôturer l'inventaire" confirmLabel="Oui, clôturer"
+          message="Clôturer l'inventaire ? Les instruments non cochés seront comptés comme manquants et la liste ne pourra plus être modifiée." /> : undefined} />
       <div className="content stack">
+        {notice && <div className={`notice ${notice[0]}`} role="status">{notice[1]}</div>}
         {open ? (
           <>
             <div className="notice ok">Inventaire en cours depuis le {fmtDate(open.created_at)}{open.note ? ` — ${open.note}` : ""}.</div>
-            <InventoryChecklist runId={open.id} rows={rows} canEdit={write} />
+            <Filterable placeholder="Rechercher un instrument (référence, désignation, lieu…)" unit={["instrument", "instruments"]}>
+              <InventoryChecklist runId={open.id} rows={rows} canEdit={write} />
+            </Filterable>
           </>
         ) : write ? (
           <div className="card"><h2>Nouvel inventaire</h2><p className="helper" style={{ marginBottom: 12 }}>Tous les instruments non archivés et non réformés seront listés ; cochez ceux que vous retrouvez.</p><StartInventoryForm action={startInventory} /></div>
@@ -47,16 +61,22 @@ export default async function InventairePage() {
         <div className="card">
           <h2>Historique</h2>
           {closed.length === 0 ? <div className="empty">Aucun inventaire clôturé.</div> : (
+            <Filterable placeholder="Rechercher (date, personne, note…)" unit={["inventaire", "inventaires"]}>
             <div className="table-wrap"><table>
-              <thead><tr><th>Date</th><th>Réalisé par</th><th>Retrouvés</th><th>Total</th><th>Taux</th><th /></tr></thead>
+              <thead><tr><th>Date</th><th>Réalisé par</th><th>Note</th><th>Retrouvés</th><th>Total</th><th>Taux</th><th /></tr></thead>
               <tbody>{closed.map((r) => (
                 <tr key={r.id}>
-                  <td>{fmtDate(r.closed_at ?? r.created_at)}</td><td>{(r.created_by && names.get(r.created_by)) || "—"}</td>
+                  <td>{fmtDate(r.closed_at ?? r.created_at)}</td><td>{(r.created_by && names.get(r.created_by)) || "—"}</td><td>{r.note || "—"}</td>
                   <td>{r.found_count}</td><td>{r.total_count}</td><td>{r.total_count ? Math.round(((r.found_count ?? 0) / r.total_count) * 100) : 0} %</td>
-                  <td><Link href={`/inventaire/${r.id}`}>Détail</Link></td>
+                  <td style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                    <Link href={`/inventaire/${r.id}`}>Détail</Link>
+                    {s.role === "admin" && <ConfirmAction action={deleteInventoryRun.bind(null, r.id)} label="Supprimer" confirmLabel="Oui, supprimer"
+                      message={`Supprimer l'inventaire du ${fmtDate(r.closed_at ?? r.created_at)} et ses constats ? Cette action est définitive ; elle reste tracée dans le journal d'audit.`} />}
+                  </td>
                 </tr>
               ))}</tbody>
             </table></div>
+            </Filterable>
           )}
         </div>
       </div>
