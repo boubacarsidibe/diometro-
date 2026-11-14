@@ -23,7 +23,7 @@ export default async function MfaPage({ searchParams }: { searchParams: Promise<
     return (
       <>
         <MfaForm />
-        <div className="auth-links"><Link href="/mfa?via=email">Recevoir plutôt un code par e-mail</Link></div>
+        <div className="otp-alt"><Link href="/mfa?via=email">Recevoir plutôt un code par e-mail</Link></div>
       </>
     );
   }
