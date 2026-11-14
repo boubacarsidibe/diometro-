@@ -16,8 +16,10 @@ export default async function DashboardPage() {
   const active = all.filter((i) => i.statut === "En service");
   const counts = { expire: 0, urgent: 0, bientot: 0, ok: 0, none: 0 };
   for (const i of active) counts[urgencyOf(i.date_prochaine)]++;
-  const conformes = counts.ok;
-  const pct = active.length ? Math.round((conformes / active.length) * 100) : 0;
+  // À jour = en service avec une échéance non dépassée (y compris « bientôt » et « urgent », encore valides).
+  // Les instruments sans date d'échéance ne sont pas comptés comme à jour.
+  const aJour = counts.ok + counts.bientot + counts.urgent;
+  const pct = active.length ? Math.round((aJour / active.length) * 100) : 0;
   const upcoming = active.filter((i) => ["expire", "urgent", "bientot"].includes(urgencyOf(i.date_prochaine))).slice(0, 8);
   // Répartitions du parc (instruments non archivés), triées du plus grand au plus petit.
   const tally = (key: (i: Instrument) => string) => [...all.reduce((m, i) => m.set(key(i), (m.get(key(i)) ?? 0) + 1), new Map<string, number>())].sort((a, b) => b[1] - a[1]);
@@ -40,10 +42,10 @@ export default async function DashboardPage() {
             <div className="dash-hero-label">Vue d&apos;ensemble</div>
             <div className="dash-hero-title">{all.length === 0 ? "Aucun instrument" : `${pct} % du parc à jour`}</div>
             <div className="dash-hero-sub">
-              {active.length} instrument{active.length > 1 ? "s" : ""} en service · {counts.expire} expiré{counts.expire > 1 ? "s" : ""} · {counts.urgent} urgent{counts.urgent > 1 ? "s" : ""}
+              {active.length} instrument{active.length > 1 ? "s" : ""} en service · {counts.expire} expiré{counts.expire > 1 ? "s" : ""} · {counts.urgent + counts.bientot} à renouveler sous 30 jours{counts.none > 0 ? ` · ${counts.none} sans échéance` : ""}
             </div>
           </div>
-          <div className="donut" style={{ ["--p" as string]: pct }} role="img" aria-label={`${pct} % conformes`}>
+          <div className="donut" style={{ ["--p" as string]: pct }} role="img" aria-label={`${pct} % du parc à jour`}>
             <div>{pct}%</div>
           </div>
         </section>
@@ -52,7 +54,7 @@ export default async function DashboardPage() {
           <div className="kpi red"><div className="v">{counts.expire}</div><div className="l">Expirés</div></div>
           <div className="kpi orange"><div className="v">{counts.urgent}</div><div className="l">Urgents (&lt; 15 jours)</div></div>
           <div className="kpi yellow"><div className="v">{counts.bientot}</div><div className="l">Bientôt (≤ 30 jours)</div></div>
-          <div className="kpi green"><div className="v">{counts.ok}</div><div className="l">À jour</div></div>
+          <div className="kpi green"><div className="v">{counts.ok}</div><div className="l">À jour (&gt; 30 jours)</div></div>
         </div>
 
         {all.length > 0 && (
