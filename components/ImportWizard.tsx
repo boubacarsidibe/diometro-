@@ -11,7 +11,9 @@ export function ImportWizard({ check, run }: { check: Action; run: Action }) {
   const [report, checkAction] = useActionState(check, null);
   const [result, runAction] = useActionState(run, null);
   const [fileName, setFileName] = useState("");
-  const input = useRef<HTMLInputElement>(null);
+  // React vide le formulaire après « Contrôler le fichier » : le fichier choisi est donc gardé ici
+  // pour l'étape d'import (avant, le champ était vide au moment d'importer et rien ne se passait).
+  const file = useRef<File | null>(null);
   const shown = result ?? report;
   const errors = shown?.rows.filter((r) => r.errors.length > 0) ?? [];
 
@@ -55,8 +57,8 @@ export function ImportWizard({ check, run }: { check: Action; run: Action }) {
         <h2>2. Charger le fichier rempli</h2>
         <p className="helper" style={{ marginBottom: 10 }}>Rien n&apos;est enregistré à cette étape : DIOMETRO contrôle chaque ligne et vous montre le résultat.</p>
         <div className="form-actions" style={{ marginTop: 0, alignItems: "center" }}>
-          <input ref={input} id="file" name="file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required className="input" style={{ maxWidth: 360 }}
-            onChange={(e) => setFileName(e.target.files?.[0]?.name ?? "")} aria-label="Fichier Excel à importer" />
+          <input id="file" name="file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required className="input" style={{ maxWidth: 360 }}
+            onChange={(e) => { file.current = e.target.files?.[0] ?? null; setFileName(file.current?.name ?? ""); }} aria-label="Fichier Excel à importer" />
           <SubmitButton className="btn primary">Contrôler le fichier</SubmitButton>
         </div>
       </form>
@@ -70,6 +72,7 @@ export function ImportWizard({ check, run }: { check: Action; run: Action }) {
                 <strong>{report.valid} ligne{report.valid > 1 ? "s" : ""} prête{report.valid > 1 ? "s" : ""} à importer</strong> sur {report.total}.
                 {errors.length > 0 && <> {errors.length} ligne{errors.length > 1 ? "s" : ""} en erreur seront ignorée{errors.length > 1 ? "s" : ""} : corrigez-les dans le fichier et recommencez, ou importez seulement les lignes valides.</>}
               </div>
+              {result?.fatal && <div className="notice err" role="alert">Import impossible : {result.fatal}</div>}
               {report.capacity && <div className="notice err" role="alert">{report.capacity}</div>}
               {errors.length > 0 && (
                 <div className="table-wrap" style={{ marginBottom: 14 }}><table>
@@ -79,7 +82,7 @@ export function ImportWizard({ check, run }: { check: Action; run: Action }) {
                   ))}</tbody>
                 </table></div>
               )}
-              {report.valid > 0 && <form action={(fd) => { const f = input.current?.files?.[0]; if (f) fd.set("file", f); runAction(fd); }} className="form-actions">
+              {report.valid > 0 && <form action={(fd) => { if (file.current) fd.set("file", file.current); runAction(fd); }} className="form-actions">
                 <SubmitButton className="btn primary">{`Importer ${report.valid} instrument${report.valid > 1 ? "s" : ""}`}</SubmitButton>
                 <button type="button" className="btn soft" onClick={downloadReport}>Télécharger le rapport</button>
               </form>}
