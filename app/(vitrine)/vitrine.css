@@ -39,12 +39,23 @@
 .vt-btn { display: inline-flex; align-items: center; gap: 10px; padding: 13px 22px; border-radius: 999px; font-weight: 600; font-size: 15px; text-decoration: none; border: 1.5px solid transparent; cursor: pointer; transition: transform .2s, box-shadow .2s, background .2s; font-family: var(--f-body); }
 .vt-btn svg { width: 17px; height: 17px; }
 .vt-btn.vt-primary { background: var(--orange); color: var(--on-orange); box-shadow: 0 1px 0 rgba(255,255,255,.4) inset, 0 10px 24px rgba(255, 107, 26, .35); }
-.vt-btn.vt-primary:hover { transform: translateY(-2px); box-shadow: 0 1px 0 rgba(255,255,255,.4) inset, 0 16px 30px rgba(255, 107, 26, .45); }
 .vt-btn.vt-ghost-dark { color: var(--cream); border-color: rgba(243, 239, 232, .35); background: rgba(243, 239, 232, .04); }
 .vt-btn.vt-ghost-dark:hover { border-color: var(--cream); background: rgba(243, 239, 232, .1); }
 .vt-btn.vt-ghost { color: var(--wine); border-color: var(--wine); background: transparent; }
 .vt-btn.vt-ghost:hover { background: var(--wine); color: var(--cream); }
 .vt-btn.vt-small { padding: 9px 16px; font-size: 14px; }
+/* Effet « marches » au survol (repris d'un bouton Tailwind, recréé en CSS) : le bouton monte en diagonale
+   et laisse trois contours décalés. --st1/2/3 = couleurs des marches, adaptées au fond. */
+.vt-btn { position: relative; --st1: var(--wine); --st2: #7a3546; --st3: #b06a7a; transition: transform .3s cubic-bezier(.2, .7, .2, 1), box-shadow .3s cubic-bezier(.2, .7, .2, 1), background .2s, border-color .2s, color .2s; }
+.vt-btn::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+.vt-btn.vt-ghost { --st1: var(--orange); --st2: #ff9a5c; --st3: #ffc39e; }
+.vt-plan.vt-fit .vt-btn.vt-ghost { --st1: var(--wine); --st2: #7a3546; --st3: #b06a7a; }
+.vt-nav .vt-btn, .vt-hero .vt-btn, .vt-final-box .vt-btn, .vt-dark-band .vt-btn { --st1: #ff8f4f; --st2: #ffb48a; --st3: #f3d9c9; }
+@media (hover: hover) {
+  .vt-btn:hover { transform: translate(-9px, -9px); box-shadow: 3px 3px 0 var(--st1), 6px 6px 0 var(--st2), 9px 9px 0 var(--st3); }
+  .vt-btn:hover::after { inset: 0 -10px -10px 0; } /* la zone de survol reste sous le curseur pendant que le bouton monte */
+}
+.vt-btn:active { transform: translate(-3px, -3px); box-shadow: 1px 1px 0 var(--st1), 2px 2px 0 var(--st2), 3px 3px 0 var(--st3); }
 
 /* Barre de navigation */
 .vt-nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: rgba(44, 14, 22, .82); backdrop-filter: blur(14px) saturate(140%); -webkit-backdrop-filter: blur(14px) saturate(140%); border-bottom: 1px solid var(--wine-line); }

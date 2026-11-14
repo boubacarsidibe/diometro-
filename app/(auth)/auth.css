@@ -74,7 +74,16 @@
 .au-pane .form-actions { margin-top: 4px; }
 .au-pane .btn.primary { width: 100%; justify-content: center; padding: 14px 20px; border: 0; border-radius: 999px; background: var(--orange); color: var(--on-orange); font-size: 15px; font-weight: 700;
   box-shadow: 0 1px 0 rgba(255, 255, 255, .4) inset, 0 12px 26px rgba(255, 107, 26, .35); transition: transform .2s, box-shadow .2s; }
-.au-pane .btn.primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 1px 0 rgba(255, 255, 255, .4) inset, 0 16px 32px rgba(255, 107, 26, .45); }
+/* Effet « marches » au survol, comme sur l'accueil : marches bordeaux sur fond clair, claires sur le volet bordeaux. */
+.au-pane .btn.primary, .au-ghost { position: relative; transition: transform .3s cubic-bezier(.2, .7, .2, 1), box-shadow .3s cubic-bezier(.2, .7, .2, 1), background .2s, border-color .2s; }
+.au-pane .btn.primary { --st1: var(--wine); --st2: #7a3546; --st3: #b06a7a; }
+.au-ghost { --st1: #ff8f4f; --st2: #ffb48a; --st3: #f3d9c9; }
+.au-pane .btn.primary::after, .au-ghost::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+@media (hover: hover) {
+  .au-pane .btn.primary:hover:not(:disabled), .au-ghost:hover { transform: translate(-9px, -9px); box-shadow: 3px 3px 0 var(--st1), 6px 6px 0 var(--st2), 9px 9px 0 var(--st3); }
+  .au-pane .btn.primary:hover:not(:disabled)::after, .au-ghost:hover::after { inset: 0 -10px -10px 0; }
+}
+.au-pane .btn.primary:active:not(:disabled), .au-ghost:active { transform: translate(-3px, -3px); box-shadow: 1px 1px 0 var(--st1), 2px 2px 0 var(--st2), 3px 3px 0 var(--st3); }
 .au-pane .auth-links { margin-top: 18px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 13.5px; }
 .au-pane .auth-links a { text-decoration: none; border-bottom: 1.5px solid var(--orange); }
 
