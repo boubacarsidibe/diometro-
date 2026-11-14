@@ -349,9 +349,9 @@ tr.cancelled .tag.keep { background: var(--slate2); color: var(--muted); }
 .pv-close { width: 34px; height: 34px; border: 0; border-radius: 8px; background: transparent; font-size: 24px; line-height: 1; cursor: pointer; color: var(--muted); }
 .pv-close:hover { background: var(--panel); color: var(--text); }
 .pv-body { padding: 16px; overflow-y: auto; }
-.pv-details { grid-template-columns: 150px 1fr; margin-bottom: 6px; }
+dl.details.pv-details { grid-template-columns: 150px 1fr; margin-bottom: 6px; }
 .pv-h { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 18px 0 8px; }
-.pv-thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+.pv-thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; }
 .pv-thumb { aspect-ratio: 1; padding: 0; border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; background: var(--panel2); cursor: zoom-in; }
 .pv-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .2s; }
 .pv-thumb:hover img { transform: scale(1.05); }
@@ -364,6 +364,6 @@ tr.cancelled .tag.keep { background: var(--slate2); color: var(--muted); }
 .pv-big { display: block; max-width: 100%; max-height: calc(100dvh - 190px); margin: 12px auto; object-fit: contain; }
 .pv-pdf { width: 100%; height: calc(100dvh - 190px); min-height: 360px; border: 0; background: #fff; }
 @media (max-width: 640px) {
-  .pv-details { grid-template-columns: 1fr; gap: 2px 0; }
+  dl.details.pv-details { grid-template-columns: 1fr; gap: 2px 0; }
   .pv-details dd { margin-bottom: 6px; }
 }
