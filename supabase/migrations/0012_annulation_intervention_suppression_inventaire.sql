@@ -44,3 +44,6 @@ create policy inventory_runs_delete on public.inventory_runs for delete to authe
 grant delete on public.inventory_runs to authenticated;
 create trigger inventory_runs_audit_delete after delete on public.inventory_runs
   for each row execute function public.write_audit();
+
+-- Comme pour 0003 : la fonction de trigger n'a pas à être appelable via l'API REST.
+revoke execute on function public.stamp_intervention_cancel() from public, anon, authenticated;
