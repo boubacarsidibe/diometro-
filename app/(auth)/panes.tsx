@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { AuthForm } from "@/components/AuthForm";
 import { TRIAL_DAYS, offerById } from "@/lib/plans";
-import { login, register } from "./actions";
+import { login, logout, register } from "./actions";
 
 const LOGIN_ERRORS: Record<string, string> = {
   inactive: "Ce compte est désactivé. Contactez votre administrateur.",
@@ -9,11 +9,21 @@ const LOGIN_ERRORS: Record<string, string> = {
 };
 
 // Contenu des deux formulaires, partagé par /login et /register (la carte affiche les deux).
-export function LoginPane({ error }: { error?: string }) {
+export function LoginPane({ error, current }: { error?: string; current?: string | null }) {
   return (
     <>
       <h1>Connexion</h1>
       <p className="lead">Votre plateforme de gestion métrologique.</p>
+      {current && (
+        <div className="notice ok session-on">
+          <span>Déjà connecté avec <strong>{current}</strong>.</span>
+          <span className="session-actions">
+            <Link className="btn primary small" href="/dashboard">Continuer</Link>
+            <form action={logout}><button className="btn soft small">Se déconnecter</button></form>
+          </span>
+          <span className="helper">Pour utiliser un autre compte, connectez-vous ci-dessous.</span>
+        </div>
+      )}
       <AuthForm
         action={login}
         submit="Se connecter"
@@ -23,6 +33,7 @@ export function LoginPane({ error }: { error?: string }) {
           { name: "email", label: "Email", type: "email", autoComplete: "username" },
           { name: "password", label: "Mot de passe", type: "password", autoComplete: "current-password" },
         ]}
+        checks={[{ name: "remember", optional: true, label: <>Rester connecté sur cet appareil <span className="helper">(à ne pas cocher sur un ordinateur partagé)</span></> }]}
       />
       <div className="auth-links">
         <Link href="/forgot-password">Mot de passe oublié ?</Link>

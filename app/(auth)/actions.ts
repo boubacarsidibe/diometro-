@@ -1,8 +1,8 @@
 "use server";
 
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, REMEMBER_COOKIE } from "@/lib/supabase/server";
 import { echoValues, parseForm, type FormState } from "@/lib/form";
 import { emailSchema, loginSchema, newPasswordSchema, onboardingSchema, registerSchema } from "@/lib/schemas";
 import { notifyNewTenant } from "@/lib/notify-platform";
@@ -17,10 +17,14 @@ async function siteUrl(): Promise<string> {
 export async function login(_: FormState, formData: FormData): Promise<FormState> {
   const parsed = parseForm(loginSchema, formData);
   if ("state" in parsed) return { error: "Email ou mot de passe invalide.", values: echoValues(formData) };
-  const supabase = await createClient();
+  const persist = formData.get("remember") === "on";
+  const store = await cookies();
+  // La nouvelle connexion remplace la session précédente éventuelle (autre compte sur le même ordinateur).
+  const supabase = await createClient({ persist });
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
   // Message générique : ne révèle pas si le compte existe.
   if (error) return { error: "Email ou mot de passe invalide.", values: echoValues(formData) };
+  store.set(REMEMBER_COOKIE, persist ? "1" : "0", { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", ...(persist ? { maxAge: 400 * 24 * 3600 } : {}) });
   redirect("/dashboard");
 }
 
