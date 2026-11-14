@@ -6,19 +6,20 @@ import type { FormState } from "@/lib/form";
 
 type Input = { name: string; label: string; type?: string; autoComplete?: string; hint?: string; required?: boolean };
 
+// idPrefix : rend les identifiants uniques quand deux formulaires partagent la page (connexion et inscription).
 export function AuthForm({
-  action, inputs, submit, initialError, checks = [], hidden = {},
+  action, inputs, submit, initialError, checks = [], hidden = {}, idPrefix = "",
 }: {
   action: (s: FormState, f: FormData) => Promise<FormState>; inputs: Input[]; submit: string; initialError?: string;
-  checks?: { name: string; label: ReactNode }[]; hidden?: Record<string, string>;
+  checks?: { name: string; label: ReactNode }[]; hidden?: Record<string, string>; idPrefix?: string;
 }) {
   const [state, formAction] = useActionState(action, initialError ? { error: initialError } : {});
   return (
     <form action={formAction} noValidate>
       <Notice error={state.error} ok={state.ok} />
       {inputs.map((i) => (
-        <Field key={i.name} label={i.label} name={i.name} error={state.fieldErrors?.[i.name]}>
-          <input id={i.name} name={i.name} type={i.type ?? "text"} className="input" autoComplete={i.autoComplete} defaultValue={state.values?.[i.name] ?? ""} required={i.required !== false} />
+        <Field key={i.name} label={i.label} name={`${idPrefix}${i.name}`} error={state.fieldErrors?.[i.name]}>
+          <input id={`${idPrefix}${i.name}`} name={i.name} type={i.type ?? "text"} className="input" autoComplete={i.autoComplete} defaultValue={state.values?.[i.name] ?? ""} required={i.required !== false} />
           {i.hint && <span className="helper">{i.hint}</span>}
         </Field>
       ))}
