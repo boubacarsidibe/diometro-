@@ -14,10 +14,14 @@ import { daysUntil } from "@/lib/status";
 export default async function ParametresPage() {
   const s = await requireAdmin();
   const supabase = await createClient();
-  const [{ data }, { count: used }] = await Promise.all([
+  const [{ data }, { count: used }, { data: places }] = await Promise.all([
     supabase.from("tenants").select("plan, plan_expires_at, alerts_enabled, max_instruments, sector, phone").eq("id", s.tenant.id).single(),
     supabase.from("instruments").select("id", { count: "exact", head: true }).is("deleted_at", null),
+    supabase.from("instruments").select("batiment").is("deleted_at", null).limit(10000),
   ]);
+  // Nombre d'instruments par bâtiment : prévient avant de retirer un bâtiment encore utilisé.
+  const buildingUsage: Record<string, number> = {};
+  for (const p of (places ?? []) as { batiment: string | null }[]) if (p.batiment) buildingUsage[p.batiment] = (buildingUsage[p.batiment] ?? 0) + 1;
   const plan = data?.plan ?? "essai";
   const planName = PLANS.find((p) => p.id === plan)?.nom ?? plan;
   const left = daysUntil(data?.plan_expires_at);
@@ -25,11 +29,11 @@ export default async function ParametresPage() {
   const offers = OFFERS.map((o) => ({ id: o.id, nom: o.nom, cible: o.cible, instruments: o.instruments, prix: o.prix ? `${money(o.prix.mensuel, "XOF")} / mois` : null }));
   return (
     <>
-      <Topbar title="Paramètres de l'entreprise" subtitle="Nom, couleur, logo, alertes et abonnement." />
+      <Topbar title="Paramètres de l'entreprise" subtitle="Nom, logo, bâtiments, alertes et abonnement." />
       <div className="content stack">
         <div className="card">
           <h2>Identité visuelle et alertes</h2>
-          <BrandingForm action={saveBranding} name={s.tenant.name} accent={s.tenant.accent} alertsEnabled={data?.alerts_enabled ?? true} logo={s.tenant.logo_data} accreditation={s.tenant.accreditation_label} currency={s.tenant.currency} sector={data?.sector ?? ""} phone={data?.phone ?? ""} buildings={s.tenant.buildings} />
+          <BrandingForm action={saveBranding} name={s.tenant.name} alertsEnabled={data?.alerts_enabled ?? true} logo={s.tenant.logo_data} accreditation={s.tenant.accreditation_label} currency={s.tenant.currency} sector={data?.sector ?? ""} phone={data?.phone ?? ""} buildings={s.tenant.buildings} buildingUsage={buildingUsage} />
         </div>
         <div className="card">
           <h2>Alertes par email</h2>

@@ -35,7 +35,8 @@ export const registerSchema = z.object({
 const buildingList = z
   .string()
   .max(1500)
-  .transform((v) => [...new Set(v.split(/[,\n]/).map((b) => b.trim()).filter(Boolean))])
+  // Un bâtiment par ligne (liste de Paramètres et de l'inscription) ; sur une seule ligne, les virgules séparent (ancien format).
+  .transform((v) => [...new Set(v.split(v.includes("\n") ? /\r?\n/ : /,/).map((b) => b.trim()).filter(Boolean))])
   .pipe(z.array(z.string().max(100)).max(50, "50 bâtiments maximum"));
 
 export const onboardingSchema = z.object({
@@ -201,7 +202,6 @@ export const prestataireSchema = z.object({
 
 export const brandingSchema = z.object({
   name: text(120).min(2, "Nom trop court"),
-  accent: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Couleur invalide"),
   alerts_enabled: checkbox,
   accreditation_label: text(60).min(1, "Organisme requis"),
   currency: z.enum(["XOF", "EUR", "USD"]),

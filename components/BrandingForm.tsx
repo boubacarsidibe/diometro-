@@ -1,12 +1,13 @@
 "use client";
 import { useActionState } from "react";
 import { Field, Notice } from "@/components/Field";
+import { BuildingsEditor } from "@/components/BuildingsEditor";
 import { SubmitButton } from "@/components/SubmitButton";
 import type { FormState } from "@/lib/form";
 
 export function BrandingForm({
-  action, name, accent, alertsEnabled, logo, accreditation, currency, sector, phone, buildings,
-}: { action: (s: FormState, f: FormData) => Promise<FormState>; name: string; accent: string; alertsEnabled: boolean; logo: string | null; accreditation: string; currency: string; sector: string; phone: string; buildings: string[] }) {
+  action, name, alertsEnabled, logo, accreditation, currency, sector, phone, buildings, buildingUsage,
+}: { action: (s: FormState, f: FormData) => Promise<FormState>; name: string; alertsEnabled: boolean; logo: string | null; accreditation: string; currency: string; sector: string; phone: string; buildings: string[]; buildingUsage: Record<string, number> }) {
   const [state, formAction] = useActionState(action, {});
   const e = state.fieldErrors ?? {};
   return (
@@ -14,14 +15,15 @@ export function BrandingForm({
       <Notice error={state.error} ok={state.ok} />
       <div className="grid cols-2">
         <Field label="Nom de l'entreprise" name="name" error={e.name}><input id="name" name="name" className="input" defaultValue={state.values?.name ?? name} maxLength={120} required /></Field>
-        <Field label="Couleur principale" name="accent" error={e.accent}><input id="accent" name="accent" type="color" className="input" style={{ height: 44, padding: 4 }} defaultValue={state.values?.accent ?? accent} /></Field>
         <Field label="Secteur d'activité" name="sector" error={e.sector}><input id="sector" name="sector" className="input" defaultValue={state.values?.sector ?? sector} maxLength={100} /></Field>
         <Field label="Téléphone" name="phone" error={e.phone}><input id="phone" name="phone" type="tel" className="input" defaultValue={state.values?.phone ?? phone} maxLength={40} /></Field>
         <Field label="Organisme d'accréditation" name="accreditation_label" error={e.accreditation_label}><input id="accreditation_label" name="accreditation_label" className="input" defaultValue={state.values?.accreditation_label ?? accreditation} placeholder="COFRAC, SENAC…" maxLength={60} required /></Field>
         <Field label="Devise des tarifs" name="currency" error={e.currency}>
           <select id="currency" name="currency" className="input" defaultValue={state.values?.currency ?? currency}><option value="XOF">FCFA (XOF)</option><option value="EUR">Euro (EUR)</option><option value="USD">Dollar (USD)</option></select>
         </Field>
-        <Field label="Bâtiments (séparés par des virgules)" name="buildings" error={e.buildings} full><input id="buildings" name="buildings" className="input" defaultValue={state.values?.buildings ?? buildings.join(", ")} maxLength={1500} /></Field>
+        <Field label="Bâtiments" name="buildings" error={e.buildings} full>
+          <BuildingsEditor id="buildings" name="buildings" initial={state.values?.buildings !== undefined ? state.values.buildings.split("\n").filter(Boolean) : buildings} usage={buildingUsage} />
+        </Field>
         <Field label="Logo (PNG, JPEG ou WebP, 150 Ko max)" name="logo" error={e.logo} full>
           {logo && (<div style={{ marginBottom: 8 }}>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={logo} alt="Logo actuel" style={{ maxHeight: 48, background: "var(--sb-bg)", padding: 6, borderRadius: 8 }} /></div>)}
           <input id="logo" name="logo" type="file" accept="image/png,image/jpeg,image/webp" className="input" />
