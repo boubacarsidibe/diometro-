@@ -1,11 +1,15 @@
 import { z } from "zod";
 
+// Messages d'erreur de validation en français (zod affiche l'anglais par défaut, ex. « Invalid ISO date »).
+z.config(z.locales.fr());
+const isoDate = () => z.iso.date({ error: "Date invalide : utilisez le format jj/mm/aaaa." });
+
 const text = (max: number) => z.string().trim().max(max);
 const optionalDate = z
   .string()
   .trim()
   .transform((v) => (v === "" ? null : v))
-  .pipe(z.union([z.null(), z.iso.date()]));
+  .pipe(z.union([z.null(), isoDate()]));
 
 export const STATUTS = ["En service", "Hors service", "En réparation", "Réformé"] as const;
 // Libellé affiché : « Réformé » (valeur enregistrée en base, inchangée) s'affiche « Mis au rebut » partout.
@@ -104,7 +108,7 @@ export const interventionSchema = z.object({
   mode: z.enum(["Interne", "Externe"]).default("Externe"),
   instrument_id: z.uuid(),
   prestataire_id: z.union([z.literal("").transform(() => null), z.uuid()]).optional().transform((v) => v ?? null),
-  date: z.iso.date(),
+  date: isoDate(),
   type: z.enum(INTERVENTION_TYPES),
   resultat: z.enum(RESULTATS),
   prestataire: text(200),
@@ -253,5 +257,5 @@ export const platformTenantSchema = z.object({
     .string()
     .trim()
     .transform((v) => (v === "" ? null : v))
-    .pipe(z.union([z.null(), z.iso.date()])),
+    .pipe(z.union([z.null(), isoDate()])),
 });
