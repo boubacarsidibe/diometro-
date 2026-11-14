@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { REMEMBER_COOKIE, sessionScoped } from "@/lib/supabase/remember";
 
 // "/vitrine" : images de la page d'accueil (public/vitrine), visibles sans connexion.
 const PUBLIC = ["/login", "/register", "/forgot-password", "/auth/confirm", "/api/cron", "/p", "/mentions-legales", "/cgu", "/confidentialite", "/robots.txt", "/sitemap.xml", "/vitrine"];
@@ -47,7 +48,8 @@ export async function proxy(request: NextRequest) {
         setAll(list) {
           list.forEach(({ name, value }) => request.cookies.set(name, value));
           response = NextResponse.next({ request: { headers } });
-          list.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+          const persist = request.cookies.get(REMEMBER_COOKIE)?.value !== "0";
+          list.forEach(({ name, value, options }) => response.cookies.set(name, value, sessionScoped(options, persist)));
         },
       },
     },

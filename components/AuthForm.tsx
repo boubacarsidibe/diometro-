@@ -13,7 +13,7 @@ export function AuthForm({
   action, inputs, submit, initialError, checks = [], hidden = {}, idPrefix = "",
 }: {
   action: (s: FormState, f: FormData) => Promise<FormState>; inputs: Input[]; submit: string; initialError?: string;
-  checks?: { name: string; label: ReactNode }[]; hidden?: Record<string, string>; idPrefix?: string;
+  checks?: { name: string; label: ReactNode; optional?: boolean }[]; hidden?: Record<string, string>; idPrefix?: string;
 }) {
   const [state, formAction] = useActionState(action, initialError ? { error: initialError } : {});
   return (
@@ -32,7 +32,7 @@ export function AuthForm({
       {Object.entries(hidden).map(([k, v]) => <input key={k} type="hidden" name={k} value={v} />)}
       {checks.map((c) => (
         <div key={c.name}>
-          <label className="consent"><input type="checkbox" name={c.name} required /> <span>{c.label}</span></label>
+          <label className="consent"><input type="checkbox" name={c.name} required={!c.optional} /> <span>{c.label}</span></label>
           {state.fieldErrors?.[c.name] && <span className="field-error" role="alert">{state.fieldErrors[c.name]}</span>}
         </div>
       ))}

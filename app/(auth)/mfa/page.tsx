@@ -1,8 +1,18 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { logout } from "../actions";
 import { EmailCodeForm } from "./EmailCodeForm";
 import { MfaForm } from "./MfaForm";
+
+// Ordinateur partagé : la personne qui arrive ici avec la session de quelqu'un d'autre peut changer de compte.
+function SwitchAccount({ email }: { email: string }) {
+  return (
+    <form action={logout} className="otp-switch">
+      <button>Ce n&apos;est pas vous ({email}) ? Changer de compte</button>
+    </form>
+  );
+}
 
 // Second facteur : code par e-mail (par défaut) ou application d'authentification (au choix de l'utilisateur).
 export default async function MfaPage({ searchParams }: { searchParams: Promise<{ via?: string }> }) {
@@ -24,8 +34,14 @@ export default async function MfaPage({ searchParams }: { searchParams: Promise<
       <>
         <MfaForm />
         <div className="otp-alt"><Link href="/mfa?via=email">Recevoir plutôt un code par e-mail</Link></div>
+        <SwitchAccount email={user.email ?? ""} />
       </>
     );
   }
-  return <EmailCodeForm email={user.email ?? ""} hasTotp={hasTotp} />;
+  return (
+    <>
+      <EmailCodeForm email={user.email ?? ""} hasTotp={hasTotp} />
+      <SwitchAccount email={user.email ?? ""} />
+    </>
+  );
 }

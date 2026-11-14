@@ -45,7 +45,9 @@ export default async function HomePage() {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    signedIn = !!user;
+    // « Mon espace » seulement pour une session complète (code de vérification validé) ;
+    // une connexion abandonnée en cours de route laisse les boutons « Connexion » / « Essai gratuit ».
+    if (user) signedIn = (await supabase.rpc("mfa_ok")).data === true;
   } catch {
     // Supabase indisponible : la page d'accueil reste affichée.
   }

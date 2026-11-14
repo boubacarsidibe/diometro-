@@ -194,3 +194,14 @@
 @media (prefers-reduced-motion: reduce) {
   .otp-core, .otp-ring b { opacity: 1 !important; transform: none; scale: 1; }
 }
+
+/* Connexion : compte déjà ouvert sur cet appareil */
+.au-pane .session-on { display: flex; flex-direction: column; gap: 10px; }
+.au-pane .session-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.au-pane .session-actions form { margin: 0; }
+.au-pane .session-on .btn.primary { width: auto; padding: 8px 16px; font-size: 13.5px; }
+.au-pane .session-on .btn.primary:hover:not(:disabled) { transform: none; box-shadow: none; }
+.au-pane .consent .helper { display: inline; }
+/* Code de vérification : changer de compte */
+.otp-switch { margin-top: 14px; text-align: center; font-size: 13.5px; }
+.otp-switch button { background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; border-bottom: 1.5px solid var(--orange); }
