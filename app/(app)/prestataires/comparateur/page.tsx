@@ -24,7 +24,7 @@ export default async function ComparateurPage({ searchParams }: { searchParams: 
   };
   return (
     <>
-      <Topbar title="Comparateur de prestataires" subtitle="Pour un domaine de mesure donné" actions={<Link className="btn small soft" href="/prestataires">← Prestataires</Link>} />
+      <Topbar title="Comparateur de prestataires" subtitle="Pour un domaine de mesure donné" />
       <div className="content stack">
         <form className="toolbar" role="search">
           <select className="input" name="domaine" defaultValue={wanted} aria-label="Domaine de mesure" style={{ maxWidth: 320 }}>

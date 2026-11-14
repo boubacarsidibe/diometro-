@@ -34,7 +34,6 @@ export default async function InventaireDetailPage({ params }: { params: Promise
             </Filterable>
           )}
         </div>
-        <div style={{ marginTop: 16 }}><Link className="btn small soft" href="/inventaire">← Retour</Link></div>
       </div>
     </>
   );

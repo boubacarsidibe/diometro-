@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ImportWizard } from "@/components/ImportWizard";
 import { Topbar } from "@/components/Topbar";
@@ -11,8 +10,7 @@ export default async function ImportPage() {
   if (!canEdit(s)) redirect("/instruments");
   return (
     <>
-      <Topbar title="Importer le parc depuis Excel" subtitle="Modèle à remplir, contrôle des erreurs avant import, puis rapport."
-        actions={<Link className="btn small soft" href="/instruments">Retour aux instruments</Link>} />
+      <Topbar title="Importer le parc depuis Excel" subtitle="Modèle à remplir, contrôle des erreurs avant import, puis rapport." />
       <div className="content stack">
         <div className="card">
           <h2>1. Télécharger le modèle</h2>
