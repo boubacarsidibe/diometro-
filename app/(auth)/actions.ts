@@ -24,7 +24,7 @@ export async function login(_: FormState, formData: FormData): Promise<FormState
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
   // Message générique : ne révèle pas si le compte existe.
   if (error) return { error: "Email ou mot de passe invalide.", values: echoValues(formData) };
-  store.set(REMEMBER_COOKIE, persist ? "1" : "0", { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", ...(persist ? { maxAge: 400 * 24 * 3600 } : {}) });
+  store.set(REMEMBER_COOKIE, persist ? "1" : "0", { httpOnly: false, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", ...(persist ? { maxAge: 400 * 24 * 3600 } : {}) });
   redirect("/dashboard");
 }
 
