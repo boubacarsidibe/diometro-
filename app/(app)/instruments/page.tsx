@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { InstrumentPreview } from "@/components/InstrumentPreview";
 import { Topbar } from "@/components/Topbar";
 import { UrgencyTag, rowClass } from "@/components/UrgencyTag";
 import { CATALOG } from "@/lib/calc/catalog";
@@ -46,6 +47,12 @@ export default async function InstrumentsPage({ searchParams }: { searchParams: 
     supabase.from("instruments").select("batiment, zone").is("deleted_at", null).limit(5000),
   ]);
   const rows = (data ?? []) as Instrument[];
+  // Nombre de documents joints par instrument de la page (bouton « Aperçu »).
+  const { data: attRows } = rows.length
+    ? await supabase.from("attachments").select("instrument_id").in("instrument_id", rows.map((r) => r.id))
+    : { data: [] as { instrument_id: string }[] };
+  const docCount = new Map<string, number>();
+  for (const a of (attRows ?? []) as { instrument_id: string }[]) docCount.set(a.instrument_id, (docCount.get(a.instrument_id) ?? 0) + 1);
   const total = count ?? 0;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const batiments = [...new Set((places ?? []).map((p) => p.batiment).filter(Boolean))].sort((a, b) => a.localeCompare(b, "fr"));
@@ -97,6 +104,7 @@ export default async function InstrumentsPage({ searchParams }: { searchParams: 
                       </th>
                     );
                   })}
+                  <th><span className="sr-only">Aperçu</span></th>
                 </tr>
               </thead>
               <tbody>
@@ -111,6 +119,7 @@ export default async function InstrumentsPage({ searchParams }: { searchParams: 
                       <td>{i.conformite}{conformityWarning(i.conformite, i.date_prochaine) && <> <span className="tag orange" title="Échéance dépassée : conformité à revérifier">À revérifier</span></>}</td>
                       <td>{fmtDate(i.date_prochaine)}</td>
                       <td><UrgencyTag urgency={u} /></td>
+                      <td><InstrumentPreview id={i.id} label={`${i.ref} ${i.designation}`} count={docCount.get(i.id) ?? 0} /></td>
                     </tr>
                   );
                 })}

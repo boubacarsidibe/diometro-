@@ -4,6 +4,8 @@ import { NextResponse, type NextRequest } from "next/server";
 // "/vitrine" : images de la page d'accueil (public/vitrine), visibles sans connexion.
 const PUBLIC = ["/login", "/register", "/forgot-password", "/auth/confirm", "/api/cron", "/p", "/mentions-legales", "/cgu", "/confidentialite", "/robots.txt", "/sitemap.xml", "/vitrine"];
 
+const PREVIEW_ROUTE = /^\/api\/attachments\/[^/]+\/view$/;
+
 function buildCsp(nonce: string): string {
   const dev = process.env.NODE_ENV === "development";
   let supabase = "";
@@ -65,7 +67,9 @@ export async function proxy(request: NextRequest) {
     return redirect;
   }
 
-  response.headers.set("Content-Security-Policy", csp);
+  // L'aperçu d'une pièce jointe fixe lui-même sa CSP (images en sandbox, PDF affichable dans la fenêtre « Aperçu ») :
+  // celle des pages (frame-ancestors 'none', object-src 'none') empêcherait le lecteur PDF de s'afficher.
+  if (!PREVIEW_ROUTE.test(path)) response.headers.set("Content-Security-Policy", csp);
   response.headers.set("Cache-Control", "private, no-store");
   return response;
 }

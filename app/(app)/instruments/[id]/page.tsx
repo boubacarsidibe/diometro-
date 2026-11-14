@@ -47,7 +47,7 @@ export default async function InstrumentPage({ params }: { params: Promise<{ id:
 
   return (
     <>
-      <Topbar title={`${instrument.ref} — ${instrument.designation}`} subtitle="Fiche de vie de l'instrument" actions={<>{write && <Link className="btn small primary" href={`/instruments/${id}/etalonnage`}>Étalonner</Link>}<a className="btn small soft" href={`/export/fiche/${id}`}>Fiche de vie PDF</a><UrgencyTag urgency={urgencyOf(instrument.date_prochaine)} /></>} />
+      <Topbar title={`${instrument.ref} — ${instrument.designation}`} subtitle="Fiche de vie de l'instrument" actions={<>{write && <Link className="btn small primary" href={`/instruments/${id}/etalonnage`}>Étalonner</Link>}<a className="btn small soft" href="#documents">Documents ({(atts ?? []).length})</a><a className="btn small soft" href={`/export/fiche/${id}`}>Fiche de vie PDF</a><UrgencyTag urgency={urgencyOf(instrument.date_prochaine)} /></>} />
       <div className="content stack">
         {conformityWarning(instrument.conformite, instrument.date_prochaine) && <div className="notice err" role="note">{conformityWarning(instrument.conformite, instrument.date_prochaine)}</div>}
         {staleDeadlineWarning(instrument.date_prochaine, instrument.date_etalonnage) && <div className="notice err" role="note">{staleDeadlineWarning(instrument.date_prochaine, instrument.date_etalonnage)}</div>}
@@ -117,7 +117,7 @@ export default async function InstrumentPage({ params }: { params: Promise<{ id:
           </div>
         )}
 
-        <div className="card">
+        <div className="card" id="documents">
           <h2>Documents joints</h2>
           <AttachmentList items={(atts ?? []) as Attachment[]} instrumentId={id} canDelete={write} />
           {write && <div style={{ marginTop: 16 }}><AttachmentUploader instrumentId={id} /></div>}
