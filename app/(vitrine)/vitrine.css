@@ -73,7 +73,7 @@
 .vt-hero-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 32px; align-items: center; padding-block: clamp(48px, 7vw, 88px) 36px; }
 .vt-pill { display: inline-flex; align-items: center; gap: 10px; padding: 5px 14px 5px 5px; border: 1px solid var(--wine-line); border-radius: 999px; font-size: 13.5px; color: var(--cream-mute); background: rgba(243, 239, 232, .05); }
 .vt-pill b { font-family: var(--f-mono); font-size: 11.5px; letter-spacing: .08em; background: var(--orange); color: var(--on-orange); padding: 3px 9px; border-radius: 999px; }
-.vt-hero h1 { font-size: clamp(42px, 6.4vw, 80px); line-height: .98; font-weight: 850; margin: 22px 0 22px; letter-spacing: -.03em; }
+.vt-hero h1 { font-size: clamp(40px, 5.2vw, 66px); line-height: .98; font-weight: 850; margin: 22px 0 22px; letter-spacing: -.03em; }
 .vt-hero h1 .vt-measure { position: relative; color: var(--orange); white-space: nowrap; }
 .vt-hero h1 .vt-measure::after { content: ""; position: absolute; left: 0; right: 0; bottom: -.08em; height: .16em; background:
   linear-gradient(var(--orange), var(--orange)) 0 100% / 100% 2px no-repeat,
@@ -93,10 +93,10 @@
 .vt-shadow-disc { left: 12%; right: 8%; bottom: 4%; height: 70px; transform: translateZ(-30px) rotateX(80deg); background: radial-gradient(closest-side, rgba(10, 2, 5, .55), transparent); }
 .vt-chip { background: rgba(44, 14, 22, .78); border: 1px solid rgba(243, 239, 232, .18); border-radius: 14px; padding: 12px 16px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 18px 40px rgba(10, 2, 5, .4); color: var(--cream); }
 .vt-chip .vt-k { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--cream-mute); }
-.vt-chip.vt-status { right: 2%; top: 4%; transform: translateZ(140px); display: grid; gap: 4px; }
+.vt-chip.vt-status { right: 9%; top: 6%; transform: translateZ(90px); display: grid; gap: 4px; }
 .vt-chip.vt-status .vt-row { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; }
 .vt-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ok-d); box-shadow: 0 0 0 4px rgba(74, 222, 128, .18); }
-.vt-chip.vt-reading { left: 6%; bottom: 8%; transform: translateZ(190px); }
+.vt-chip.vt-reading { left: 8%; bottom: 8%; transform: translateZ(120px); }
 .vt-chip.vt-reading .vt-v { font-family: var(--f-mono); font-size: 30px; font-weight: 600; line-height: 1.1; letter-spacing: -.01em; }
 .vt-chip.vt-reading .vt-v small { font-size: 14px; color: var(--cream-mute); margin-left: 4px; }
 .vt-chip.vt-reading .vt-tol { font-family: var(--f-mono); font-size: 12px; color: var(--ok-d); margin-top: 2px; }
