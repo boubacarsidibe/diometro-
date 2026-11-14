@@ -10,7 +10,7 @@ export function TenantRow({ action, t }: { action: (s: FormState, f: FormData) =
   const [state, formAction] = useActionState(action, {});
   const expired = t.plan_expires_at && t.plan_expires_at < new Date().toISOString().slice(0, 10);
   return (
-    <tr>
+    <tr data-f-statut={t.status}>
       <td><strong>{t.name}</strong><div className="helper">créée le {fmtDate(t.created_at)}</div></td>
       <td>{t.users}</td><td>{t.instruments}{t.max_instruments != null ? ` / ${t.max_instruments}` : " / ∞"}</td>
       <td>{t.status === "blocked" ? <span className="tag red">Bloquée</span> : expired ? <span className="tag orange">Expirée</span> : <span className="tag green">Active</span>}</td>

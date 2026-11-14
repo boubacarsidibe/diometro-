@@ -38,3 +38,14 @@ export async function closeInventory(runId: string) {
   revalidatePath("/inventaire");
   redirect(error ? "/inventaire" : `/inventaire/${runId}`);
 }
+
+// Suppression d'un inventaire clôturé de l'historique (administrateur ; migration 0012). Ses constats partent avec lui ;
+// le journal d'audit garde la trace de la suppression.
+export async function deleteInventoryRun(runId: string) {
+  const s = await requireSession();
+  if (s.role !== "admin" || !z.uuid().safeParse(runId).success) redirect("/inventaire");
+  const supabase = await createClient();
+  const { error, count } = await supabase.from("inventory_runs").delete({ count: "exact" }).eq("id", runId).eq("status", "cloture");
+  revalidatePath("/inventaire");
+  redirect(`/inventaire?suppression=${!error && count ? "ok" : error?.code === "42501" ? "inactive" : "echec"}`);
+}

@@ -57,6 +57,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           {s.isPlatformAdmin && <NavLink href="/admin">Plateforme</NavLink>}
           <div className="navlabel" style={{ marginTop: 10 }}>Aide</div>
           <NavLink href="/aide">Aide et FAQ</NavLink>
+          <NavLink href="/compte">Mon compte</NavLink>
         </nav>
         <div className="userbox">
           <div className="userline">{s.displayName}</div>

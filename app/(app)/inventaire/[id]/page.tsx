@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { Topbar } from "@/components/Topbar";
+import { Filterable } from "@/components/Filterable";
 import { requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { fmtDate } from "@/lib/dates";
@@ -25,10 +26,12 @@ export default async function InventaireDetailPage({ params }: { params: Promise
         <div className="card">
           <h2>Instruments non retrouvés</h2>
           {missing.length === 0 ? <div className="empty">Tous les instruments ont été retrouvés.</div> : (
+            <Filterable placeholder="Rechercher un instrument manquant" unit={["instrument", "instruments"]}>
             <div className="table-wrap"><table>
               <thead><tr><th>Référence</th><th>Désignation</th></tr></thead>
               <tbody>{missing.map((m) => <tr key={m.id}><td><Link href={`/instruments/${m.id}`}>{m.ref}</Link></td><td>{m.designation}</td></tr>)}</tbody>
             </table></div>
+            </Filterable>
           )}
         </div>
         <div style={{ marginTop: 16 }}><Link className="btn small soft" href="/inventaire">← Retour</Link></div>

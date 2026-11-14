@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Topbar } from "@/components/Topbar";
+import { Filterable } from "@/components/Filterable";
+import { CATALOG } from "@/lib/calc/catalog";
 import { UrgencyTag, rowClass } from "@/components/UrgencyTag";
 import { fmtDate } from "@/lib/dates";
 import { requireSession } from "@/lib/session";
@@ -20,10 +22,19 @@ export default async function AlertsPage() {
   const { data } = await supabase.from("instruments").select("*").is("deleted_at", null).eq("statut", "En service").order("date_prochaine", { ascending: true });
   const rows = (data ?? []) as Instrument[];
   const total = rows.filter((i) => TIERS.some((t) => t.key === urgencyOf(i.date_prochaine))).length;
+  const alerted = rows.filter((i) => TIERS.some((t) => t.key === urgencyOf(i.date_prochaine)));
+  const batiments = [...new Set(alerted.map((i) => i.batiment).filter(Boolean))].sort((a, b) => a.localeCompare(b, "fr"));
+  const types = CATALOG.filter((c) => alerted.some((i) => i.catalog_id === c.id));
   return (
     <>
       <Topbar title="Alertes" subtitle={total === 0 ? "Tous les instruments en service sont à jour." : `${total} instrument${total > 1 ? "s" : ""} en service à étalonner ou en retard.`} />
-      <div className="content stack">
+      <div className="content">
+        <Filterable placeholder="Rechercher (référence, désignation, lieu…)" unit={["alerte", "alertes"]}
+          selects={[
+            { key: "batiment", label: "Tous les bâtiments", options: batiments.map((b) => ({ value: b, label: b })) },
+            { key: "type", label: "Tous les types", options: types.map((c) => ({ value: c.id, label: c.nom })) },
+          ]}>
+        <div className="stack">
         {TIERS.map((t) => {
           const list = rows.filter((i) => urgencyOf(i.date_prochaine) === t.key);
           return (
@@ -38,7 +49,7 @@ export default async function AlertsPage() {
                       {list.map((i) => {
                         const d = daysUntil(i.date_prochaine) ?? 0;
                         return (
-                          <tr key={i.id} className={rowClass(t.key)}>
+                          <tr key={i.id} className={rowClass(t.key)} data-f-batiment={i.batiment || ""} data-f-type={i.catalog_id || ""}>
                             <td><strong>{i.ref}</strong></td>
                             <td>{i.designation}</td>
                             <td>{[i.batiment, i.zone].filter(Boolean).join(" · ") || "—"}</td>
@@ -55,6 +66,8 @@ export default async function AlertsPage() {
             </section>
           );
         })}
+        </div>
+        </Filterable>
       </div>
     </>
   );

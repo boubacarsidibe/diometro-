@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Topbar } from "@/components/Topbar";
+import { Filterable } from "@/components/Filterable";
 import { CATALOG, withOrganisme } from "@/lib/calc/catalog";
 import { requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
@@ -18,16 +19,19 @@ export default async function EtalonnagePage() {
         <div className="card">
           <h2>Étalonner un instrument</h2>
           {instruments.length === 0 ? <div className="empty">Aucun instrument en service.</div> : (
+            <Filterable placeholder="Rechercher (référence, désignation…)" unit={["instrument", "instruments"]}
+              selects={[{ key: "type", label: "Tous les types", options: CATALOG.filter((c) => instruments.some((i) => i.catalog_id === c.id)).map((c) => ({ value: c.id, label: c.nom })) }]}>
             <div className="table-wrap"><table>
               <thead><tr><th>Référence</th><th>Désignation</th><th>Type</th><th /></tr></thead>
               <tbody>{instruments.map((i) => {
                 const c = CATALOG.find((x) => x.id === i.catalog_id);
                 return (
-                  <tr key={i.id}><td>{i.ref}</td><td>{i.designation}</td><td>{c ? `${c.icone} ${c.nom}` : <span className="helper">Non précisé</span>}</td>
+                  <tr key={i.id} data-f-type={i.catalog_id || ""}><td>{i.ref}</td><td>{i.designation}</td><td>{c ? `${c.icone} ${c.nom}` : <span className="helper">Non précisé</span>}</td>
                     <td><Link className="btn small primary" href={`/instruments/${i.id}/etalonnage${c ? `?type=${c.id}` : ""}`}>Étalonner</Link></td></tr>
                 );
               })}</tbody>
             </table></div>
+            </Filterable>
           )}
         </div>
         <div className="card">

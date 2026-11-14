@@ -15,8 +15,12 @@ import { canEdit, requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { conformityWarning, staleDeadlineWarning, urgencyOf } from "@/lib/status";
 import { ConfirmAction } from "@/components/ConfirmAction";
-import type { Attachment, Instrument, Intervention } from "@/lib/types";
-import { addIntervention, archiveInstrument, updateInstrument } from "../actions";
+import { CancelIntervention } from "@/components/CancelIntervention";
+import { Filterable } from "@/components/Filterable";
+import { suggestPrestataires } from "@/lib/suggest";
+import { INTERVENTION_TYPES, RESULTATS } from "@/lib/schemas";
+import type { Attachment, Instrument, Intervention, Prestataire } from "@/lib/types";
+import { addIntervention, archiveInstrument, cancelIntervention, updateInstrument } from "../actions";
 import { fmtDate } from "@/lib/dates";
 
 export default async function InstrumentPage({ params }: { params: Promise<{ id: string }> }) {
@@ -28,11 +32,15 @@ export default async function InstrumentPage({ params }: { params: Promise<{ id:
   if (!data) notFound();
   const instrument = data as Instrument;
   const { data: ints } = await supabase.from("interventions").select("*").eq("instrument_id", id).order("date", { ascending: false });
-  const interventions = (ints ?? []) as Intervention[];
+  // annulee_at / annulation_motif existent après la migration 0012 (lus s'ils sont présents).
+  const interventions = (ints ?? []) as (Intervention & { annulee_at?: string | null; annulation_motif?: string })[];
   const { data: calcRows } = await supabase.from("interventions").select("id, calcul").eq("instrument_id", id).not("calcul", "is", null);
   const calculs = new Map((calcRows ?? []).map((c) => [c.id as string, c.calcul as unknown]));
   const { data: atts } = await supabase.from("attachments").select("id, kind, filename, mime, size_bytes, created_at").eq("instrument_id", id).order("created_at", { ascending: false });
-  const { data: prest } = await supabase.from("prestataires").select("id, nom").is("deleted_at", null).eq("actif", true).order("nom");
+  const { data: prestRows } = await supabase.from("prestataires").select("*").is("deleted_at", null).eq("actif", true).order("nom");
+  const prestFull = (prestRows ?? []) as Prestataire[];
+  const prest = prestFull.map((p) => ({ id: p.id, nom: p.nom }));
+  const suggestions = instrument.statut === "Réformé" ? [] : suggestPrestataires(instrument, prestFull, s.tenant.accreditation_label);
   const write = canEdit(s);
   const publicUrl = instrument.public_token ? `${await appOrigin()}/p/${instrument.public_token}` : null;
   const publicQr = publicUrl ? await qrDataUri(publicUrl) : null;
@@ -68,22 +76,46 @@ export default async function InstrumentPage({ params }: { params: Promise<{ id:
           {interventions.length === 0 ? (
             <div className="empty">Aucune intervention enregistrée.</div>
           ) : (
-            <div className="table-wrap">
-              <table>
-                <thead><tr><th>Date</th><th>Type</th><th>Mode</th><th>Résultat</th><th>Prestataire</th><th>Certificat</th><th>Observation</th></tr></thead>
-                <tbody>
-                  {interventions.map((i) => (
-                    <tr key={i.id}>
-                      <td>{fmtDate(i.date)}</td><td>{i.type}</td><td>{i.mode ?? "—"}</td>
-                      <td><span className={`tag ${i.resultat === "Conforme" ? "green" : i.resultat === "Non conforme" ? "red" : "yellow"}`}>{i.resultat}</span></td>
-                      <td>{i.prestataire || "—"}</td><td>{i.ref_certificat || "—"}</td><td>{i.observation || "—"}{i.calcul_type && <CalculDetail kind={i.calcul_type} data={(calculs.get(i.id) ?? null)} />}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <Filterable placeholder="Rechercher (prestataire, certificat, observation…)" unit={["intervention", "interventions"]}
+              selects={[
+                { key: "type", label: "Tous les types", options: INTERVENTION_TYPES.map((t) => ({ value: t, label: t })) },
+                { key: "resultat", label: "Tous les résultats", options: [...RESULTATS.map((t) => ({ value: t, label: t })), { value: "Annulée", label: "Annulées" }] },
+              ]}>
+              <div className="table-wrap">
+                <table>
+                  <thead><tr><th>Date</th><th>Type</th><th>Mode</th><th>Résultat</th><th>Prestataire</th><th>Certificat</th><th>Observation</th>{write && <th />}</tr></thead>
+                  <tbody>
+                    {interventions.map((i) => {
+                      const cancelled = Boolean(i.annulee_at);
+                      return (
+                        <tr key={i.id} className={cancelled ? "cancelled" : undefined} data-f-type={i.type} data-f-resultat={cancelled ? "Annulée" : i.resultat}>
+                          <td>{fmtDate(i.date)}</td><td>{i.type}</td><td>{i.mode ?? "—"}</td>
+                          <td>{cancelled ? <span className="tag keep">Annulée</span> : <span className={`tag ${i.resultat === "Conforme" ? "green" : i.resultat === "Non conforme" ? "red" : "yellow"}`}>{i.resultat}</span>}</td>
+                          <td>{i.prestataire || "—"}</td><td>{i.ref_certificat || "—"}</td>
+                          <td>{i.observation || "—"}{i.calcul_type && <CalculDetail kind={i.calcul_type} data={(calculs.get(i.id) ?? null)} />}
+                            {cancelled && <div className="helper keep">Annulée le {fmtDate(i.annulee_at!.slice(0, 10))} : {i.annulation_motif}</div>}</td>
+                          {write && <td>{!cancelled && <CancelIntervention action={cancelIntervention.bind(null, id, i.id)} label={fmtDate(i.date)} />}</td>}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </Filterable>
           )}
         </div>
+
+        {suggestions.length > 0 && (
+          <div className="card">
+            <h2>Prestataires suggérés</h2>
+            <p className="helper" style={{ marginBottom: 10 }}>Choisis parmi vos prestataires actifs selon le domaine de mesure de l&apos;instrument, l&apos;accréditation, votre note et le délai moyen.</p>
+            <ul className="suggest-list">
+              {suggestions.map((p) => (
+                <li key={p.id}><Link href={`/prestataires/${p.id}`}><strong>{p.nom}</strong></Link> <span className="helper">{p.raisons.join(" · ")}</span>{p.contact && <div className="helper">{p.contact}</div>}</li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <div className="card">
           <h2>Documents joints</h2>
@@ -94,7 +126,7 @@ export default async function InstrumentPage({ params }: { params: Promise<{ id:
         {write && (
           <div className="card">
             <h2>QR code de l'instrument (fiche publique)</h2>
-            <PublicLinkCard instrumentId={id} url={publicUrl} qr={publicQr} />
+            <PublicLinkCard instrumentId={id} url={publicUrl} qr={publicQr} refName={instrument.ref} />
           </div>
         )}
 

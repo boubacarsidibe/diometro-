@@ -30,7 +30,7 @@ export function InventoryChecklist({ runId, rows, canEdit }: { runId: string; ro
         <table>
           <thead><tr><th style={{ width: 70 }}>Présent</th><th>Référence</th><th>Désignation</th><th>Localisation</th></tr></thead>
           <tbody>{groups.map(([place, list]) => [
-            <tr key={`g-${place}`} className="inv-group"><td colSpan={4}><strong>{place}</strong> <span className="helper">{list.filter((r) => state.get(r.instrument_id)).length} / {list.length} retrouvé{list.length > 1 ? "s" : ""}</span></td></tr>,
+            <tr key={`g-${place}`} className="inv-group" data-filter-ignore=""><td colSpan={4}><strong>{place}</strong> <span className="helper">{list.filter((r) => state.get(r.instrument_id)).length} / {list.length} retrouvé{list.length > 1 ? "s" : ""}</span></td></tr>,
             ...list.map((r) => (
             <tr key={r.instrument_id}>
               <td><input type="checkbox" checked={state.get(r.instrument_id) ?? false} disabled={!canEdit || pending} onChange={(e) => toggle(r.instrument_id, e.target.checked)} aria-label={`Instrument ${r.ref} retrouvé`} /></td>

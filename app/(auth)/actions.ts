@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { echoValues, parseForm, type FormState } from "@/lib/form";
 import { emailSchema, loginSchema, newPasswordSchema, onboardingSchema, registerSchema } from "@/lib/schemas";
+import { notifyNewTenant } from "@/lib/notify-platform";
 
 async function siteUrl(): Promise<string> {
   const h = await headers();
@@ -86,6 +87,7 @@ export async function createCompany(_: FormState, formData: FormData): Promise<F
     p_buildings: parsed.data.buildings,
   });
   if (error) return { error: "Création de l'entreprise impossible (compte déjà rattaché ?).", values: echoValues(formData) };
+  await notifyNewTenant({ company: parsed.data.company, displayName: parsed.data.displayName, sector: parsed.data.sector, phone: parsed.data.phone, userEmail: user.email ?? "", appUrl: await siteUrl() });
   redirect("/mfa");
 }
 

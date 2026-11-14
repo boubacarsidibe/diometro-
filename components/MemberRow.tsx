@@ -9,16 +9,18 @@ export function MemberRow({
   action, member, self, canAssignAdmin, locked,
 }: { action: (s: FormState, f: FormData) => Promise<FormState>; member: { user_id: string; display_name: string; role: string; active: boolean; phone: string }; self: boolean; canAssignAdmin: boolean; locked: boolean }) {
   const [state, formAction] = useActionState(action, {});
+  // data-f-* : filtres de la liste des utilisateurs (components/Filterable).
+  const f = { "data-f-role": member.role, "data-f-acces": member.active ? "actif" : "inactif" };
   if (locked) {
     return (
-      <tr>
+      <tr {...f}>
         <td>{member.display_name}</td>
         <td colSpan={3}><span className="tag">{LABEL[member.role]}</span> <span className="helper">Géré par un administrateur</span></td>
       </tr>
     );
   }
   return (
-    <tr>
+    <tr {...f}>
       <td>{member.display_name}{self && <span className="helper"> (vous)</span>}</td>
       <td colSpan={3}>
         <form action={formAction} style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>

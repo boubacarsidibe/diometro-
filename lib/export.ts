@@ -210,10 +210,12 @@ export async function buildFichePdf(instrument: Instrument, interventions: Inter
   section(`Historique des interventions (${interventions.length})`);
   if (!interventions.length) { c.page.drawText("Aucune intervention enregistrée.", { x: M, y: c.y, size: 10, font: c.font }); c.y -= 14; }
   for (const it of interventions) {
-    const detail = [it.prestataire && `Prestataire : ${it.prestataire}`, it.ref_certificat && `Certificat : ${it.ref_certificat}`, it.observation && `Observation : ${it.observation}`].filter(Boolean).join("\n");
+    // Intervention annulée (migration 0012) : conservée dans la fiche, signalée comme annulée avec son motif.
+    const annul = it as Intervention & { annulee_at?: string | null; annulation_motif?: string };
+    const detail = [annul.annulee_at && `ANNULÉE le ${fmtDate(annul.annulee_at.slice(0, 10), "-")} : ${annul.annulation_motif ?? ""}`, it.prestataire && `Prestataire : ${it.prestataire}`, it.ref_certificat && `Certificat : ${it.ref_certificat}`, it.observation && `Observation : ${it.observation}`].filter(Boolean).join("\n");
     const rows = detail ? wrap(c.font, detail, 9, c.w - 2 * M - 12) : [];
     ensure(16 + rows.length * 12 + 8);
-    c.page.drawText(fit(c.bold, `${fmtDate(it.date, "-")}   ${it.type}   ${it.resultat}`, 10, c.w - 2 * M), { x: M, y: c.y, size: 10, font: c.bold });
+    c.page.drawText(fit(c.bold, `${fmtDate(it.date, "-")}   ${it.type}   ${annul.annulee_at ? "ANNULÉE" : it.resultat}`, 10, c.w - 2 * M), { x: M, y: c.y, size: 10, font: c.bold });
     c.y -= 14;
     rows.forEach((r) => { c.page.drawText(r, { x: M + 12, y: c.y, size: 9, font: c.font, color: rgb(0.3, 0.33, 0.4) }); c.y -= 12; });
     c.y -= 6;

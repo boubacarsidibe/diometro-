@@ -1,4 +1,5 @@
 import { Topbar } from "@/components/Topbar";
+import { Filterable } from "@/components/Filterable";
 import { requireAdmin } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { restoreItem } from "./actions";
@@ -19,25 +20,25 @@ export default async function CorbeillePage() {
         <div className="card">
           <h2>Instruments archivés</h2>
           {(instruments ?? []).length === 0 ? <div className="empty">Aucun instrument archivé.</div> : (
-            <div className="table-wrap"><table>
+            <Filterable placeholder="Rechercher un instrument archivé" unit={["instrument", "instruments"]}><div className="table-wrap"><table>
               <thead><tr><th>Référence</th><th>Désignation</th><th>Archivé le</th><th /></tr></thead>
               <tbody>{(instruments ?? []).map((i) => (
                 <tr key={i.id}><td>{i.ref}</td><td>{i.designation}</td><td>{fmt(i.deleted_at)}</td>
                   <td><form action={restoreItem.bind(null, "instruments", i.id)}><button className="btn small soft">Restaurer</button></form></td></tr>
               ))}</tbody>
-            </table></div>
+            </table></div></Filterable>
           )}
         </div>
         <div className="card">
           <h2>Prestataires archivés</h2>
           {(prestataires ?? []).length === 0 ? <div className="empty">Aucun prestataire archivé.</div> : (
-            <div className="table-wrap"><table>
+            <Filterable placeholder="Rechercher un prestataire archivé" unit={["prestataire", "prestataires"]}><div className="table-wrap"><table>
               <thead><tr><th>Nom</th><th>Archivé le</th><th /></tr></thead>
               <tbody>{(prestataires ?? []).map((p) => (
                 <tr key={p.id}><td>{p.nom}</td><td>{fmt(p.deleted_at)}</td>
                   <td><form action={restoreItem.bind(null, "prestataires", p.id)}><button className="btn small soft">Restaurer</button></form></td></tr>
               ))}</tbody>
-            </table></div>
+            </table></div></Filterable>
           )}
         </div>
       </div>

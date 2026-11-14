@@ -4,11 +4,15 @@ import { Topbar } from "@/components/Topbar";
 import { qrDataUri } from "@/lib/qr";
 import { requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
+import { z } from "zod";
 import type { Instrument } from "@/lib/types";
 
 const MAX = 150;
 
-export default async function EtiquettesPage() {
+// ?ids=a,b : présélection (lien « Imprimer l'étiquette » depuis la fiche d'un instrument).
+export default async function EtiquettesPage({ searchParams }: { searchParams: Promise<{ ids?: string }> }) {
+  const { ids } = await searchParams;
+  const initialIds = (ids ?? "").split(",").filter((v) => z.uuid().safeParse(v).success).slice(0, MAX);
   await requireSession();
   const origin = await appOrigin();
   const supabase = await createClient();
@@ -21,7 +25,7 @@ export default async function EtiquettesPage() {
     <>
       <Topbar title="QR codes et étiquettes" subtitle="Le QR code ouvre la fiche publique de l'instrument, sans connexion, toujours à jour." />
       <div className="content">
-        {items.length === 0 ? <div className="card empty">Aucun instrument à étiqueter.</div> : <LabelPrinter items={items} />}
+        {items.length === 0 ? <div className="card empty">Aucun instrument à étiqueter.</div> : <LabelPrinter items={items} initialIds={initialIds} />}
       </div>
     </>
   );
