@@ -382,3 +382,15 @@ dl.details.pv-details { grid-template-columns: 150px 1fr; margin-bottom: 6px; }
   .top-actions { width: 100%; }
   .back-btn { padding: 7px 10px; }
 }
+
+/* ── Liste des bâtiments (components/BuildingsEditor.tsx) : Paramètres et création de l'entreprise ── */
+.bld { display: grid; gap: 8px; }
+.bld-list { list-style: none; display: grid; gap: 6px; margin: 0; padding: 0; }
+.bld-list li { display: flex; align-items: center; gap: 8px; }
+.bld-list .input { flex: 1; min-width: 0; }
+.bld-num { flex: none; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 999px; background: var(--panel2); border: 1px solid var(--line); font-size: 11.5px; font-weight: 700; color: var(--muted); }
+.bld-use { flex: none; width: 96px; text-align: right; white-space: nowrap; }
+.bld-add { display: flex; gap: 8px; align-items: center; }
+.bld-add .input { flex: 1; min-width: 0; }
+.bld-warn { color: var(--orange); }
+@media (max-width: 520px) { .bld-use { display: none; } }

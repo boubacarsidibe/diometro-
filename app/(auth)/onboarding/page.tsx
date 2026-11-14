@@ -20,7 +20,7 @@ export default async function OnboardingPage() {
           { name: "displayName", label: "Votre nom affiché", autoComplete: "name" },
           { name: "sector", label: "Secteur d'activité (facultatif)", required: false },
           { name: "phone", label: "Téléphone (facultatif)", type: "tel", autoComplete: "tel", required: false },
-          { name: "buildings", label: "Bâtiments (facultatif)", required: false, hint: "Séparés par des virgules : Atelier A, Laboratoire, Magasin" },
+          { name: "buildings", label: "Bâtiments (facultatif)", type: "buildings", required: false, hint: "Ajoutez-les un par un (ex. : Atelier A, Laboratoire, Magasin). Modifiables plus tard dans Paramètres." },
         ]}
       />
     </>
