@@ -14,6 +14,7 @@ export function BuildingsEditor({ id, name, initial, usage = {} }: { id: string;
   const [items, setItems] = useState<string[]>(initial);
   const [draft, setDraft] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState<number | null>(null); // ligne dont le retrait attend confirmation
   const removedInUse = initial.filter((b) => (usage[b] ?? 0) > 0 && !items.some((i) => key(i) === key(b)));
 
   const add = () => {
@@ -46,7 +47,20 @@ export function BuildingsEditor({ id, name, initial, usage = {} }: { id: string;
                 onKeyDown={(e) => { if (e.key === "Enter") e.preventDefault(); }}
               />
               <span className="helper bld-use">{(usage[b] ?? 0) > 0 ? `${usage[b]} instrument${usage[b] > 1 ? "s" : ""}` : ""}</span>
-              <button type="button" className="btn small soft" onClick={() => { setItems(items.filter((_, k) => k !== n)); setMsg(null); }} aria-label={`Retirer ${b || `le bâtiment ${n + 1}`}`}>Retirer</button>
+              <button type="button" className="btn small soft" disabled={confirming === n} onClick={() => { setConfirming(n); setMsg(null); }} aria-label={`Retirer ${b || `le bâtiment ${n + 1}`}`}>Retirer</button>
+              {confirming === n && (
+                <div className="bld-confirm" role="alertdialog" aria-label={`Confirmer le retrait de ${b || `le bâtiment ${n + 1}`}`}>
+                  <span>
+                    Retirer « {b.trim() || `bâtiment ${n + 1}`} » de la liste ?
+                    {(usage[b] ?? 0) > 0 && <> Il est indiqué sur {usage[b]} instrument{usage[b] > 1 ? "s" : ""}, qui garderont ce nom.</>}
+                    {" "}Le retrait n&apos;est appliqué qu&apos;après « Enregistrer ».
+                  </span>
+                  <div className="bld-confirm-actions">
+                    <button type="button" className="btn small danger" autoFocus onClick={() => { setItems(items.filter((_, k) => k !== n)); setConfirming(null); }}>Oui, retirer</button>
+                    <button type="button" className="btn small soft" onClick={() => setConfirming(null)}>Annuler</button>
+                  </div>
+                </div>
+              )}
             </li>
           ))}
         </ul>
