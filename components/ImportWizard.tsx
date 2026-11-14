@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useState } from "react";
 import { SubmitButton } from "@/components/SubmitButton";
 import type { ImportResult } from "@/app/(app)/instruments/import/actions";
 
@@ -10,8 +10,11 @@ type Action = (s: ImportResult | null, f: FormData) => Promise<ImportResult>;
 export function ImportWizard({ check, run }: { check: Action; run: Action }) {
   const [report, checkAction] = useActionState(check, null);
   const [result, runAction] = useActionState(run, null);
-  const [fileName, setFileName] = useState("");
-  const input = useRef<HTMLInputElement>(null);
+  // Fichier contrôlé à l'étape 2, gardé en mémoire : React vide le champ du formulaire après l'envoi,
+  // l'import (étape 3) doit donc renvoyer ce fichier-là, et non relire le champ.
+  const [checked, setChecked] = useState<File | null>(null);
+  // Contrôle de taille côté navigateur : au-delà de 4,5 Mo, Vercel rejette l'envoi sans message lisible.
+  const [tooBig, setTooBig] = useState("");
   const shown = result ?? report;
   const errors = shown?.rows.filter((r) => r.errors.length > 0) ?? [];
 
@@ -51,19 +54,24 @@ export function ImportWizard({ check, run }: { check: Action; run: Action }) {
 
   return (
     <div className="stack">
-      <form action={checkAction} className="card">
+      <form action={(fd) => {
+        const f = fd.get("file");
+        if (f instanceof File && f.size > 4 * 1024 * 1024) { setChecked(null); setTooBig(`Le fichier « ${f.name} » dépasse 4 Mo : retirez les lignes vides ou les images, ou importez le parc en plusieurs fichiers.`); return; }
+        setTooBig(""); setChecked(f instanceof File && f.size > 0 ? f : null); checkAction(fd);
+      }} className="card">
         <h2>2. Charger le fichier rempli</h2>
         <p className="helper" style={{ marginBottom: 10 }}>Rien n&apos;est enregistré à cette étape : DIOMETRO contrôle chaque ligne et vous montre le résultat.</p>
         <div className="form-actions" style={{ marginTop: 0, alignItems: "center" }}>
-          <input ref={input} id="file" name="file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required className="input" style={{ maxWidth: 360 }}
-            onChange={(e) => setFileName(e.target.files?.[0]?.name ?? "")} aria-label="Fichier Excel à importer" />
+          <input id="file" name="file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required className="input" style={{ maxWidth: 360 }}
+            aria-label="Fichier Excel à importer" />
           <SubmitButton className="btn primary">Contrôler le fichier</SubmitButton>
         </div>
+        {tooBig && <div className="notice err" role="alert" style={{ marginTop: 12, marginBottom: 0 }}>{tooBig}</div>}
       </form>
 
-      {report && (
+      {report && !tooBig && (
         <div className="card">
-          <h2>3. Résultat du contrôle{fileName ? ` — ${fileName}` : ""}</h2>
+          <h2>3. Résultat du contrôle{checked ? ` : ${checked.name}` : ""}</h2>
           {report.fatal ? <div className="notice err" role="alert">{report.fatal}</div> : (
             <>
               <div className={`notice ${errors.length ? "err" : "ok"}`} role="status">
@@ -79,7 +87,7 @@ export function ImportWizard({ check, run }: { check: Action; run: Action }) {
                   ))}</tbody>
                 </table></div>
               )}
-              {report.valid > 0 && <form action={(fd) => { const f = input.current?.files?.[0]; if (f) fd.set("file", f); runAction(fd); }} className="form-actions">
+              {report.valid > 0 && checked && <form action={(fd) => { fd.set("file", checked); runAction(fd); }} className="form-actions">
                 <SubmitButton className="btn primary">{`Importer ${report.valid} instrument${report.valid > 1 ? "s" : ""}`}</SubmitButton>
                 <button type="button" className="btn soft" onClick={downloadReport}>Télécharger le rapport</button>
               </form>}
