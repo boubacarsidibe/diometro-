@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { CalcDemo, EcheancierDemo, HeroStage, PlanPicker, RevealObserver, SecurityStack, Tilt, type VitrineOffer } from "@/components/vitrine/Interactive";
 import { IconArrow, IconBell, IconBuilding, IconCalc, IconCalendar, IconCheck, IconDownload, IconFile, IconPlus, IconQr, QrPattern } from "@/components/vitrine/icons";
 import { CATALOG } from "@/lib/calc/catalog";
@@ -40,13 +39,14 @@ function Brand() {
 }
 
 export default async function HomePage() {
+  // La page d'accueil reste visible même connecté (avant : redirection vers /dashboard, puis /mfa ou /login
+  // quand la session n'était pas complète, ce qui donnait l'impression que le lien du site menait à l'authentification).
+  let signedIn = false;
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (user) redirect("/dashboard");
-  } catch (e) {
-    if (e instanceof Error && e.message === "NEXT_REDIRECT") throw e;
-    if (typeof e === "object" && e && "digest" in e) throw e; // redirection Next.js
+    signedIn = !!user;
+  } catch {
     // Supabase indisponible : la page d'accueil reste affichée.
   }
   const offers: VitrineOffer[] = OFFERS.map((o) => ({ id: o.id, nom: o.nom, cible: o.cible, instruments: o.instruments, prix: o.prix }));
@@ -65,8 +65,14 @@ export default async function HomePage() {
             <a href="#questions">Questions</a>
           </nav>
           <div className="vt-nav-cta">
-            <Link className="vt-login" href="/login">Connexion</Link>
-            <Link className="vt-btn vt-primary vt-small" href="/register">Essai gratuit <IconArrow /></Link>
+            {signedIn ? (
+              <Link className="vt-btn vt-primary vt-small" href="/dashboard">Mon espace <IconArrow /></Link>
+            ) : (
+              <>
+                <Link className="vt-login" href="/login">Connexion</Link>
+                <Link className="vt-btn vt-primary vt-small" href="/register">Essai gratuit <IconArrow /></Link>
+              </>
+            )}
           </div>
         </div>
       </header>
