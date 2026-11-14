@@ -1,7 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC = ["/login", "/register", "/forgot-password", "/auth/confirm", "/api/cron", "/p", "/mentions-legales", "/cgu", "/confidentialite", "/robots.txt", "/sitemap.xml"];
+// "/vitrine" : images de la page d'accueil (public/vitrine), visibles sans connexion.
+const PUBLIC = ["/login", "/register", "/forgot-password", "/auth/confirm", "/api/cron", "/p", "/mentions-legales", "/cgu", "/confidentialite", "/robots.txt", "/sitemap.xml", "/vitrine"];
 
 function buildCsp(nonce: string): string {
   const dev = process.env.NODE_ENV === "development";
