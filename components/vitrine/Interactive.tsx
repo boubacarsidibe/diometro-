@@ -263,7 +263,7 @@ export function PlanPicker({ offers, contact }: { offers: VitrineOffer[]; contac
               <span className="vt-badge">Adaptée</span>
               <div><h3>{o.nom}</h3><div className="vt-cible">{o.cible}</div></div>
               {o.prix
-                ? <div className="vt-price">{(annual ? Math.round(o.prix.annuel / 12) : o.prix.mensuel).toLocaleString("fr-FR")} <small>FCFA / mois{annual ? ", facturé à l'année" : ""}</small></div>
+                ? <div className="vt-price">{(annual ? Math.round(o.prix.annuel / 12) : o.prix.mensuel).toLocaleString("fr-FR")} <small>FCFA HT / mois{annual ? ", facturé à l'année" : ""}</small></div>
                 : <div className="vt-price vt-quote">{custom ? "Sur devis" : "Tarif communiqué prochainement"}</div>}
               {href.startsWith("mailto:")
                 ? <a className="vt-btn vt-ghost" href={href}>{label} <IconArrow /></a>
