@@ -24,7 +24,17 @@ const FAQ = [
   { q: "Puis-je reprendre mon fichier Excel existant ?", a: "Oui. DIOMETRO fournit un modèle à télécharger, contrôle chaque ligne avant l'import, importe les lignes valides et vous remet un rapport des corrections à faire." },
   { q: "Le QR code fonctionne-t-il sans compte ?", a: "Oui. Un scan affiche la fiche à jour de l'instrument en lecture seule, limitée aux données utiles au terrain. Vous pouvez révoquer le lien d'un instrument à tout moment." },
   { q: "Quels calculs de conformité sont disponibles ?", a: `${NB_CALCULATEURS} calculateurs couvrent les vérifications les plus courantes, dont la comparaison directe à un étalon. Ils vous aident à décider et ne remplacent pas un certificat d'étalonnage accrédité. Le catalogue compte ${NB_TYPES} types d'instruments et s'enrichit en continu.` },
+  { q: "Puis-je récupérer mes données si j'arrête ?", a: "Oui. Vos instruments, interventions et historiques s'exportent en Excel et en PDF à tout moment, y compris quand le compte est en lecture seule. Vos données restent à vous." },
   { q: "Mes données sont-elles visibles par d'autres entreprises ?", a: "Non. Chaque entreprise est isolée au niveau de la base de données, l'accès exige une double authentification, et chaque action est enregistrée dans un journal d'audit non modifiable." },
+];
+
+const SECTEURS = [
+  { nom: "Agroalimentaire", instruments: "Balances, thermomètres et sondes, pH-mètres, hygromètres", enjeu: "Températures et pesées prouvées lors des audits clients et sanitaires." },
+  { nom: "Pharmacie et santé", instruments: "Pipettes, balances, thermomètres, hygromètres", enjeu: "Chaque mesure tracée jusqu'au certificat d'étalonnage." },
+  { nom: "Industrie mécanique", instruments: "Pieds à coulisse, micromètres, comparateurs, clés dynamométriques, duromètres", enjeu: "Des moyens de contrôle à jour sur chaque poste." },
+  { nom: "Électricité et maintenance", instruments: "Multimètres, pinces ampèremétriques, mégohmmètres, telluromètres", enjeu: "Des appareils de vérification sûrs avant chaque intervention." },
+  { nom: "Pétrole, gaz et process", instruments: "Manomètres, manomètres à vide, débitmètres, thermomètres", enjeu: "Des parcs étendus, répartis sur plusieurs sites, sans échéance oubliée." },
+  { nom: "Laboratoires d'analyses et d'essais", instruments: "pH-mètres, conductivimètres, pipettes, balances, chronomètres", enjeu: "Un historique complet, prêt pour un audit qualité." },
 ];
 
 const BARS = [34, 52, 26, 68, 44, 92, 58, 30, 76, 50, 40, 62];
@@ -184,8 +194,8 @@ export default async function HomePage() {
                 <h3>Prestataires</h3>
                 <p>Carnet de laboratoires, accréditations, délais, tarifs en FCFA et comparateur par domaine de mesure.</p>
                 <div className="vt-labs">
-                  <div className="vt-lab"><span>Laboratoire A · Température</span><span className="vt-m">Accrédité · 8 j</span></div>
-                  <div className="vt-lab"><span>Laboratoire B · Pression</span><span className="vt-m">Accrédité · 12 j</span></div>
+                  <div className="vt-lab"><span>Labo Thermique (exemple) · Température</span><span className="vt-m">Accrédité · 8 j</span></div>
+                  <div className="vt-lab"><span>Labo Pression (exemple) · Pression</span><span className="vt-m">Accrédité · 12 j</span></div>
                 </div>
               </Tilt>
             </div>
@@ -206,6 +216,25 @@ export default async function HomePage() {
               <p className="vt-calc-note">Ces calculs vous aident à décider. Ils ne remplacent pas un certificat d&apos;étalonnage délivré par un laboratoire accrédité.</p>
             </div>
             <CalcDemo />
+          </div>
+        </section>
+
+        <section className="vt-section" id="secteurs" aria-labelledby="vt-sect-title">
+          <div className="vt-wrap">
+            <div className="vt-section-head vt-reveal">
+              <span className="vt-eyebrow">Pour qui</span>
+              <h2 id="vt-sect-title">Pensé pour les parcs d&apos;instruments de terrain.</h2>
+              <p className="vt-lead">De l&apos;atelier au laboratoire, les instruments de chaque secteur figurent déjà au catalogue, avec leur démarche d&apos;étalonnage.</p>
+            </div>
+            <div className="vt-sectors">
+              {SECTEURS.map((s) => (
+                <article key={s.nom} className="vt-sector vt-reveal">
+                  <h3>{s.nom}</h3>
+                  <p>{s.enjeu}</p>
+                  <div className="vt-meta">{s.instruments}</div>
+                </article>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -248,6 +277,13 @@ export default async function HomePage() {
             <div className="vt-reveal">
               <span className="vt-eyebrow">Questions fréquentes</span>
               <h2 id="vt-q-title" style={{ marginTop: 16 }}>Les réponses, avant de vous lancer.</h2>
+              {LEGAL.email ? (
+                <div className="vt-faq-contact">
+                  <b>Une autre question ?</b>
+                  <p>Écrivez-nous, nous vous répondons personnellement.</p>
+                  <a className="vt-btn vt-ghost" href={`mailto:${LEGAL.email}`}>{LEGAL.email}</a>
+                </div>
+              ) : null}
             </div>
             <div className="vt-faq">
               {FAQ.map((f, i) => (
@@ -289,8 +325,11 @@ export default async function HomePage() {
               <Brand />
               <p style={{ maxWidth: "40ch" }}>Le suivi métrologique des instruments de mesure : échéances, conformité, preuves d&apos;audit.</p>
             </div>
-            <div><h4>Produit</h4><ul><li><a href="#fonctionnalites">Fonctionnalités</a></li><li><a href="#calculateurs">Calculateurs</a></li><li><a href="#formules">Formules</a></li><li><a href="#questions">Questions fréquentes</a></li></ul></div>
+            <div><h4>Produit</h4><ul><li><a href="#fonctionnalites">Fonctionnalités</a></li><li><a href="#calculateurs">Calculateurs</a></li><li><a href="#secteurs">Secteurs</a></li><li><a href="#formules">Formules</a></li><li><a href="#questions">Questions fréquentes</a></li></ul></div>
             <div><h4>Compte</h4><ul><li><Link href="/register">Essai gratuit</Link></li><li><Link href="/login">Connexion</Link></li><li><Link href="/forgot-password">Mot de passe oublié</Link></li></ul></div>
+            {LEGAL.email ? (
+              <div><h4>Contact</h4><ul><li><a href={`mailto:${LEGAL.email}`}>{LEGAL.email}</a></li><li><a href={`mailto:${LEGAL.email}?subject=Devis DIOMETRO sur-mesure`}>Demander un devis</a></li>{LEGAL.telephone ? <li><a href={`tel:${LEGAL.telephone.replace(/\s/g, "")}`}>{LEGAL.telephone}</a></li> : null}</ul></div>
+            ) : null}
           </div>
           <div className="vt-foot-bottom">
             <span>© {new Date().getFullYear()} DIOMETRO · Suivi métrologique</span>
