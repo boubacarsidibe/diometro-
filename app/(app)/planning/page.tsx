@@ -88,9 +88,9 @@ export default async function PlanningPage({ searchParams }: { searchParams: Pro
         </div>
         <div className="card">
           <h2>Charge de travail — 12 prochains mois</h2>
-          <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 150 }} role="img" aria-label="Nombre d'échéances par mois">
+          <div className="load-chart" style={{ display: "flex", alignItems: "flex-end", height: 150 }} role="img" aria-label="Nombre d'échéances par mois">
             {perMonth.map(({ m, n }) => (
-              <Link key={m} href={`/planning?m=${m}`} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", textDecoration: "none", height: "100%" }} title={`${monthLabel(m)} : ${n} échéance(s)`}>
+              <Link key={m} href={`/planning?m=${m}`} style={{ flex: "1 1 0", minWidth: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", textDecoration: "none", height: "100%" }} title={`${monthLabel(m)} : ${n} échéance(s)`}>
                 <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-soft)" }}>{n}</span>
                 <div style={{ width: "100%", height: `${Math.max(3, (n / peak) * 100)}%`, background: m === key ? "var(--accent)" : "var(--accent2)", borderRadius: 6 }} />
                 <span style={{ fontSize: 10, color: "var(--muted)", marginTop: 4 }}>{monthShort(m)}</span>
