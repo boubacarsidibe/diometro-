@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { INDEXABLE } from "@/lib/seo";
 import { Missing } from "@/components/LegalLayout";
 import { LEGAL, missingLegalFields } from "@/lib/legal";
 
-export const metadata: Metadata = { title: "Mentions légales · DIOMETRO" };
+export const metadata: Metadata = { title: "Mentions légales · DIOMETRO", robots: INDEXABLE };
 
 export default function MentionsLegalesPage() {
   const L = LEGAL;

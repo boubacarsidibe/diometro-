@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { INDEXABLE } from "@/lib/seo";
 import { Missing } from "@/components/LegalLayout";
 import { LEGAL, missingLegalFields } from "@/lib/legal";
 
-export const metadata: Metadata = { title: "Politique de confidentialité · DIOMETRO" };
+export const metadata: Metadata = { title: "Politique de confidentialité · DIOMETRO", robots: INDEXABLE };
 
 export default function ConfidentialitePage() {
   const L = LEGAL;

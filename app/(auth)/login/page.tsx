@@ -1,7 +1,11 @@
+import type { Metadata } from "next";
+import { INDEXABLE } from "@/lib/seo";
 import { AuthSwitcher } from "@/components/auth/AuthCards";
 import { TRIAL_DAYS } from "@/lib/plans";
 import { createClient } from "@/lib/supabase/server";
 import { LoginPane, SignupPane } from "../panes";
+
+export const metadata: Metadata = { title: "Connexion · DIOMETRO", description: "Connectez-vous à DIOMETRO, votre plateforme de gestion métrologique.", robots: INDEXABLE };
 
 // Comme sur un site classique, le formulaire s'affiche toujours : sur un ordinateur partagé, chacun se connecte
 // avec son propre compte (la nouvelle connexion remplace la précédente).
