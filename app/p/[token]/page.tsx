@@ -34,7 +34,7 @@ export default async function PublicFichePage({ params }: { params: Promise<{ to
           <>
             <h1 style={{ fontSize: 22, margin: "14px 0 2px" }}>{fiche.ref}</h1>
             <p style={{ color: "var(--text-soft)", marginBottom: 16 }}>{fiche.designation}</p>
-            <dl className="details" style={{ gridTemplateColumns: "150px 1fr" }}>
+            <dl className="details p-details">
               <dt>Statut</dt><dd>{statutLabel(fiche.statut)}</dd>
               <dt>Conformité</dt><dd>{fiche.conformite}</dd>
               <dt>Dernier étalonnage</dt><dd>{fmt(fiche.date_etalonnage)}</dd>
