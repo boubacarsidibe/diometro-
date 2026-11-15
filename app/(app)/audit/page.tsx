@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Topbar } from "@/components/Topbar";
 import { requireAdmin } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
-import { fmtDateTime } from "@/lib/dates";
+import { fmtDateTime, zoneLabel } from "@/lib/dates";
 import { auditUser, describeAudit, type AuditRow } from "@/lib/audit";
 
 const PAGE_SIZE = 50;
@@ -13,7 +13,7 @@ const safeDate = (v?: string) => (v && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : "");
 const safeUuid = (v?: string) => (v && /^[0-9a-f-]{36}$/i.test(v) ? v : "");
 
 export default async function AuditPage({ searchParams }: { searchParams: Promise<Q> }) {
-  await requireAdmin();
+  const s = await requireAdmin();
   const q = await searchParams;
   const page = Math.max(1, Math.min(10000, Number(q.page) || 1));
   const f = { action: safeToken(q.action), entity: safeToken(q.entity), from: safeDate(q.from), to: safeDate(q.to), user: safeUuid(q.user) };
@@ -53,12 +53,12 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
         </form>
         {rows.length === 0 ? <div className="card empty">Aucune action pour ces critères.</div> : (
           <div className="table-wrap"><table>
-            <thead><tr><th>Date (heure de Dakar)</th><th>Utilisateur</th><th>Action</th><th>Détail</th></tr></thead>
+            <thead><tr><th>Date ({zoneLabel(s.timeZone)})</th><th>Utilisateur</th><th>Action</th><th>Détail</th></tr></thead>
             <tbody>{rows.map((r) => {
-              const v = describeAudit(r);
+              const v = describeAudit(r, s.timeZone);
               return (
                 <tr key={r.id}>
-                  <td style={{ whiteSpace: "nowrap" }}>{fmtDateTime(r.created_at)}</td>
+                  <td style={{ whiteSpace: "nowrap" }}>{fmtDateTime(r.created_at, "—", s.timeZone)}</td>
                   <td>{auditUser(r.user_id, names)}</td>
                   <td><strong>{v.label}</strong>{v.object && <div className="helper">{v.object}</div>}</td>
                   <td>{v.changes.length === 0 ? <span className="helper">—</span> : (

@@ -29,6 +29,14 @@ export async function saveBranding(_: FormState, formData: FormData): Promise<Fo
   const supabase = await createClient();
   const { error } = await supabase.from("tenants").update(update).eq("id", s.tenant.id);
   if (error) return { error: "Enregistrement impossible.", values: echoValues(formData) };
+  // Fuseau horaire enregistré à part : tant que la migration 0013 n'est pas appliquée, le reste s'enregistre quand même.
+  if (parsed.data.time_zone && parsed.data.time_zone !== s.timeZone) {
+    const { error: tzError } = await supabase.from("tenants").update({ time_zone: parsed.data.time_zone }).eq("id", s.tenant.id);
+    if (tzError) {
+      revalidatePath("/", "layout");
+      return { error: "Paramètres enregistrés, sauf le fuseau horaire : la mise à jour de la base (migration 0013) n'est pas encore appliquée.", values: echoValues(formData) };
+    }
+  }
   revalidatePath("/", "layout");
   return { ok: "Paramètres enregistrés." };
 }

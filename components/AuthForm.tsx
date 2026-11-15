@@ -10,10 +10,10 @@ type Input = { name: string; label: string; type?: string; autoComplete?: string
 
 // idPrefix : rend les identifiants uniques quand deux formulaires partagent la page (connexion et inscription).
 export function AuthForm({
-  action, inputs, submit, initialError, checks = [], hidden = {}, idPrefix = "",
+  action, inputs, submit, initialError, checks = [], hidden = {}, idPrefix = "", extra,
 }: {
   action: (s: FormState, f: FormData) => Promise<FormState>; inputs: Input[]; submit: string; initialError?: string;
-  checks?: { name: string; label: ReactNode; optional?: boolean }[]; hidden?: Record<string, string>; idPrefix?: string;
+  checks?: { name: string; label: ReactNode; optional?: boolean }[]; hidden?: Record<string, string>; idPrefix?: string; extra?: ReactNode;
 }) {
   const [state, formAction] = useActionState(action, initialError ? { error: initialError } : {});
   return (
@@ -30,6 +30,7 @@ export function AuthForm({
         </Field>
       ))}
       {Object.entries(hidden).map(([k, v]) => <input key={k} type="hidden" name={k} value={v} />)}
+      {extra}
       {checks.map((c) => (
         <div key={c.name}>
           <label className="consent"><input type="checkbox" name={c.name} required={!c.optional} /> <span>{c.label}</span></label>

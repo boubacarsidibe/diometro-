@@ -34,20 +34,20 @@ const FIELD: Record<string, string> = {
 const HIDDEN = new Set(["id", "tenant_id", "created_at", "updated_at", "created_by", "realise_par", "calcul", "calcul_type", "instrument_id", "user_id", "size_bytes", "mime", "storage_path", "logo_data"]);
 const ROLE: Record<string, string> = { admin: "Administrateur", responsable: "Coordinateur", consultation: "Consultation" };
 
-function show(field: string, v: unknown): string {
+function show(field: string, v: unknown, tz?: string): string {
   if (v === null || v === undefined || v === "") return "—";
   if (field === "public_token") return "actif";
   if (field === "role") return ROLE[String(v)] ?? String(v);
   if (typeof v === "boolean") return v ? "Oui" : "Non";
   if (typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v)) return fmtDate(v);
-  if (typeof v === "string" && /^\d{4}-\d{2}-\d{2}T/.test(v)) return fmtDateTime(v);
+  if (typeof v === "string" && /^\d{4}-\d{2}-\d{2}T/.test(v)) return fmtDateTime(v, "—", tz);
   if (Array.isArray(v)) return v.join(", ") || "—";
   if (typeof v === "object") return "…";
   const s = String(v);
   return s.length > 80 ? `${s.slice(0, 77)}…` : s;
 }
 
-function objectName(entity: string, d: Json | null | undefined): string {
+function objectName(entity: string, d: Json | null | undefined, tz?: string): string {
   if (!d) return "";
   const pick = (k: string) => (typeof d[k] === "string" && d[k] ? String(d[k]) : "");
   if (entity === "instruments") return [pick("ref"), pick("designation")].filter(Boolean).join(" — ");
@@ -55,16 +55,16 @@ function objectName(entity: string, d: Json | null | undefined): string {
   if (entity === "prestataires") return pick("nom");
   if (entity === "profiles") return pick("display_name");
   if (entity === "attachments") return pick("filename");
-  if (entity === "inventory_runs") return d.created_at ? `du ${show("created_at", d.created_at).slice(0, 10)}` : "";
+  if (entity === "inventory_runs") return d.created_at ? `du ${show("created_at", d.created_at, tz).slice(0, 10)}` : "";
   return pick("name") || pick("nom");
 }
 
-export function describeAudit(r: AuditRow): AuditView {
+export function describeAudit(r: AuditRow, tz?: string): AuditView {
   const e = ENTITY[r.entity] ?? { noun: r.entity, article: "de " };
   const before = (r.detail?.before ?? null) as Json | null;
   const after = (r.detail?.after ?? null) as Json | null;
   const current = (r.action === "update" ? after : r.detail) as Json | null;
-  const object = objectName(r.entity, current) || r.entity_id.slice(0, 8);
+  const object = objectName(r.entity, current, tz) || r.entity_id.slice(0, 8);
 
   if (r.action === "platform_update") return { label: "Modification par l'administrateur de la plateforme", object, changes: [] };
   if (r.action === "insert") return { label: `Création ${e.article}${e.noun}`, object, changes: [] };
@@ -78,7 +78,7 @@ export function describeAudit(r: AuditRow): AuditView {
   if (r.entity === "inventory_runs" && keys.includes("closed_at") && after.closed_at) {
     return { label: "Clôture de l'inventaire", object, changes: [{ field: "Retrouvés", before: "", after: `${show("", after.found_count)} / ${show("", after.total_count)}` }] };
   }
-  const changes = keys.map((k) => ({ field: FIELD[k] ?? k, before: show(k, before[k]), after: show(k, after[k]) }));
+  const changes = keys.map((k) => ({ field: FIELD[k] ?? k, before: show(k, before[k], tz), after: show(k, after[k], tz) }));
   return { label: `Modification ${e.article}${e.noun}`, object, changes };
 }
 

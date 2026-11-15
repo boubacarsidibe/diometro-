@@ -8,6 +8,7 @@ import { UrgencyTag } from "@/components/UrgencyTag";
 
 type Doc = { id: string; kind: string; filename: string; mime: string; size_bytes: number; created_at: string };
 type Data = {
+  timeZone?: string;
   instrument: {
     id: string; ref: string; designation: string; type_mesure: string | null; batiment: string | null; zone: string | null;
     statut: string; conformite: string; date_etalonnage: string | null; date_prochaine: string | null; tolerance: string | null;
@@ -136,7 +137,7 @@ export function InstrumentPreview({ id, label, count }: { id: string; label: str
                       <li key={d.id}>
                         <span className="tag">{KIND_LABEL[d.kind] ?? d.kind}</span>
                         <span className="pv-name" title={d.filename}>{d.filename}</span>
-                        <span className="helper">{size(d.size_bytes)} · {fmtDate(d.created_at)}</span>
+                        <span className="helper">{size(d.size_bytes)} · {fmtDate(d.created_at, "—", data.timeZone)}</span>
                         {viewable(d)
                           ? <button type="button" className="btn small primary" onClick={() => setCurrent(shown.indexOf(d))}>Voir</button>
                           : <a className="btn small soft" href={`/api/attachments/${d.id}`}>Télécharger</a>}

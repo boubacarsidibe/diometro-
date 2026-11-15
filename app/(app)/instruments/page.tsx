@@ -11,7 +11,7 @@ import { canEdit, requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { conformityWarning, instrumentUrgency, isRebut } from "@/lib/status";
 import type { Instrument } from "@/lib/types";
-import { fmtDate } from "@/lib/dates";
+import { fmtDate, todayIn } from "@/lib/dates";
 
 type SP = Record<string, string | string[] | undefined>;
 const COLUMNS: { key: SortColumn | "etat"; label: string }[] = [
@@ -24,7 +24,7 @@ export default async function InstrumentsPage({ searchParams }: { searchParams: 
   const sp = await searchParams;
   const q = parseInstrumentQuery(sp);
   const supabase = await createClient();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayIn(s.timeZone);
 
   let query = supabase.from("instruments").select("*", { count: "exact" }).is("deleted_at", null);
   const term = sanitizeSearch(q.q);

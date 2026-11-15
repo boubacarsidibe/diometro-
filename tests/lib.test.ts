@@ -41,3 +41,24 @@ describe("validation", () => {
     expect(instrumentSchema.safeParse({ ...base, frequence_valeur: "0", frequence_unite: "mois" }).success).toBe(false);
   });
 });
+
+import { fmtDateTime, isValidTimeZone, todayIn, zonedNow, zoneLabel } from "@/lib/dates";
+describe("fuseau horaire de l'entreprise", () => {
+  it("affiche l'heure dans le fuseau choisi, Dakar par défaut", () => {
+    const t = "2026-07-14T22:30:00Z";
+    expect(fmtDateTime(t)).toBe("14/07/2026 22:30");
+    expect(fmtDateTime(t, "—", "Europe/Paris")).toBe("15/07/2026 00:30"); // heure d'été
+    expect(fmtDateTime(t, "—", "Africa/Lagos")).toBe("14/07/2026 23:30");
+    expect(fmtDateTime(t, "—", "Pas/UnFuseau")).toBe("14/07/2026 22:30"); // invalide : Dakar
+  });
+  it("jour courant et « maintenant » ramenés au fuseau", () => {
+    const instant = new Date("2026-12-31T23:30:00Z");
+    expect(todayIn("Africa/Dakar", instant)).toBe("2026-12-31");
+    expect(todayIn("Europe/Paris", instant)).toBe("2027-01-01");
+    const n = zonedNow("Europe/Paris", instant);
+    expect([n.getFullYear(), n.getMonth(), n.getDate()]).toEqual([2027, 0, 1]);
+    expect(isValidTimeZone("America/Toronto")).toBe(true);
+    expect(isValidTimeZone("x")).toBe(false);
+    expect(zoneLabel("Europe/Paris")).toBe("heure de Paris");
+  });
+});

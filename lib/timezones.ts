@@ -1,0 +1,23 @@
+// Fuseaux proposés dans Paramètres (les plus probables pour les clients DIOMETRO). Tout autre nom IANA valide est accepté.
+export const TIME_ZONES: { id: string; label: string }[] = [
+  { id: "Africa/Dakar", label: "Sénégal, Mali, Côte d'Ivoire, Guinée, Burkina Faso, Togo, Mauritanie (GMT)" },
+  { id: "Africa/Lagos", label: "Cameroun, Gabon, Congo, Niger, Tchad, Bénin, Nigeria (GMT+1)" },
+  { id: "Africa/Kinshasa", label: "RD Congo, Kinshasa (GMT+1)" },
+  { id: "Africa/Lubumbashi", label: "RD Congo, Lubumbashi (GMT+2)" },
+  { id: "Africa/Casablanca", label: "Maroc" },
+  { id: "Africa/Algiers", label: "Algérie (GMT+1)" },
+  { id: "Africa/Tunis", label: "Tunisie (GMT+1)" },
+  { id: "Africa/Cairo", label: "Égypte" },
+  { id: "Africa/Johannesburg", label: "Afrique du Sud (GMT+2)" },
+  { id: "Africa/Nairobi", label: "Kenya, Éthiopie (GMT+3)" },
+  { id: "Indian/Antananarivo", label: "Madagascar (GMT+3)" },
+  { id: "Indian/Mauritius", label: "Maurice (GMT+4)" },
+  { id: "Indian/Reunion", label: "La Réunion (GMT+4)" },
+  { id: "Europe/Paris", label: "France, Belgique, Suisse, Luxembourg (heure d'été)" },
+  { id: "Europe/London", label: "Royaume-Uni (heure d'été)" },
+  { id: "America/Toronto", label: "Québec, Ontario (heure d'été)" },
+  { id: "America/Martinique", label: "Martinique, Guadeloupe (GMT-4)" },
+  { id: "America/Cayenne", label: "Guyane (GMT-3)" },
+  { id: "Pacific/Noumea", label: "Nouvelle-Calédonie (GMT+11)" },
+  { id: "UTC", label: "Temps universel (UTC)" },
+];

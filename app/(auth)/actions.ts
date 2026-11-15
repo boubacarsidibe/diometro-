@@ -6,6 +6,7 @@ import { createClient, REMEMBER_COOKIE } from "@/lib/supabase/server";
 import { echoValues, parseForm, type FormState } from "@/lib/form";
 import { emailSchema, loginSchema, newPasswordSchema, onboardingSchema, registerSchema } from "@/lib/schemas";
 import { notifyNewTenant } from "@/lib/notify-platform";
+import { DEFAULT_TIME_ZONE, isValidTimeZone } from "@/lib/dates";
 
 async function siteUrl(): Promise<string> {
   const h = await headers();
@@ -83,7 +84,7 @@ export async function createCompany(_: FormState, formData: FormData): Promise<F
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
-  const { error } = await supabase.rpc("register_tenant", {
+  const { data: tenantId, error } = await supabase.rpc("register_tenant", {
     p_name: parsed.data.company,
     p_display_name: parsed.data.displayName,
     p_sector: parsed.data.sector,
@@ -91,6 +92,11 @@ export async function createCompany(_: FormState, formData: FormData): Promise<F
     p_buildings: parsed.data.buildings,
   });
   if (error) return { error: "Création de l'entreprise impossible (compte déjà rattaché ?).", values: echoValues(formData) };
+  // Fuseau du navigateur proposé par défaut (modifiable dans Paramètres) ; sans effet tant que la migration 0013 n'est pas appliquée.
+  const tz = String(formData.get("time_zone") ?? "");
+  if (tenantId && tz !== DEFAULT_TIME_ZONE && isValidTimeZone(tz)) {
+    await supabase.from("tenants").update({ time_zone: tz }).eq("id", tenantId);
+  }
   await notifyNewTenant({ company: parsed.data.company, displayName: parsed.data.displayName, sector: parsed.data.sector, phone: parsed.data.phone, userEmail: user.email ?? "", appUrl: await siteUrl() });
   redirect("/mfa");
 }

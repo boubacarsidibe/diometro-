@@ -93,7 +93,7 @@ export default async function InstrumentPage({ params }: { params: Promise<{ id:
                           <td>{cancelled ? <span className="tag keep">Annulée</span> : <span className={`tag ${i.resultat === "Conforme" ? "green" : i.resultat === "Non conforme" ? "red" : "yellow"}`}>{i.resultat}</span>}</td>
                           <td>{i.prestataire || "—"}</td><td>{i.ref_certificat || "—"}</td>
                           <td>{i.observation || "—"}{i.calcul_type && <CalculDetail kind={i.calcul_type} data={(calculs.get(i.id) ?? null)} />}
-                            {cancelled && <div className="helper keep">Annulée le {fmtDate(i.annulee_at!.slice(0, 10))} : {i.annulation_motif}</div>}</td>
+                            {cancelled && <div className="helper keep">Annulée le {fmtDate(i.annulee_at!, "—", s.timeZone)} : {i.annulation_motif}</div>}</td>
                           {write && <td>{!cancelled && <CancelIntervention action={cancelIntervention.bind(null, id, i.id)} label={fmtDate(i.date)} />}</td>}
                         </tr>
                       );
@@ -119,7 +119,7 @@ export default async function InstrumentPage({ params }: { params: Promise<{ id:
 
         <div className="card" id="documents">
           <h2>Documents joints</h2>
-          <AttachmentList items={(atts ?? []) as Attachment[]} instrumentId={id} canDelete={write} />
+          <AttachmentList items={(atts ?? []) as Attachment[]} instrumentId={id} canDelete={write} timeZone={s.timeZone} />
           {write && <div style={{ marginTop: 16 }}><AttachmentUploader instrumentId={id} /></div>}
         </div>
 

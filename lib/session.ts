@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { DEFAULT_TIME_ZONE, isValidTimeZone, todayIn } from "@/lib/dates";
 
 export type Role = "admin" | "responsable" | "consultation";
 
@@ -14,6 +15,8 @@ export type Session = {
   isPlatformAdmin: boolean;
   plan: string;
   planExpiresAt: string | null;
+  // Fuseau horaire de l'entreprise (Paramètres) : heures affichées, exports, « aujourd'hui ».
+  timeZone: string;
   // Essai ou abonnement terminé : consultation seulement, les données sont conservées.
   readOnly: boolean;
 };
@@ -43,6 +46,10 @@ export const requireSession = cache(async (): Promise<Session> => {
 
   // Entreprise bloquée ou abonnement expiré : la base masque ses données, on affiche un message clair.
   const { data: tenant } = await supabase.from("tenants").select("id, name, accent, logo_data, accreditation_label, currency, buildings, plan, plan_expires_at").eq("id", profile.tenant_id).maybeSingle();
+  // Lu à part : si la migration 0013 n'est pas encore appliquée, la requête échoue sans bloquer la session (Dakar par défaut).
+  const { data: tzRow } = await supabase.from("tenants").select("time_zone").eq("id", profile.tenant_id).maybeSingle();
+  const tzValue: unknown = tzRow?.time_zone;
+  const timeZone = typeof tzValue === "string" && isValidTimeZone(tzValue) ? tzValue : DEFAULT_TIME_ZONE;
   if (!tenant) redirect("/suspendu");
   const { data: platform } = await supabase.rpc("is_platform_admin");
 
@@ -55,7 +62,8 @@ export const requireSession = cache(async (): Promise<Session> => {
     isPlatformAdmin: platform === true,
     plan: tenant.plan,
     planExpiresAt: tenant.plan_expires_at,
-    readOnly: Boolean(tenant.plan_expires_at && tenant.plan_expires_at < new Date().toISOString().slice(0, 10)),
+    timeZone,
+    readOnly: Boolean(tenant.plan_expires_at && tenant.plan_expires_at < todayIn(timeZone)),
   };
 });
 

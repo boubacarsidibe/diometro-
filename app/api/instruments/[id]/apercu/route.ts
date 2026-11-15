@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) return NextResponse.json({ error: "introuvable" }, { status: 404 });
-  await requireSession();
+  const s = await requireSession();
   const supabase = await createClient();
 
   const { data: ins } = await supabase.from("instruments")
@@ -29,6 +29,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
       instrument: ins,
       derniere: last ? { date: last.date, type: last.type, resultat: last.resultat, prestataire: last.prestataire, ref_certificat: last.ref_certificat } : null,
       documents: atts ?? [],
+      timeZone: s.timeZone,
     },
     { headers: { "Cache-Control": "private, no-store" } },
   );

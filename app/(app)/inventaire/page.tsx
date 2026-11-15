@@ -48,7 +48,7 @@ export default async function InventairePage({ searchParams }: { searchParams: P
         {notice && <div className={`notice ${notice[0]}`} role="status">{notice[1]}</div>}
         {open ? (
           <>
-            <div className="notice ok">Inventaire en cours depuis le {fmtDate(open.created_at)}{open.note ? ` — ${open.note}` : ""}.</div>
+            <div className="notice ok">Inventaire en cours depuis le {fmtDate(open.created_at, "—", s.timeZone)}{open.note ? ` — ${open.note}` : ""}.</div>
             <Filterable placeholder="Rechercher un instrument (référence, désignation, lieu…)" unit={["instrument", "instruments"]}>
               <InventoryChecklist runId={open.id} rows={rows} canEdit={write} />
             </Filterable>
@@ -66,12 +66,12 @@ export default async function InventairePage({ searchParams }: { searchParams: P
               <thead><tr><th>Date</th><th>Réalisé par</th><th>Note</th><th>Retrouvés</th><th>Total</th><th>Taux</th><th /></tr></thead>
               <tbody>{closed.map((r) => (
                 <tr key={r.id}>
-                  <td>{fmtDate(r.closed_at ?? r.created_at)}</td><td>{(r.created_by && names.get(r.created_by)) || "—"}</td><td>{r.note || "—"}</td>
+                  <td>{fmtDate(r.closed_at ?? r.created_at, "—", s.timeZone)}</td><td>{(r.created_by && names.get(r.created_by)) || "—"}</td><td>{r.note || "—"}</td>
                   <td>{r.found_count}</td><td>{r.total_count}</td><td>{r.total_count ? Math.round(((r.found_count ?? 0) / r.total_count) * 100) : 0} %</td>
                   <td style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                     <Link href={`/inventaire/${r.id}`}>Détail</Link>
                     {s.role === "admin" && <ConfirmAction action={deleteInventoryRun.bind(null, r.id)} label="Supprimer" confirmLabel="Oui, supprimer"
-                      message={`Supprimer l'inventaire du ${fmtDate(r.closed_at ?? r.created_at)} et ses constats ? Cette action est définitive ; elle reste tracée dans le journal d'audit.`} />}
+                      message={`Supprimer l'inventaire du ${fmtDate(r.closed_at ?? r.created_at, "—", s.timeZone)} et ses constats ? Cette action est définitive ; elle reste tracée dans le journal d'audit.`} />}
                   </td>
                 </tr>
               ))}</tbody>

@@ -12,7 +12,7 @@ type RawCheck = { instrument_id: string; found: boolean; instruments: { ref: str
 export default async function InventaireDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
-  await requireSession();
+  const s = await requireSession();
   const supabase = await createClient();
   const { data: run } = await supabase.from("inventory_runs").select("id, status, note, closed_at, created_at, total_count, found_count").eq("id", id).maybeSingle();
   if (!run) notFound();
@@ -21,7 +21,7 @@ export default async function InventaireDetailPage({ params }: { params: Promise
   const missing = checks.filter((c) => !c.found).sort((a, b) => a.ref.localeCompare(b.ref));
   return (
     <>
-      <Topbar title={`Inventaire du ${fmtDate(run.closed_at ?? run.created_at)}`} subtitle={`${run.found_count ?? checks.filter((c) => c.found).length} / ${run.total_count ?? checks.length} retrouvés${run.note ? ` — ${run.note}` : ""}`} />
+      <Topbar title={`Inventaire du ${fmtDate(run.closed_at ?? run.created_at, "—", s.timeZone)}`} subtitle={`${run.found_count ?? checks.filter((c) => c.found).length} / ${run.total_count ?? checks.length} retrouvés${run.note ? ` — ${run.note}` : ""}`} />
       <div className="content">
         <div className="card">
           <h2>Instruments non retrouvés</h2>

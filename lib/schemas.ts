@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isValidTimeZone } from "@/lib/dates";
 
 // Messages d'erreur de validation en français (zod affiche l'anglais par défaut, ex. « Invalid ISO date »).
 z.config(z.locales.fr());
@@ -215,6 +216,8 @@ export const brandingSchema = z.object({
   sector: text(100),
   phone: text(40),
   buildings: buildingList,
+  // Nom de fuseau IANA ; absent du formulaire = inchangé.
+  time_zone: z.string().trim().max(64).refine((v) => v === "" || isValidTimeZone(v), "Fuseau horaire inconnu").default(""),
 });
 
 export const inventoryNoteSchema = z.object({ note: text(500) });
