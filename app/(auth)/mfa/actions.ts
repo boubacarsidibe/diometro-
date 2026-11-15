@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { mfaCodeSchema } from "@/lib/schemas";
 import { isMailConfigured, mailer, missingMailVars, smtpErrorInfo } from "@/lib/mail";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { appBaseUrl, codeEmail } from "@/lib/email-template";
 import { createClient } from "@/lib/supabase/server";
 
 const VALIDITY_MIN = 10;
@@ -60,11 +61,7 @@ export async function sendEmailCode(force = false): Promise<CodeState> {
     return { error: "Impossible de générer un code pour le moment. Réessayez." };
   }
   try {
-    await mailer().sendMail({
-      from: process.env.MAIL_FROM, to: s.email,
-      subject: `${code} est votre code de connexion DIOMETRO`,
-      text: `Votre code de connexion DIOMETRO : ${code}\n\nIl est valable ${VALIDITY_MIN} minutes et ne peut servir qu'une fois.\nSi vous n'êtes pas à l'origine de cette connexion, changez votre mot de passe.`,
-    });
+    await mailer().sendMail({ from: process.env.MAIL_FROM, to: s.email, ...codeEmail(code, VALIDITY_MIN, appBaseUrl()) });
   } catch (e) {
     await admin.from("mfa_email_codes").delete().eq("id", row.id);
     console.error("Code e-mail : envoi refusé", smtpErrorInfo(e).code);

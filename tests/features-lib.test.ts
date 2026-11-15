@@ -6,6 +6,7 @@ import { buildFichePdf, buildInstrumentsPdf, buildInstrumentsXlsx, pdfText, safe
 import { escapeHtml, renderAlertEmail, selectAlertItems } from "@/lib/alerts";
 import { detectImageMime, logoToDataUri } from "@/lib/image";
 import { qrDataUri } from "@/lib/qr";
+import { codeEmail, newTenantEmail, planRequestEmail, testEmail } from "@/lib/email-template";
 import type { Instrument } from "@/lib/types";
 
 const inst = (o: Partial<Instrument>): Instrument => ({
@@ -84,7 +85,8 @@ describe("alertes par email", () => {
   it("échappe tout le contenu de l'email", () => {
     const mail = renderAlertEmail('<img src=x onerror=alert(1)>', [{ ref: "<b>R</b>", designation: '"><script>x</script>', date_prochaine: "2026-11-01", statut: "En service", days: 5 }], "https://app.example");
     expect(mail.html).not.toContain("<script>");
-    expect(mail.html).not.toContain("<img");
+    expect(mail.html).not.toContain("<img src=x");
+    expect(mail.html).toContain("/email/diometro-logo.png"); // seule image : le logo DIOMETRO
     expect(mail.html).toContain("&lt;b&gt;R&lt;/b&gt;");
     expect(mail.subject).not.toMatch(/[\r\n]/);
     expect(escapeHtml(`'"<>&`)).toBe("&#39;&quot;&lt;&gt;&amp;");
@@ -105,5 +107,22 @@ describe("logo et QR", () => {
   });
   it("génère un QR code PNG", async () => {
     expect((await qrDataUri("https://app.example/instruments/abc")).startsWith("data:image/png;base64,")).toBe(true);
+  });
+});
+
+describe("e-mails habillés", () => {
+  it("met le logo, échappe les noms et garde une version texte", () => {
+    const c = codeEmail("042517", 10, "https://app.example");
+    expect(c.subject).toBe("042517 est votre code de connexion DIOMETRO");
+    expect(c.html).toContain("https://app.example/email/diometro-logo.png");
+    expect(c.text).toContain("042517");
+    const t = testEmail("<b>Awa</b>", 'Labo "X"', "https://app.example");
+    expect(t.html).not.toContain("<b>Awa</b>");
+    expect(t.html).toContain("&lt;b&gt;Awa&lt;/b&gt;");
+    const n = newTenantEmail([["Entreprise", "<script>x</script>"]], "Acme\r\nBcc: x@y.z", "https://app.example");
+    expect(n.html).not.toContain("<script>");
+    expect(n.subject).not.toMatch(/[\r\n]/);
+    const r = planRequestEmail({ company: "Acme", displayName: "A", email: "a@b.c", plan: "Pro", scope: "jusqu'à 500 instruments" }, "https://app.example");
+    expect(r.html).toContain("https://app.example/admin");
   });
 });
