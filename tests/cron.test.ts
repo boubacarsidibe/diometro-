@@ -124,8 +124,8 @@ describe("/api/cron/alerts", () => {
     expect(r.body).toMatchObject({ sent: 1, failed: 0, forced: false, recipients: 2 });
     expect(received).toHaveLength(1);
     expect(received[0].to.sort()).toEqual(["admin@dioulatech.sn", "coord@dioulatech.sn"]);
-    const html = received[0].data.slice(received[0].data.indexOf("Content-Type: text/html"));
-    expect(received[0].data).toMatch(/Subject: =\?UTF-8\?Q\?DIOMETRO_-_1_instrument/); // objet encodé, sans retour à la ligne injectable
+    const html = received[0].data.slice(received[0].data.indexOf("Content-Type: text/html")).replace(/=\r?\n/g, ""); // retours à la ligne « doux » du quoted-printable retirés
+    expect(received[0].data).toMatch(/Subject: =\?UTF-8\?Q\?DIOMETRO_=C2=B7_1_instrument/); // objet encodé, sans retour à la ligne injectable
     expect(html).toContain("&lt;img src=3Dx&gt;"); // partie HTML : contenu échappé
     expect(html).not.toContain("<img src=3Dx>");
     expect(html).not.toContain("<b>");               // le nom d'entreprise est échappé lui aussi

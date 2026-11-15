@@ -2,8 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { REMEMBER_COOKIE, sessionScoped } from "@/lib/supabase/remember";
 
-// "/vitrine" : images de la page d'accueil (public/vitrine), visibles sans connexion.
-const PUBLIC = ["/login", "/register", "/forgot-password", "/auth/confirm", "/api/cron", "/p", "/mentions-legales", "/cgu", "/confidentialite", "/robots.txt", "/sitemap.xml", "/vitrine"];
+// "/vitrine" : images de la page d'accueil (public/vitrine) ; "/email" : logo des e-mails (public/email). Visibles sans connexion.
+const PUBLIC = ["/login", "/register", "/forgot-password", "/auth/confirm", "/api/cron", "/p", "/mentions-legales", "/cgu", "/confidentialite", "/robots.txt", "/sitemap.xml", "/vitrine", "/email"];
 
 const PREVIEW_ROUTE = /^\/api\/attachments\/[^/]+\/view$/;
 

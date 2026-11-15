@@ -11,6 +11,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { LEGAL } from "@/lib/legal";
 import { offerById } from "@/lib/plans";
 import { isZoneOfCountry } from "@/lib/timezones";
+import { appBaseUrl, planRequestEmail, testEmail } from "@/lib/email-template";
 
 export async function saveBranding(_: FormState, formData: FormData): Promise<FormState> {
   const s = await requireAdmin();
@@ -58,8 +59,7 @@ export async function sendTestEmail(): Promise<FormState> {
   }
   try {
     await mailer().sendMail({
-      from: process.env.MAIL_FROM, to: s.email, subject: "DIOMETRO - email de test",
-      text: `Bonjour ${s.displayName},\n\nSi vous recevez ce message, l'envoi d'emails de DIOMETRO (alertes d'échéance) fonctionne.`,
+      from: process.env.MAIL_FROM, to: s.email, ...testEmail(s.displayName, s.tenant.name, appBaseUrl()),
     });
     return { ok: `Email de test envoyé à ${s.email}. Vérifiez votre boîte de réception (et les spams).` };
   } catch (e) {
@@ -89,12 +89,7 @@ export async function requestPlan(_: FormState, formData: FormData): Promise<For
   try {
     await mailer().sendMail({
       from: process.env.MAIL_FROM, to: [...to], replyTo: s.email,
-      subject: `DIOMETRO - demande de formule ${offer.nom} - ${s.tenant.name}`,
-      text: `Entreprise : ${s.tenant.name}
-Demandeur : ${s.displayName} (${s.email})
-Formule demandée : ${offer.nom} (${offer.instruments ? `jusqu'à ${offer.instruments} instruments` : "sur devis"})
-
-Activez la formule depuis la page Plateforme une fois le paiement reçu.`,
+      ...planRequestEmail({ company: s.tenant.name, displayName: s.displayName, email: s.email, plan: offer.nom, scope: offer.instruments ? `jusqu'à ${offer.instruments} instruments` : "sur devis" }, appBaseUrl()),
     });
   } catch (e) {
     console.error("Demande de formule : envoi refusé", smtpErrorInfo(e).code);

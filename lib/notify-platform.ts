@@ -1,8 +1,7 @@
 import "server-only";
 import { LEGAL } from "@/lib/legal";
 import { isMailConfigured, mailer } from "@/lib/mail";
-
-const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+import { newTenantEmail } from "@/lib/email-template";
 
 /**
  * Prévient le responsable de la plateforme à chaque nouvelle entreprise inscrite (repris de la version locale :
@@ -17,12 +16,10 @@ export async function notifyNewTenant(info: { company: string; displayName: stri
     ["Entreprise", info.company], ["Administrateur", info.displayName], ["E-mail", info.userEmail],
     ["Secteur", info.sector || "—"], ["Téléphone", info.phone || "—"], ["Inscription", `${when} (heure de Dakar)`],
   ];
-  const text = `Nouvelle inscription sur DIOMETRO\n\n${lines.map(([k, v]) => `${k} : ${v}`).join("\n")}\n\nPlateforme : ${info.appUrl}/admin`;
-  const html = `<p><strong>Nouvelle inscription sur DIOMETRO</strong></p><table cellpadding="4">${lines.map(([k, v]) => `<tr><td style="color:#6a5d60">${k}</td><td><strong>${esc(v)}</strong></td></tr>`).join("")}</table>` +
-    `<p><a href="${esc(info.appUrl)}/admin">Ouvrir la page Plateforme</a></p>`;
+  const mail = newTenantEmail(lines, info.company, info.appUrl.replace(/\/$/, ""));
   try {
     await Promise.race([
-      mailer().sendMail({ from: process.env.MAIL_FROM, to, subject: `Nouvelle inscription : ${info.company}`, text, html }),
+      mailer().sendMail({ from: process.env.MAIL_FROM, to, ...mail }),
       new Promise((_, reject) => setTimeout(() => reject(new Error("délai dépassé")), 6000)),
     ]);
   } catch (e) {

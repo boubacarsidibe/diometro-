@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
       if (data.user?.email) emails.push(data.user.email);
     }
     if (emails.length === 0) { summary.skipped++; continue; }
-    const mail = renderAlertEmail(t.name, items, appUrl);
+    const mail = renderAlertEmail(t.name, items, appUrl, tz);
     try {
       await transport.sendMail({ from: process.env.MAIL_FROM, to: emails, subject: mail.subject, text: mail.text, html: mail.html });
       if (!force) await admin.from("alert_log").insert({ tenant_id: t.id, sent_on: today, items: items.length });
