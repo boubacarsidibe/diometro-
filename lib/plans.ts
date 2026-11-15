@@ -18,5 +18,10 @@ export const OFFERS: Offer[] = [
   { id: "custom", nom: "Sur-mesure", instruments: null, cible: "Au-delà de 2 000 instruments, sur devis", prix: null },
 ];
 
+// Prix masqués sur le site et dans l'application tant que les tarifs ne sont pas validés (sondage en cours).
+// Passer à true pour réafficher les prix ci-dessus, sans autre changement.
+export const PRIX_PUBLIES = false;
+export const prixAffiche = (o: Offer) => (PRIX_PUBLIES ? o.prix : null);
+
 export const TRIAL_DAYS = 30;
 export const offerById = (id: string) => OFFERS.find((o) => o.id === id);

@@ -6,7 +6,7 @@ import { IconArrow, IconBell, IconBuilding, IconCalc, IconCalendar, IconCheck, I
 import { CONTACT, RESEAUX } from "@/lib/contact";
 import { CATALOG } from "@/lib/calc/catalog";
 import { LEGAL } from "@/lib/legal";
-import { OFFERS, TRIAL_DAYS } from "@/lib/plans";
+import { OFFERS, prixAffiche, TRIAL_DAYS } from "@/lib/plans";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -62,7 +62,7 @@ export default async function HomePage() {
   } catch {
     // Supabase indisponible : la page d'accueil reste affichée.
   }
-  const offers: VitrineOffer[] = OFFERS.map((o) => ({ id: o.id, nom: o.nom, cible: o.cible, instruments: o.instruments, prix: o.prix }));
+  const offers: VitrineOffer[] = OFFERS.map((o) => ({ id: o.id, nom: o.nom, cible: o.cible, instruments: o.instruments, prix: prixAffiche(o) }));
   const ck = <span className="vt-ck"><IconCheck w={3} /></span>;
 
   return (
