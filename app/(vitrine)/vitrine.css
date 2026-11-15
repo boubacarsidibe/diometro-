@@ -342,7 +342,8 @@
 @media (max-width: 960px) {
   .vt-nav-links { display: none; }
   .vt-hero-grid, .vt-calc-grid, .vt-sec-grid, .vt-faq-grid, .vt-final-box { grid-template-columns: minmax(0, 1fr); }
-  .vt-stage { order: -1; height: 300px; margin-top: 8px; }
+  /* Tablette : la scène 3D garde une largeur bornée, sinon le pied à coulisse déborde sur le titre */
+  .vt-stage { order: -1; height: 300px; margin-top: 8px; width: min(100%, 380px); margin-inline: auto; }
   .vt-chip.vt-reading { left: 4%; bottom: 4%; transform: translateZ(70px); }
   .vt-chip.vt-status { right: 3%; transform: translateZ(50px); }
   .vt-chip.vt-reading .vt-v { font-size: 24px; }
@@ -369,6 +370,14 @@
   .vt-stat .vt-n small { display: block; margin: 6px 0 0; }
   .vt-faq details p { padding-right: 0; }
   .vt-trial { flex-direction: column; align-items: flex-start; }
+  /* Pied de page : présentation sur toute la largeur, puis les deux colonnes de liens */
+  .vt-foot { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px 20px; }
+  .vt-foot > :first-child { grid-column: 1 / -1; }
+  .vt-nav-cta .vt-btn { white-space: nowrap; }
+}
+@media (max-width: 380px) {
+  .vt-nav-cta .vt-btn { padding-inline: 14px; font-size: 13.5px; }
+  .vt-nav-cta .vt-btn svg { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .vt *, .vt *::before, .vt *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
