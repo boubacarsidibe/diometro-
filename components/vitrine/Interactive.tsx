@@ -228,7 +228,7 @@ export function SecurityStack({ children }: { children: ReactNode }) {
 export type VitrineOffer = { id: string; nom: string; cible: string; instruments: number | null; prix: { mensuel: number; annuel: number } | null };
 
 /** Formules : choix de la taille du parc, la formule adaptée s'avance. */
-export function PlanPicker({ offers, contact }: { offers: VitrineOffer[]; contact: string | null }) {
+export function PlanPicker({ offers }: { offers: VitrineOffer[] }) {
   const [n, setN] = useState(120);
   const [annual, setAnnual] = useState(false);
   const priced = offers.filter((o) => o.prix);
@@ -256,7 +256,7 @@ export function PlanPicker({ offers, contact }: { offers: VitrineOffer[]; contac
       <div className="vt-plans">
         {offers.map((o, k) => {
           const custom = o.instruments === null;
-          const href = custom && contact ? `mailto:${contact}?subject=Devis DIOMETRO sur-mesure` : `/register?formule=${o.id}`;
+          const href = custom ? "/devis?formule=custom" : `/register?formule=${o.id}`;
           const label = custom ? "Demander un devis" : `Essayer ${o.nom}`;
           return (
             <article key={o.id} className={`vt-plan${k === fitIndex ? " vt-fit" : ""}`}>
@@ -265,11 +265,7 @@ export function PlanPicker({ offers, contact }: { offers: VitrineOffer[]; contac
               {o.prix
                 ? <div className="vt-price">{(annual ? Math.round(o.prix.annuel / 12) : o.prix.mensuel).toLocaleString("fr-FR")} <small>FCFA HT / mois{annual ? ", facturé à l'année" : ""}</small></div>
                 : <div className="vt-price vt-quote">{custom ? "Sur devis" : "Tarif communiqué prochainement"}</div>}
-              {custom && !contact
-                ? <span className="vt-btn vt-ghost vt-btn-off" aria-disabled="true">Devis sur demande</span>
-                : href.startsWith("mailto:")
-                  ? <a className="vt-btn vt-ghost" href={href}>{label} <IconArrow /></a>
-                  : <Link className="vt-btn vt-ghost" href={href}>{label} <IconArrow /></Link>}
+              <Link className="vt-btn vt-ghost" href={href}>{label} <IconArrow /></Link>
               <ul className="vt-feat">
                 <li><IconCheck />{o.instruments ? `Jusqu'à ${o.instruments.toLocaleString("fr-FR")} instruments` : "Plus de 2 000 instruments"}</li>
                 <li><IconCheck />Toutes les fonctionnalités incluses</li>
