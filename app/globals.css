@@ -413,3 +413,55 @@ dl.details.pv-details { grid-template-columns: 150px 1fr; margin-bottom: 6px; }
 .live-clock .lc-time { font-weight: 700; color: var(--sb-text, #fff); font-variant-numeric: tabular-nums; font-size: 12.5px; }
 .live-clock .lc-place { overflow: hidden; text-overflow: ellipsis; }
 @media (max-width: 720px) { .live-clock .lc-date { display: none; } }
+
+/* ── Téléphone : filtres repliables (components/MobileFilters.tsx) ── */
+.mf-toggle { display: none; }
+.mf-body { display: contents; }
+@media (max-width: 720px) {
+  .mf-toggle { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+  .mf-label { display: inline-flex; align-items: center; gap: 8px; }
+  .mf-count { background: var(--accent); color: var(--on-accent); border-radius: 999px; font-size: 11px; font-weight: 800; padding: 1px 7px; }
+  .mf-chevron { font-size: 10px; opacity: .6; }
+  .mf-body { display: none; }
+  .mf-body[data-open] { display: contents; }
+  .toolbar .input { max-width: none !important; flex: 1 1 140px; }
+}
+
+/* ── Téléphone : tableaux en fiches empilées (table.cards + classes de cellule) ──
+   c-main : référence (en haut à gauche) · c-badge : état (en haut à droite) · c-sub : désignation (pleine largeur)
+   td[data-label] : détails sur deux colonnes, avec leur libellé · c-act : actions (pleine largeur) */
+@media (max-width: 720px) {
+  .table-wrap:has(> table.cards) { overflow: visible; border: 0; background: none; border-radius: 0; }
+  table.cards, table.cards tbody { display: block; }
+  table.cards thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  table.cards tr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 14px; align-items: start; padding: 14px 16px; margin-bottom: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow-sm, 0 1px 2px rgba(0,0,0,.04)); }
+  table.cards tr[hidden] { display: none; }
+  table.cards tr.row-red { border-left: 4px solid var(--red); }
+  table.cards tr.row-orange { border-left: 4px solid var(--orange); }
+  table.cards tr.row-yellow { border-left: 4px solid var(--yellow); }
+  table.cards td { display: block; padding: 0; border: 0; box-shadow: none !important; min-width: 0; font-size: 14px; }
+  table.cards td.c-main { grid-column: 1; grid-row: 1; font-weight: 800; font-size: 15px; }
+  table.cards td.c-badge { grid-column: 2; grid-row: 1; justify-self: end; text-align: right; }
+  table.cards td.c-sub { grid-column: 1 / -1; grid-row: 2; color: var(--text-soft); margin-top: -4px; }
+  table.cards td[data-label]::before { content: attr(data-label); display: block; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+  table.cards td.c-act { grid-column: 1 / -1; text-align: left !important; padding-top: 4px; border-top: 1px dashed var(--line); }
+  table.cards td.c-act:empty { display: none; }
+  table.cards td.c-wide { grid-column: 1 / -1; }
+}
+
+/* ── Téléphone : planning en agenda à la place du calendrier ── */
+.agenda { display: none; }
+@media (max-width: 720px) {
+  .cal-wrap { display: none; }
+  .agenda { display: grid; gap: 10px; margin-top: 4px; }
+  .agenda-day { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 12px; align-items: start; }
+  .agenda-date { text-align: center; background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; padding: 6px 0; line-height: 1.1; }
+  .agenda-date b { display: block; font-size: 20px; }
+  .agenda-date small { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .agenda-date.today { border-color: var(--accent); }
+  .agenda-items { display: grid; gap: 6px; }
+  .agenda-item { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); text-decoration: none; color: inherit; }
+  .agenda-item .ai-ref { font-weight: 800; font-size: 14px; }
+  .agenda-item .ai-des { font-size: 12.5px; color: var(--text-soft); }
+  .hide-mobile { display: none !important; }
+}
