@@ -265,9 +265,11 @@ export function PlanPicker({ offers, contact }: { offers: VitrineOffer[]; contac
               {o.prix
                 ? <div className="vt-price">{(annual ? Math.round(o.prix.annuel / 12) : o.prix.mensuel).toLocaleString("fr-FR")} <small>FCFA HT / mois{annual ? ", facturé à l'année" : ""}</small></div>
                 : <div className="vt-price vt-quote">{custom ? "Sur devis" : "Tarif communiqué prochainement"}</div>}
-              {href.startsWith("mailto:")
-                ? <a className="vt-btn vt-ghost" href={href}>{label} <IconArrow /></a>
-                : <Link className="vt-btn vt-ghost" href={href}>{label} <IconArrow /></Link>}
+              {custom && !contact
+                ? <span className="vt-btn vt-ghost vt-btn-off" aria-disabled="true">Devis sur demande</span>
+                : href.startsWith("mailto:")
+                  ? <a className="vt-btn vt-ghost" href={href}>{label} <IconArrow /></a>
+                  : <Link className="vt-btn vt-ghost" href={href}>{label} <IconArrow /></Link>}
               <ul className="vt-feat">
                 <li><IconCheck />{o.instruments ? `Jusqu'à ${o.instruments.toLocaleString("fr-FR")} instruments` : "Plus de 2 000 instruments"}</li>
                 <li><IconCheck />Toutes les fonctionnalités incluses</li>

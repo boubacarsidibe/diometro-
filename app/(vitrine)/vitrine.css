@@ -299,6 +299,13 @@
 .vt-trial b { color: var(--cream); }
 
 /* Questions */
+.vt-sectors { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.vt-sector { background: var(--sage-card); border: 1px solid var(--sage-line); border-radius: var(--r); padding: 24px; box-shadow: var(--shadow); min-width: 0; display: grid; align-content: start; gap: 8px; border-top: 3px solid var(--wine); }
+.vt-sector p { color: var(--ink-soft); font-size: 15px; }
+.vt-sector .vt-meta { font-family: var(--f-mono); font-size: 12px; color: var(--wine-mid); line-height: 1.5; }
+.vt-faq-contact { margin-top: 28px; padding: 20px; border: 1px solid var(--sage-line2); border-radius: var(--r); background: var(--sage-card); display: grid; gap: 8px; justify-items: start; }
+.vt-faq-contact p { color: var(--ink-soft); font-size: 15px; }
+.vt-btn-off { cursor: default; opacity: .7; }
 .vt-faq-grid { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: clamp(28px, 5vw, 64px); align-items: start; }
 .vt-faq { border-top: 1px solid var(--sage-line2); }
 .vt-faq details { border-bottom: 1px solid var(--sage-line2); }
@@ -326,6 +333,8 @@
 /* Pied de page */
 .vt-footer { background: var(--wine-deep); color: var(--cream-mute); padding-block: 56px 28px; font-size: 14px; }
 .vt-foot { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(0, .6fr)); gap: 32px; }
+.vt-foot:has(> :nth-child(4)) { grid-template-columns: minmax(0, 1.2fr) repeat(3, minmax(0, .65fr)); }
+.vt-foot a { overflow-wrap: anywhere; }
 .vt-foot .vt-brand { margin-bottom: 14px; }
 .vt-foot h4 { margin: 0 0 12px; font-family: var(--f-mono); font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--cream); font-weight: 600; }
 .vt-foot ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
@@ -340,6 +349,7 @@
 .vt.vt-js .vt-reveal.vt-in { transform: none; }
 
 @media (max-width: 960px) {
+  .vt-sectors { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .vt-nav-links { display: none; }
   .vt-hero-grid, .vt-calc-grid, .vt-sec-grid, .vt-faq-grid, .vt-final-box { grid-template-columns: minmax(0, 1fr); }
   /* Tablette : la scène 3D garde une largeur bornée, sinon le pied à coulisse déborde sur le titre */
@@ -357,6 +367,7 @@
   .vt-iso-scene { height: 340px; }
 }
 @media (max-width: 640px) {
+  .vt-sectors { grid-template-columns: 1fr; }
   .vt-nav-cta .vt-login { display: none; }
   .vt-bento, .vt-plans, .vt-steps { grid-template-columns: minmax(0, 1fr); }
   .vt-span-4, .vt-span-3, .vt-span-2 { grid-column: auto; }
@@ -373,6 +384,8 @@
   /* Pied de page : présentation sur toute la largeur, puis les deux colonnes de liens */
   .vt-foot { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px 20px; }
   .vt-foot > :first-child { grid-column: 1 / -1; }
+  .vt-foot:has(> :nth-child(4)) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .vt-foot > :nth-child(4) { grid-column: 1 / -1; }
   .vt-nav-cta .vt-btn { white-space: nowrap; }
 }
 @media (max-width: 380px) {
