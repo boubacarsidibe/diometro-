@@ -7,7 +7,7 @@ import { TestEmailButton } from "@/components/TestEmailButton";
 import { requestPlan, saveBranding, sendTestEmail } from "./actions";
 import { fmtDate } from "@/lib/dates";
 import { money } from "@/lib/money";
-import { OFFERS } from "@/lib/plans";
+import { OFFERS, prixAffiche } from "@/lib/plans";
 import { PLANS } from "@/lib/schemas";
 import { daysUntil } from "@/lib/status";
 
@@ -26,7 +26,7 @@ export default async function ParametresPage() {
   const planName = PLANS.find((p) => p.id === plan)?.nom ?? plan;
   const left = daysUntil(data?.plan_expires_at);
   const max = data?.max_instruments ?? null;
-  const offers = OFFERS.map((o) => ({ id: o.id, nom: o.nom, cible: o.cible, instruments: o.instruments, prix: o.prix ? `${money(o.prix.mensuel, "XOF")} HT / mois` : null }));
+  const offers = OFFERS.map((o) => ({ id: o.id, nom: o.nom, cible: o.cible, instruments: o.instruments, prix: prixAffiche(o) ? `${money(prixAffiche(o)!.mensuel, "XOF")} HT / mois` : null }));
   return (
     <>
       <Topbar title="Paramètres de l'entreprise" subtitle="Nom, logo, bâtiments, alertes et abonnement." />
