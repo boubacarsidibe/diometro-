@@ -34,8 +34,9 @@ describe("saisies", () => {
     expect(ok.prestataire_id).toBeNull();
   });
   it("inscription : bâtiments dédoublonnés et bornés", () => {
-    const r = onboardingSchema.parse({ company: "Dioulatech", displayName: "Jula", sector: "", phone: "", buildings: "Atelier A, Atelier A,\nLabo , " });
-    expect(r.buildings).toEqual(["Atelier A", "Labo"]);
+    const r = onboardingSchema.parse({ company: "Dioulatech", displayName: "Jula", sector: "", phone: "", buildings: "Atelier A\nAtelier A\n\nLabo \n" });
+    expect(r.buildings).toEqual(["Atelier A", "Labo"]); // un bâtiment par ligne (liste)
+    expect(onboardingSchema.parse({ company: "Dioulatech", displayName: "Jula", sector: "", phone: "", buildings: "Atelier A, Atelier A, Labo " }).buildings).toEqual(["Atelier A", "Labo"]); // ancien format à virgules
     expect(onboardingSchema.safeParse({ company: "X", displayName: "Jula", sector: "", phone: "", buildings: "" }).success).toBe(false);
     expect(onboardingSchema.safeParse({ company: "Dioulatech", displayName: "Jula", sector: "", phone: "", buildings: Array.from({ length: 60 }, (_, i) => `B${i}`).join(",") }).success).toBe(false);
   });

@@ -33,7 +33,7 @@ export default async function ParametresPage() {
       <div className="content stack">
         <div className="card">
           <h2>Identité visuelle et alertes</h2>
-          <BrandingForm action={saveBranding} name={s.tenant.name} alertsEnabled={data?.alerts_enabled ?? true} logo={s.tenant.logo_data} accreditation={s.tenant.accreditation_label} currency={s.tenant.currency} sector={data?.sector ?? ""} phone={data?.phone ?? ""} buildings={s.tenant.buildings} buildingUsage={buildingUsage} />
+          <BrandingForm action={saveBranding} name={s.tenant.name} alertsEnabled={data?.alerts_enabled ?? true} logo={s.tenant.logo_data} accreditation={s.tenant.accreditation_label} currency={s.tenant.currency} sector={data?.sector ?? ""} phone={data?.phone ?? ""} buildings={s.tenant.buildings} buildingUsage={buildingUsage} timeZone={s.timeZone} country={s.country} />
         </div>
         <div className="card">
           <h2>Alertes par email</h2>

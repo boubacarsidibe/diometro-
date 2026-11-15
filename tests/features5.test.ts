@@ -88,6 +88,10 @@ describe("inscription, essai et formules", () => {
     expect(OFFERS.map((o) => o.id)).not.toContain("essai");
     expect(OFFERS.map((o) => o.id)).toEqual(["starter", "standard", "pro", "entreprise", "grandcompte", "custom"]);
     for (const o of OFFERS) expect(o.instruments).toBe(PLANS.find((p) => p.id === o.id)!.instruments);
-    expect(OFFERS.every((o) => o.prix === null)).toBe(true); // prix à fournir
+    // Prix HT en FCFA (14/11/2026) : sur devis seulement pour le sur-mesure, annuel = 10 mois.
+    for (const o of OFFERS) {
+      if (o.id === "custom") expect(o.prix).toBeNull();
+      else expect(o.prix!.annuel).toBe(o.prix!.mensuel * 10);
+    }
   });
 });

@@ -2,7 +2,7 @@ import { fileResponse } from "@/lib/download";
 import { buildAuditPdf } from "@/lib/export";
 import { requireAdmin } from "@/lib/session";
 import { auditUser, describeAudit, type AuditRow } from "@/lib/audit";
-import { fmtDateTime } from "@/lib/dates";
+import { fmtDateTime, todayIn } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET() {
@@ -15,10 +15,12 @@ export async function GET() {
   const names = new Map((members ?? []).map((m) => [m.user_id, m.display_name]));
   const bytes = await buildAuditPdf(
     ((data ?? []) as AuditRow[]).map((r) => {
-      const v = describeAudit(r);
-      return { created_at: fmtDateTime(r.created_at), user: auditUser(r.user_id, names), action: v.label, entity: v.object, entity_id: v.changes.map((c) => `${c.field} : ${c.before ? `${c.before} → ` : ""}${c.after}`).join(" ; ") };
+      const v = describeAudit(r, s.timeZone);
+      return { created_at: fmtDateTime(r.created_at, "—", s.timeZone), user: auditUser(r.user_id, names), action: v.label, entity: v.object, entity_id: v.changes.map((c) => `${c.field} : ${c.before ? `${c.before} → ` : ""}${c.after}`).join(" ; ") };
     }),
     s.tenant.name,
+    new Date(),
+    s.timeZone,
   );
-  return fileResponse(bytes, "application/pdf", `audit-${new Date().toISOString().slice(0, 10)}.pdf`);
+  return fileResponse(bytes, "application/pdf", `audit-${todayIn(s.timeZone)}.pdf`);
 }

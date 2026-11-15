@@ -9,6 +9,7 @@ import { computePipette } from "@/lib/calc/pipette";
 import { computePt100, type Verdict } from "@/lib/calc/pt100";
 import { CALC_KINDS, directSchema, pipetteSchema, pt100Schema } from "@/lib/calc/schemas";
 import { canEdit, requireSession } from "@/lib/session";
+import { todayIn } from "@/lib/dates";
 import { addDuration, type FrequenceUnite } from "@/lib/status";
 import { createClient } from "@/lib/supabase/server";
 
@@ -53,7 +54,7 @@ export async function saveCalculation(instrumentId: string, kind: string, payloa
     calcul = { input: p.data, result: r };
   }
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayIn(s.timeZone);
   const { error } = await supabase.from("interventions").insert({
     tenant_id: s.tenant.id, instrument_id: inst.id, date: today, type: "Étalonnage", resultat: RESULTAT_OF[verdict], mode: "Interne",
     observation: description.slice(0, 2000), realise_par: s.userId, calcul_type: kind, calcul,

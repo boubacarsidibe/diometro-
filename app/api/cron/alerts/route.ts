@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { renderAlertEmail, selectAlertItems, type AlertInput } from "@/lib/alerts";
 import { missingMailVars, mailer, smtpErrorInfo } from "@/lib/mail";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { todayIn, zonedNow } from "@/lib/dates";
 
 export const maxDuration = 60;
 
@@ -45,12 +46,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Connexion SMTP refusée", smtp: smtpErrorInfo(e) }, { status: 502 });
   }
   const appUrl = (process.env.APP_URL ?? request.nextUrl.origin).replace(/\/$/, "");
-  const now = new Date();
-  const today = now.toISOString().slice(0, 10);
+  const instant = new Date();
   const summary = { tenants: 0, sent: 0, skipped: 0, failed: 0, forced: force, recipients: 0, errors: [] as { code: string; message: string }[] };
 
-  const { data: tenants } = await admin.from("tenants").select("id, name, plan_expires_at").eq("status", "active").eq("alerts_enabled", true);
+  // select("*") : la colonne time_zone n'existe qu'après la migration 0013 (Dakar par défaut).
+  const { data: tenants } = await admin.from("tenants").select("*").eq("status", "active").eq("alerts_enabled", true);
   for (const t of tenants ?? []) {
+    // « Aujourd'hui » et le lundi des relances suivent le fuseau de l'entreprise.
+    const tz = (t as { time_zone?: string }).time_zone;
+    const now = zonedNow(tz, instant);
+    const today = todayIn(tz, instant);
     if (t.plan_expires_at && t.plan_expires_at < today) continue;
     summary.tenants++;
     const { data: instruments } = await admin.from("instruments").select("ref, designation, date_prochaine, statut").eq("tenant_id", t.id).is("deleted_at", null);

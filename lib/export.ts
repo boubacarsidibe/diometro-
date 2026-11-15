@@ -3,7 +3,7 @@ import { PDFDocument, PDFFont, PDFPage, StandardFonts, rgb } from "pdf-lib";
 import { URGENCY_LABEL, daysUntil, describeFrequence, instrumentUrgency, isRebut } from "@/lib/status";
 import { statutLabel } from "@/lib/schemas";
 import type { Instrument, Intervention } from "@/lib/types";
-import { fmtDate } from "@/lib/dates";
+import { fmtDate, zoneLabel, zonedNow } from "@/lib/dates";
 
 // Anti « injection de formule » : une cellule qui commence par = + - @ est neutralisée.
 export function safeCell(value: unknown): string | number {
@@ -37,17 +37,17 @@ export function instrumentRows(instruments: Instrument[], now: Date = new Date()
   });
 }
 
-export async function buildInstrumentsXlsx(instruments: Instrument[], tenantName: string, now: Date = new Date()): Promise<Uint8Array> {
+export async function buildInstrumentsXlsx(instruments: Instrument[], tenantName: string, now: Date = new Date(), tz?: string): Promise<Uint8Array> {
   const wb = new ExcelJS.Workbook();
   wb.creator = "DIOMETRO";
   wb.created = now;
   const ws = wb.addWorksheet("Instruments", { views: [{ state: "frozen", ySplit: 3 }] });
   ws.addRow([safeCell(`${tenantName} — Parc d'instruments`)]).font = { bold: true, size: 14 };
-  ws.addRow([`Export du ${fmtDate(now.toISOString())}`]);
+  ws.addRow([`Export du ${fmtDate(now.toISOString(), "—", tz)}`]);
   const head = ws.addRow(HEADERS);
   head.font = { bold: true, color: { argb: "FFFFFFFF" } };
   head.eachCell((c) => (c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1D4ED8" } }));
-  for (const r of instrumentRows(instruments, now)) ws.addRow(r);
+  for (const r of instrumentRows(instruments, zonedNow(tz, now))) ws.addRow(r);
   ws.columns.forEach((c, idx) => (c.width = [14, 34, 18, 16, 14, 14, 18, 18, 14, 14, 14, 18, 18, 16, 18][idx] ?? 14));
   ws.autoFilter = { from: { row: 3, column: 1 }, to: { row: 3, column: HEADERS.length } };
   return new Uint8Array(await wb.xlsx.writeBuffer());
@@ -56,12 +56,14 @@ export async function buildInstrumentsXlsx(instruments: Instrument[], tenantName
 export async function buildAuditXlsx(
   rows: { created_at: string; user: string; action: string; entity: string; entity_id: string }[],
   tenantName: string,
+  _now: Date = new Date(),
+  tz?: string,
 ): Promise<Uint8Array> {
   const wb = new ExcelJS.Workbook();
   wb.creator = "DIOMETRO";
   const ws = wb.addWorksheet("Audit trail");
   ws.addRow([safeCell(`${tenantName} — Journal d'audit`)]).font = { bold: true, size: 14 };
-  ws.addRow(["Date (heure de Dakar)", "Utilisateur", "Action", "Objet", "Détail"]).font = { bold: true };
+  ws.addRow([`Date (${zoneLabel(tz)})`, "Utilisateur", "Action", "Objet", "Détail"]).font = { bold: true };
   for (const r of rows) ws.addRow([r.created_at, safeCell(r.user), safeCell(r.action), safeCell(r.entity), safeCell(r.entity_id)]);
   ws.columns.forEach((c, i) => (c.width = [20, 24, 30, 32, 60][i]));
   return new Uint8Array(await wb.xlsx.writeBuffer());
@@ -84,7 +86,8 @@ function fit(font: PDFFont, text: string, size: number, maxWidth: number): strin
   return t;
 }
 
-export async function buildInstrumentsPdf(instruments: Instrument[], tenantName: string, now: Date = new Date()): Promise<Uint8Array> {
+export async function buildInstrumentsPdf(instruments: Instrument[], tenantName: string, now: Date = new Date(), tz?: string): Promise<Uint8Array> {
+  const day = zonedNow(tz, now);
   const c = await newDoc(true);
   const cols = [
     { label: "Référence", w: 90 }, { label: "Désignation", w: 220 }, { label: "Localisation", w: 150 },
@@ -92,7 +95,7 @@ export async function buildInstrumentsPdf(instruments: Instrument[], tenantName:
   ];
   const header = () => {
     c.page.drawText(pdfText(`${tenantName} - Parc d'instruments`), { x: 40, y: c.y, size: 15, font: c.bold, color: rgb(0.11, 0.31, 0.85) });
-    c.page.drawText(pdfText(`Édité le ${fmtDate(now.toISOString())} - ${instruments.length} instrument(s)`), { x: 40, y: c.y - 16, size: 9, font: c.font, color: rgb(0.4, 0.45, 0.5) });
+    c.page.drawText(pdfText(`Édité le ${fmtDate(now.toISOString(), "—", tz)} - ${instruments.length} instrument(s)`), { x: 40, y: c.y - 16, size: 9, font: c.font, color: rgb(0.4, 0.45, 0.5) });
     c.y -= 40;
     let x = 40;
     for (const col of cols) { c.page.drawText(pdfText(col.label), { x, y: c.y, size: 9, font: c.bold }); x += col.w; }
@@ -103,7 +106,7 @@ export async function buildInstrumentsPdf(instruments: Instrument[], tenantName:
   header();
   for (const i of instruments) {
     if (c.y < 50) { c.page = c.doc.addPage([c.w, c.h]); c.y = c.h - 50; header(); }
-    const u = instrumentUrgency(i, now);
+    const u = instrumentUrgency(i, day);
     const cells = [i.ref, i.designation, [i.batiment, i.zone].filter(Boolean).join(" / ") || "-", statutLabel(i.statut), i.date_prochaine ?? "-", isRebut(i.statut) ? "Mis au rebut" : URGENCY_LABEL[u]];
     let x = 40;
     cells.forEach((t, idx) => {
@@ -140,7 +143,8 @@ function wrap(font: PDFFont, text: string, size: number, maxWidth: number): stri
 
 export type FicheTenant = { name: string; logo_data?: string | null; accreditation_label?: string };
 
-export async function buildFichePdf(instrument: Instrument, interventions: Intervention[], tenantInfo: string | FicheTenant, now: Date = new Date()): Promise<Uint8Array> {
+export async function buildFichePdf(instrument: Instrument, interventions: Intervention[], tenantInfo: string | FicheTenant, now: Date = new Date(), tz?: string): Promise<Uint8Array> {
+  const day = zonedNow(tz, now);
   const tenant: FicheTenant = typeof tenantInfo === "string" ? { name: tenantInfo } : tenantInfo;
   const c = await newDoc(false);
   const M = 40;
@@ -164,15 +168,15 @@ export async function buildFichePdf(instrument: Instrument, interventions: Inter
     }
   } catch { /* logo illisible : on continue sans */ }
   c.page.drawText(pdfText(tenant.name), { x: textX, y: c.y, size: 13, font: c.bold });
-  c.page.drawText(pdfText(`Fiche de vie de l'instrument - éditée le ${fmtDate(now.toISOString())}`), { x: textX, y: c.y - 15, size: 9, font: c.font, color: grey });
+  c.page.drawText(pdfText(`Fiche de vie de l'instrument - éditée le ${fmtDate(now.toISOString(), "—", tz)}`), { x: textX, y: c.y - 15, size: 9, font: c.font, color: grey });
   c.y -= 44;
   c.page.drawLine({ start: { x: M, y: c.y }, end: { x: c.w - M, y: c.y }, thickness: 1, color: blue });
   c.y -= 26;
   c.page.drawText(fit(c.bold, `${instrument.ref} - ${instrument.designation}`, 16, c.w - 2 * M), { x: M, y: c.y, size: 16, font: c.bold, color: blue });
   c.y -= 24;
 
-  const urgency = instrumentUrgency(instrument);
-  const late = daysUntil(instrument.date_prochaine);
+  const urgency = instrumentUrgency(instrument, day);
+  const late = daysUntil(instrument.date_prochaine, day);
   const line = (label: string, value: string) => {
     const rows = wrap(c.font, value || "-", 10, c.w - 2 * M - 150);
     ensure(rows.length * 13 + 4);
@@ -213,7 +217,7 @@ export async function buildFichePdf(instrument: Instrument, interventions: Inter
   for (const it of interventions) {
     // Intervention annulée (migration 0012) : conservée dans la fiche, signalée comme annulée avec son motif.
     const annul = it as Intervention & { annulee_at?: string | null; annulation_motif?: string };
-    const detail = [annul.annulee_at && `ANNULÉE le ${fmtDate(annul.annulee_at.slice(0, 10), "-")} : ${annul.annulation_motif ?? ""}`, it.prestataire && `Prestataire : ${it.prestataire}`, it.ref_certificat && `Certificat : ${it.ref_certificat}`, it.observation && `Observation : ${it.observation}`].filter(Boolean).join("\n");
+    const detail = [annul.annulee_at && `ANNULÉE le ${fmtDate(annul.annulee_at, "-", tz)} : ${annul.annulation_motif ?? ""}`, it.prestataire && `Prestataire : ${it.prestataire}`, it.ref_certificat && `Certificat : ${it.ref_certificat}`, it.observation && `Observation : ${it.observation}`].filter(Boolean).join("\n");
     const rows = detail ? wrap(c.font, detail, 9, c.w - 2 * M - 12) : [];
     ensure(16 + rows.length * 12 + 8);
     c.page.drawText(fit(c.bold, `${fmtDate(it.date, "-")}   ${it.type}   ${annul.annulee_at ? "ANNULÉE" : it.resultat}`, 10, c.w - 2 * M), { x: M, y: c.y, size: 10, font: c.bold });
@@ -232,12 +236,13 @@ export async function buildAuditPdf(
   rows: { created_at: string; user: string; action: string; entity: string; entity_id: string }[],
   tenantName: string,
   now: Date = new Date(),
+  tz?: string,
 ): Promise<Uint8Array> {
   const c = await newDoc(true);
-  const cols = [{ label: "Date (Dakar)", w: 95 }, { label: "Utilisateur", w: 120 }, { label: "Action", w: 165 }, { label: "Objet", w: 165 }, { label: "Détail", w: 225 }];
+  const cols = [{ label: `Date (${zoneLabel(tz).replace("heure de ", "")})`, w: 95 }, { label: "Utilisateur", w: 120 }, { label: "Action", w: 165 }, { label: "Objet", w: 165 }, { label: "Détail", w: 225 }];
   const header = () => {
     c.page.drawText(pdfText(`${tenantName} - Journal d'audit`), { x: 40, y: c.y, size: 15, font: c.bold, color: rgb(0.11, 0.31, 0.85) });
-    c.page.drawText(pdfText(`Édité le ${fmtDate(now.toISOString())} - ${rows.length} action(s)`), { x: 40, y: c.y - 16, size: 9, font: c.font, color: rgb(0.4, 0.45, 0.5) });
+    c.page.drawText(pdfText(`Édité le ${fmtDate(now.toISOString(), "—", tz)} - ${rows.length} action(s)`), { x: 40, y: c.y - 16, size: 9, font: c.font, color: rgb(0.4, 0.45, 0.5) });
     c.y -= 40;
     let x = 40;
     for (const col of cols) { c.page.drawText(pdfText(col.label), { x, y: c.y, size: 9, font: c.bold }); x += col.w; }

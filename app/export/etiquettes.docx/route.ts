@@ -5,6 +5,7 @@ import { buildingColors, NO_BUILDING } from "@/lib/labels";
 import { appOrigin } from "@/lib/origin";
 import { qrPng } from "@/lib/qr";
 import { requireSession } from "@/lib/session";
+import { todayIn } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/server";
 
 const MAX = 150;
@@ -32,5 +33,5 @@ export async function POST(request: Request) {
     png: await qrPng(`${origin}/p/${r.public_token}`),
   })));
   const bytes = buildLabelsDocx(labels, perRow, `Étiquettes métrologiques · ${s.tenant.name}`);
-  return fileResponse(bytes, DOCX_MIME, `etiquettes-${new Date().toISOString().slice(0, 10)}.docx`);
+  return fileResponse(bytes, DOCX_MIME, `etiquettes-${todayIn(s.timeZone)}.docx`);
 }

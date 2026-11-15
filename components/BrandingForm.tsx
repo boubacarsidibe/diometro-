@@ -4,10 +4,11 @@ import { Field, Notice } from "@/components/Field";
 import { BuildingsEditor } from "@/components/BuildingsEditor";
 import { SubmitButton } from "@/components/SubmitButton";
 import type { FormState } from "@/lib/form";
+import { CountryTimeZoneSelect } from "@/components/CountryTimeZoneSelect";
 
 export function BrandingForm({
-  action, name, alertsEnabled, logo, accreditation, currency, sector, phone, buildings, buildingUsage,
-}: { action: (s: FormState, f: FormData) => Promise<FormState>; name: string; alertsEnabled: boolean; logo: string | null; accreditation: string; currency: string; sector: string; phone: string; buildings: string[]; buildingUsage: Record<string, number> }) {
+  action, name, alertsEnabled, logo, accreditation, currency, sector, phone, buildings, buildingUsage, timeZone, country,
+}: { action: (s: FormState, f: FormData) => Promise<FormState>; name: string; alertsEnabled: boolean; logo: string | null; accreditation: string; currency: string; sector: string; phone: string; buildings: string[]; buildingUsage: Record<string, number>; timeZone: string; country: string | null }) {
   const [state, formAction] = useActionState(action, {});
   const e = state.fieldErrors ?? {};
   return (
@@ -21,6 +22,7 @@ export function BrandingForm({
         <Field label="Devise des tarifs" name="currency" error={e.currency}>
           <select id="currency" name="currency" className="input" defaultValue={state.values?.currency ?? currency}><option value="XOF">FCFA (XOF)</option><option value="EUR">Euro (EUR)</option><option value="USD">Dollar (USD)</option></select>
         </Field>
+        <div className="tz-full"><CountryTimeZoneSelect country={state.values?.country || country} timeZone={state.values?.time_zone || timeZone} error={e.country} /></div>
         <Field label="Bâtiments" name="buildings" error={e.buildings} full>
           <BuildingsEditor id="buildings" name="buildings" initial={state.values?.buildings !== undefined ? state.values.buildings.split("\n").filter(Boolean) : buildings} usage={buildingUsage} />
         </Field>

@@ -5,6 +5,16 @@ import { ROLE_LABEL, requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { urgencyOf } from "@/lib/status";
 import { logout } from "../(auth)/actions";
+import { LiveClock } from "@/components/LiveClock";
+import { countryByCode, countryOfZone } from "@/lib/timezones";
+
+// Lieu affiché à côté de l'heure : pays (et ville s'il a plusieurs fuseaux), ex. « Sénégal », « Canada (Toronto) ».
+function placeOf(tz: string, country: string | null): string {
+  const c = countryByCode(country) ?? countryOfZone(tz);
+  if (!c) return tz.split("/").pop()!.replace(/_/g, " ");
+  const z = c.zones.length > 1 ? c.zones.find((x) => x.id === tz) : undefined;
+  return z ? `${c.name} (${z.city})` : c.name;
+}
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const s = await requireSession();
@@ -24,6 +34,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <div className="logo-name">DIO<span>METRO</span></div>
           )}
           <div className="logo-sub">{s.tenant.name}</div>
+          <LiveClock timeZone={s.timeZone} place={placeOf(s.timeZone, s.country)} />
         </div>}>
         <nav className="navgroup" aria-label="Navigation principale" style={{ overflowY: "auto" }}>
           <div className="navlabel">Navigation</div>

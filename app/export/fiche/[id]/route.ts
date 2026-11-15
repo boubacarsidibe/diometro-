@@ -14,6 +14,6 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   const { data: inst } = await supabase.from("instruments").select("*").eq("id", id).is("deleted_at", null).maybeSingle();
   if (!inst) return new NextResponse("Not found", { status: 404 });
   const { data: ints } = await supabase.from("interventions").select("*").eq("instrument_id", id).order("date", { ascending: false });
-  const bytes = await buildFichePdf(inst as Instrument, (ints ?? []) as Intervention[], { name: s.tenant.name, logo_data: s.tenant.logo_data, accreditation_label: s.tenant.accreditation_label });
+  const bytes = await buildFichePdf(inst as Instrument, (ints ?? []) as Intervention[], { name: s.tenant.name, logo_data: s.tenant.logo_data, accreditation_label: s.tenant.accreditation_label }, new Date(), s.timeZone);
   return fileResponse(bytes, "application/pdf", `fiche-de-vie-${(inst as Instrument).ref}.pdf`);
 }

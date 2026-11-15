@@ -6,13 +6,13 @@ import { requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { daysUntil, urgencyOf } from "@/lib/status";
 import type { Instrument } from "@/lib/types";
-import { fmtDate } from "@/lib/dates";
+import { fmtDate, todayIn } from "@/lib/dates";
 
 const DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 const CHIP = { expire: "red", urgent: "orange", bientot: "yellow", ok: "green", none: "" } as const;
 
 export default async function PlanningPage({ searchParams }: { searchParams: Promise<{ m?: string }> }) {
-  await requireSession();
+  const s = await requireSession();
   const { m } = await searchParams;
   const key = parseMonth(m);
   const next = shiftMonth(key, 1);
@@ -28,7 +28,7 @@ export default async function PlanningPage({ searchParams }: { searchParams: Pro
   const perMonth = Array.from({ length: 12 }, (_, i) => shiftMonth(start, i)).map((m) => ({ m, n: (load ?? []).filter((r) => r.date_prochaine?.startsWith(m)).length }));
   const peak = Math.max(1, ...perMonth.map((x) => x.n));
   // Instruments en service dont l'échéance est déjà passée : ils n'apparaissent dans aucun mois à venir.
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayIn(s.timeZone);
   const { data: lateData } = await supabase.from("instruments").select("*").is("deleted_at", null).eq("statut", "En service").lt("date_prochaine", today).order("date_prochaine");
   const late = (lateData ?? []) as Instrument[];
   return (
