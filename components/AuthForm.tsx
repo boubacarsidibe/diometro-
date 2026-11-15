@@ -1,5 +1,5 @@
 "use client";
-import { useActionState, useState, type ReactNode } from "react";
+import { useActionState, useRef, useState, type ReactNode } from "react";
 import { BuildingsEditor } from "@/components/BuildingsEditor";
 import { Field, Notice } from "@/components/Field";
 import { SubmitButton } from "@/components/SubmitButton";
@@ -55,13 +55,21 @@ const RULES: [string, (p: string) => boolean][] = [
 function PasswordInput({ id, name, autoComplete, required, meter }: { id: string; name: string; autoComplete?: string; required: boolean; meter: boolean }) {
   const [show, setShow] = useState(false);
   const [value, setValue] = useState("");
+  const field = useRef<HTMLInputElement>(null);
+  // L'œil ne vole pas le focus au champ : on peut afficher le mot de passe puis continuer à taper (clavier du téléphone gardé ouvert).
+  const toggle = () => {
+    const el = field.current;
+    const focused = el && document.activeElement === el;
+    setShow((v) => !v);
+    if (el && focused) requestAnimationFrame(() => { el.focus(); const n = el.value.length; try { el.setSelectionRange(n, n); } catch { /* type sans sélection */ } });
+  };
   const passed = RULES.map(([, test]) => test(value));
   return (
     <>
       <div className="pw-wrap">
-        <input id={id} name={name} type={show ? "text" : "password"} className="input" autoComplete={autoComplete} required={required}
+        <input ref={field} id={id} name={name} type={show ? "text" : "password"} className="input" autoComplete={autoComplete} required={required} autoCapitalize="none" autoCorrect="off" spellCheck={false}
           value={value} onChange={(e) => setValue(e.target.value)} aria-describedby={meter ? `${id}-rules` : undefined} />
-        <button type="button" className="pw-eye" onClick={() => setShow((v) => !v)} aria-label={show ? "Masquer le mot de passe" : "Afficher le mot de passe"} aria-pressed={show}>
+        <button type="button" className="pw-eye" onMouseDown={(e) => e.preventDefault()} onClick={toggle} aria-label={show ? "Masquer le mot de passe" : "Afficher le mot de passe"} aria-pressed={show}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             {show ? <><path d="M3 3l18 18" /><path d="M10.6 5.1A9.9 9.9 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2M6.6 6.6A17.4 17.4 0 0 0 2 12s3.6 7 10 7a9.6 9.6 0 0 0 5.4-1.6" /><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" /></>
               : <><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></>}
