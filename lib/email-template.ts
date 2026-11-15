@@ -121,3 +121,14 @@ export function newTenantEmail(lines: [string, string][], company: string, appUr
     html: emailLayout({ appUrl, preheader: `${company} vient de s'inscrire`, kicker: "Nouvelle inscription", title: "Une entreprise a rejoint DIOMETRO", body, cta: { label: "Ouvrir la page Plateforme", url: `${appUrl}/admin` }, reason: "Vous recevez cet e-mail car vous administrez la plateforme DIOMETRO." }),
   };
 }
+
+// ── Demande de devis depuis la page /devis (envoyée à l'équipe DIOMETRO) ──
+export function quoteRequestEmail(lines: [string, string][], company: string, appUrl: string) {
+  const body = p(`<strong>${escapeHtml(company)}</strong> demande un devis depuis le site.`) + infoTable(lines) +
+    p(`<span style="color:${BRAND.muted}">Répondez directement à cet e-mail pour joindre le demandeur.</span>`);
+  return {
+    subject: `DIOMETRO · demande de devis · ${company}`.replace(/[\r\n]+/g, " ").slice(0, 160),
+    text: `Demande de devis DIOMETRO\n\n${lines.map(([k, v]) => `${k} : ${v}`).join("\n")}`,
+    html: emailLayout({ appUrl, preheader: `${company} demande un devis`, kicker: "Demande de devis", title: "Nouvelle demande de devis", body, reason: "Vous recevez cet e-mail car une demande de devis a été envoyée depuis le site DIOMETRO." }),
+  };
+}

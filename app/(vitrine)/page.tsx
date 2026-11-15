@@ -269,7 +269,7 @@ export default async function HomePage() {
               <h2 id="vt-p-title">La formule qui correspond à votre parc.</h2>
               <p className="vt-lead">Toutes les fonctionnalités dans chaque formule : seule la capacité d&apos;instruments change. Indiquez la taille de votre parc, la formule adaptée s&apos;affiche.</p>
             </div>
-            <PlanPicker offers={offers} contact={LEGAL.email} />
+            <PlanPicker offers={offers} />
             <div className="vt-trial vt-reveal"><div className="vt-n">{TRIAL_DAYS}<small>jours</small></div><p><b>Essai gratuit avec toutes les fonctionnalités</b> (jusqu&apos;à 50 instruments le temps de l&apos;essai), puis choix de la formule adaptée à votre parc. Il n&apos;y a pas de formule gratuite : à la fin de l&apos;essai, le compte passe en <b>lecture seule</b> jusqu&apos;au paiement. <b>Vos données ne sont jamais supprimées.</b></p></div>
           </div>
         </section>
@@ -334,7 +334,7 @@ export default async function HomePage() {
                   ))}
                 </div>
               ) : null}
-              {CONTACT.email ? <a className="vt-btn vt-primary" href={`mailto:${CONTACT.email}?subject=Devis DIOMETRO`}>Demander un devis <IconArrow /></a> : null}
+              <Link className="vt-btn vt-primary" href="/devis">Demander un devis <IconArrow /></Link>
             </div>
           </div>
         </section>
@@ -371,7 +371,7 @@ export default async function HomePage() {
             <div><h4>Produit</h4><ul><li><a href="#fonctionnalites">Fonctionnalités</a></li><li><a href="#calculateurs">Calculateurs</a></li><li><a href="#secteurs">Secteurs</a></li><li><a href="#formules">Formules</a></li><li><a href="#questions">Questions fréquentes</a></li></ul></div>
             <div><h4>Compte</h4><ul><li><Link href="/register">Essai gratuit</Link></li><li><Link href="/login">Connexion</Link></li><li><Link href="/forgot-password">Mot de passe oublié</Link></li></ul></div>
             {LEGAL.email ? (
-              <div><h4>Contact</h4><ul><li><a href="#contact">Nos coordonnées</a></li><li><a href={`mailto:${LEGAL.email}`}>{LEGAL.email}</a></li><li><a href={`mailto:${LEGAL.email}?subject=Devis DIOMETRO sur-mesure`}>Demander un devis</a></li>{LEGAL.telephone ? <li><a href={`tel:${LEGAL.telephone.replace(/\s/g, "")}`}>{LEGAL.telephone}</a></li> : null}</ul></div>
+              <div><h4>Contact</h4><ul><li><a href="#contact">Nos coordonnées</a></li><li><a href={`mailto:${LEGAL.email}`}>{LEGAL.email}</a></li><li><Link href="/devis">Demander un devis</Link></li>{LEGAL.telephone ? <li><a href={`tel:${LEGAL.telephone.replace(/\s/g, "")}`}>{LEGAL.telephone}</a></li> : null}</ul></div>
             ) : null}
           </div>
           <div className="vt-foot-bottom">
