@@ -42,7 +42,8 @@ function Brand() {
   );
 }
 
-function useShape(band: React.RefObject<HTMLDivElement | null>, seam: React.RefObject<HTMLDivElement | null>, mode: "login" | "signup") {
+// `key` : à changer quand le volet apparaît (ex. arrivée sur /onboarding ou /mfa depuis /register ou /login sans rechargement).
+function useShape(band: React.RefObject<HTMLDivElement | null>, seam: React.RefObject<HTMLDivElement | null>, mode: "login" | "signup", key?: string) {
   useEffect(() => {
     const apply = () => {
       const s = (isNarrow() ? NARROW : WIDE)[mode];
@@ -53,7 +54,7 @@ function useShape(band: React.RefObject<HTMLDivElement | null>, seam: React.RefO
     const mq = window.matchMedia("(max-width: 760px)");
     mq.addEventListener("change", apply);
     return () => mq.removeEventListener("change", apply);
-  }, [band, seam, mode]);
+  }, [band, seam, mode, key]);
 }
 
 export function AuthSwitcher({ initial, login, signup, trialDays }: { initial: Mode; login: ReactNode; signup: ReactNode; trialDays: number }) {
@@ -156,7 +157,7 @@ export function AuthFrame({ children }: { children: ReactNode }) {
   const path = usePathname();
   const band = useRef<HTMLDivElement>(null);
   const seam = useRef<HTMLDivElement>(null);
-  useShape(band, seam, "login");
+  useShape(band, seam, "login", path);
   if (path === "/login" || path === "/register") return <>{children}</>;
   const s = STEPS[path] ?? { k: "DIOMETRO", t: "Suivi", em: "métrologique.", d: "Vos instruments, leurs étalonnages et leurs échéances au même endroit." };
   return (

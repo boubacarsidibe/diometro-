@@ -101,6 +101,10 @@
   .au-welcome p { font-size: 14px; }
   .au-welcome .au-ghost { display: none; }
   .au-welcome h2 { font-size: 30px; }
+  /* Volet fixe (onboarding, double authentification, mot de passe…) : bandeau en haut sur téléphone,
+     même sans JavaScript ou avant son exécution (sinon le volet en biais de l'ordinateur masquait le formulaire). */
+  .au-static .au-band { clip-path: polygon(0% 0px, 100% 0px, 100% 246px, 0% 272px) !important; }
+  .au-static .au-seam { clip-path: polygon(-0.7% 0px, 100.7% 0px, 100.7% 246px, -0.7% 272px) !important; }
 }
 @media (prefers-reduced-motion: reduce) { .au *, .au *::before, .au *::after { transition: none !important; animation: none !important; } }
 
