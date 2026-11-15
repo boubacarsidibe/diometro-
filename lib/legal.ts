@@ -12,7 +12,8 @@ export const LEGAL = {
   adresse: field("LEGAL_ADDRESS"),
   ninea: field("LEGAL_NINEA"),
   directeur: field("LEGAL_DIRECTOR"),
-  email: field("LEGAL_CONTACT_EMAIL"),
+  // Adresse de contact réelle de DIOMETRO, utilisée tant que la variable Vercel n'est pas renseignée.
+  email: field("LEGAL_CONTACT_EMAIL") ?? "contact.diometro@gmail.com",
   telephone: field("LEGAL_PHONE"),
   juridiction: field("LEGAL_JURISDICTION"),
   cdp: field("LEGAL_CDP_REF"),

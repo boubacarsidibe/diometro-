@@ -75,6 +75,7 @@ export default async function HomePage() {
             <a href="#calculateurs">Calculateurs</a>
             <a href="#formules">Formules</a>
             <a href="#questions">Questions</a>
+            {LEGAL.email ? <a href={`mailto:${LEGAL.email}`}>Contact</a> : null}
           </nav>
           <div className="vt-nav-cta">
             {signedIn ? (
