@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { AuthForm } from "@/components/AuthForm";
-import { TimeZoneInput } from "@/components/TimeZoneInput";
+import { CountryTimeZoneSelect } from "@/components/CountryTimeZoneSelect";
 import { createClient } from "@/lib/supabase/server";
 import { createCompany } from "../actions";
 
@@ -15,7 +15,7 @@ export default async function OnboardingPage() {
       <p className="lead">Dernière étape : créez votre entreprise.</p>
       <AuthForm
         action={createCompany}
-        extra={<TimeZoneInput />}
+        extra={<CountryTimeZoneSelect detect />}
         submit="Créer l'entreprise"
         inputs={[
           { name: "company", label: "Nom de l'entreprise" },

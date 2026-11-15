@@ -62,3 +62,22 @@ describe("fuseau horaire de l'entreprise", () => {
     expect(zoneLabel("Europe/Paris")).toBe("heure de Paris");
   });
 });
+
+import { COUNTRIES, countryByCode, countryOfZone, gmtOffset, isZoneOfCountry } from "@/lib/timezones";
+describe("pays et fuseaux", () => {
+  it("tous les pays du monde, avec au moins un fuseau valide", () => {
+    expect(COUNTRIES.length).toBeGreaterThan(240);
+    for (const c of COUNTRIES) {
+      expect(c.zones.length).toBeGreaterThan(0);
+      for (const z of c.zones) expect(isValidTimeZone(z.id)).toBe(true);
+    }
+    expect(countryByCode("sn")?.name).toBe("Sénégal");
+    expect(countryOfZone("Africa/Dakar")?.code).toBe("SN");
+    expect(countryByCode("US")!.zones.length).toBeGreaterThan(10);
+  });
+  it("fuseau cohérent avec le pays", () => {
+    expect(isZoneOfCountry("CA", "America/Toronto")).toBe(true);
+    expect(isZoneOfCountry("FR", "America/Toronto")).toBe(false);
+    expect(gmtOffset("Africa/Dakar")).toBe("GMT");
+  });
+});

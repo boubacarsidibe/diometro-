@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { LEGAL } from "@/lib/legal";
 import { offerById } from "@/lib/plans";
+import { isZoneOfCountry } from "@/lib/timezones";
 
 export async function saveBranding(_: FormState, formData: FormData): Promise<FormState> {
   const s = await requireAdmin();
@@ -30,11 +31,16 @@ export async function saveBranding(_: FormState, formData: FormData): Promise<Fo
   const { error } = await supabase.from("tenants").update(update).eq("id", s.tenant.id);
   if (error) return { error: "Enregistrement impossible.", values: echoValues(formData) };
   // Fuseau horaire enregistré à part : tant que la migration 0013 n'est pas appliquée, le reste s'enregistre quand même.
-  if (parsed.data.time_zone && parsed.data.time_zone !== s.timeZone) {
-    const { error: tzError } = await supabase.from("tenants").update({ time_zone: parsed.data.time_zone }).eq("id", s.tenant.id);
-    if (tzError) {
+  const { country, time_zone } = parsed.data;
+  if (country && !isZoneOfCountry(country, time_zone)) {
+    return { error: "Choisissez le pays puis la ville de l'entreprise.", fieldErrors: { country: "Pays ou ville invalide" }, values: echoValues(formData) };
+  }
+  if (country && (time_zone !== s.timeZone || country !== s.country)) {
+    const { error: tzError } = await supabase.from("tenants").update({ time_zone, country }).eq("id", s.tenant.id);
+    // Avant la migration 0013, seul un vrai changement de fuseau mérite un message (le pays n'était simplement pas encore enregistré).
+    if (tzError && time_zone !== s.timeZone) {
       revalidatePath("/", "layout");
-      return { error: "Paramètres enregistrés, sauf le fuseau horaire : la mise à jour de la base (migration 0013) n'est pas encore appliquée.", values: echoValues(formData) };
+      return { error: "Paramètres enregistrés, sauf le pays et le fuseau horaire : la mise à jour de la base (migration 0013) n'est pas encore appliquée.", values: echoValues(formData) };
     }
   }
   revalidatePath("/", "layout");
