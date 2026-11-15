@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { CalcDemo, EcheancierDemo, HeroStage, PlanPicker, RevealObserver, SecurityStack, Tilt, type VitrineOffer } from "@/components/vitrine/Interactive";
-import { IconArrow, IconBell, IconBuilding, IconCalc, IconCalendar, IconCheck, IconDownload, IconFile, IconPlus, IconQr, QrPattern } from "@/components/vitrine/icons";
+import { CalcDemo, CopyText, EcheancierDemo, HeroStage, PlanPicker, RevealObserver, SecurityStack, Tilt, type VitrineOffer } from "@/components/vitrine/Interactive";
+import { IconArrow, IconBell, IconBuilding, IconCalc, IconCalendar, IconCheck, IconDownload, IconFacebook, IconFile, IconInstagram, IconLinkedin, IconMail, IconPhone, IconPlus, IconQr, IconWhatsapp, QrPattern } from "@/components/vitrine/icons";
+import { CONTACT, RESEAUX } from "@/lib/contact";
 import { CATALOG } from "@/lib/calc/catalog";
 import { LEGAL } from "@/lib/legal";
 import { OFFERS, TRIAL_DAYS } from "@/lib/plans";
@@ -75,7 +76,7 @@ export default async function HomePage() {
             <a href="#calculateurs">Calculateurs</a>
             <a href="#formules">Formules</a>
             <a href="#questions">Questions</a>
-            {LEGAL.email ? <a href={`mailto:${LEGAL.email}`}>Contact</a> : null}
+            <a href="#contact">Contact</a>
           </nav>
           <div className="vt-nav-cta">
             {signedIn ? (
@@ -282,7 +283,7 @@ export default async function HomePage() {
                 <div className="vt-faq-contact">
                   <b>Une autre question ?</b>
                   <p>Écrivez-nous, nous vous répondons personnellement.</p>
-                  <a className="vt-btn vt-ghost" href={`mailto:${LEGAL.email}`}>{LEGAL.email}</a>
+                  <a className="vt-btn vt-ghost" href="#contact">Nos coordonnées <IconArrow /></a>
                 </div>
               ) : null}
             </div>
@@ -293,6 +294,47 @@ export default async function HomePage() {
                   <p>{f.a}</p>
                 </details>
               ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="vt-section" id="contact" aria-labelledby="vt-ct-title" style={{ paddingTop: 0 }}>
+          <div className="vt-wrap vt-contact">
+            <div className="vt-reveal">
+              <span className="vt-eyebrow">Contact</span>
+              <h2 id="vt-ct-title" style={{ marginTop: 16 }}>Parlons de votre parc d&apos;instruments.</h2>
+              <p className="vt-lead" style={{ marginTop: 14 }}>Une question, un devis pour un grand parc ou un besoin particulier : écrivez-nous, nous vous répondons personnellement.</p>
+            </div>
+            <div className="vt-contact-card vt-reveal">
+              {CONTACT.email ? (
+                <div className="vt-contact-row">
+                  <span className="vt-ico"><IconMail /></span>
+                  <div><span className="vt-contact-k">E-mail</span><a href={`mailto:${CONTACT.email}`}>{CONTACT.email.split("@")[0]}<wbr />@{CONTACT.email.split("@")[1]}</a></div>
+                  <CopyText text={CONTACT.email} label="Copier l'adresse e-mail" />
+                </div>
+              ) : null}
+              {CONTACT.telephone ? (
+                <div className="vt-contact-row">
+                  <span className="vt-ico"><IconPhone /></span>
+                  <div><span className="vt-contact-k">Téléphone</span><a href={`tel:${CONTACT.telephone.replace(/\s/g, "")}`}>{CONTACT.telephone}</a></div>
+                </div>
+              ) : null}
+              {CONTACT.whatsapp ? (
+                <div className="vt-contact-row">
+                  <span className="vt-ico"><IconWhatsapp /></span>
+                  <div><span className="vt-contact-k">WhatsApp</span><a href={`https://wa.me/${CONTACT.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer">{CONTACT.whatsapp}</a></div>
+                </div>
+              ) : null}
+              {RESEAUX.length > 0 ? (
+                <div className="vt-socials" aria-label="Réseaux sociaux">
+                  {RESEAUX.map(([id, nom, url]) => (
+                    <a key={id} href={url} target="_blank" rel="noopener noreferrer" aria-label={`DIOMETRO sur ${nom}`}>
+                      {id === "linkedin" ? <IconLinkedin /> : id === "facebook" ? <IconFacebook /> : <IconInstagram />}
+                    </a>
+                  ))}
+                </div>
+              ) : null}
+              {CONTACT.email ? <a className="vt-btn vt-primary" href={`mailto:${CONTACT.email}?subject=Devis DIOMETRO`}>Demander un devis <IconArrow /></a> : null}
             </div>
           </div>
         </section>
@@ -329,7 +371,7 @@ export default async function HomePage() {
             <div><h4>Produit</h4><ul><li><a href="#fonctionnalites">Fonctionnalités</a></li><li><a href="#calculateurs">Calculateurs</a></li><li><a href="#secteurs">Secteurs</a></li><li><a href="#formules">Formules</a></li><li><a href="#questions">Questions fréquentes</a></li></ul></div>
             <div><h4>Compte</h4><ul><li><Link href="/register">Essai gratuit</Link></li><li><Link href="/login">Connexion</Link></li><li><Link href="/forgot-password">Mot de passe oublié</Link></li></ul></div>
             {LEGAL.email ? (
-              <div><h4>Contact</h4><ul><li><a href={`mailto:${LEGAL.email}`}>{LEGAL.email}</a></li><li><a href={`mailto:${LEGAL.email}?subject=Devis DIOMETRO sur-mesure`}>Demander un devis</a></li>{LEGAL.telephone ? <li><a href={`tel:${LEGAL.telephone.replace(/\s/g, "")}`}>{LEGAL.telephone}</a></li> : null}</ul></div>
+              <div><h4>Contact</h4><ul><li><a href="#contact">Nos coordonnées</a></li><li><a href={`mailto:${LEGAL.email}`}>{LEGAL.email}</a></li><li><a href={`mailto:${LEGAL.email}?subject=Devis DIOMETRO sur-mesure`}>Demander un devis</a></li>{LEGAL.telephone ? <li><a href={`tel:${LEGAL.telephone.replace(/\s/g, "")}`}>{LEGAL.telephone}</a></li> : null}</ul></div>
             ) : null}
           </div>
           <div className="vt-foot-bottom">
