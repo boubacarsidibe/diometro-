@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Topbar } from "@/components/Topbar";
+import { MobileFilters } from "@/components/MobileFilters";
 import { requireAdmin } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { fmtDateTime, zoneLabel } from "@/lib/dates";
@@ -38,6 +39,7 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
         actions={<><a className="btn small soft" href="/export/audit.xlsx">Excel</a><a className="btn small soft" href="/export/audit.pdf">PDF</a></>} />
       <div className="content stack">
         <form className="toolbar" role="search">
+          <MobileFilters count={[f.action, f.entity, f.user, f.from, f.to].filter(Boolean).length}>
           <select className="input" name="action" defaultValue={f.action} aria-label="Action" style={{ maxWidth: 170 }}>
             <option value="">Toutes les actions</option><option value="insert">Création</option><option value="update">Modification</option><option value="delete">Suppression</option><option value="platform_update">Plateforme</option>
           </select>
@@ -50,18 +52,19 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
           <input className="input" type="date" name="from" defaultValue={f.from} aria-label="Du" style={{ maxWidth: 160 }} />
           <input className="input" type="date" name="to" defaultValue={f.to} aria-label="Au" style={{ maxWidth: 160 }} />
           <button className="btn small soft">Filtrer</button>
+          </MobileFilters>
         </form>
         {rows.length === 0 ? <div className="card empty">Aucune action pour ces critères.</div> : (
-          <div className="table-wrap"><table>
+          <div className="table-wrap"><table className="cards">
             <thead><tr><th>Date ({zoneLabel(s.timeZone)})</th><th>Utilisateur</th><th>Action</th><th>Détail</th></tr></thead>
             <tbody>{rows.map((r) => {
               const v = describeAudit(r, s.timeZone);
               return (
                 <tr key={r.id}>
-                  <td style={{ whiteSpace: "nowrap" }}>{fmtDateTime(r.created_at, "—", s.timeZone)}</td>
-                  <td>{auditUser(r.user_id, names)}</td>
-                  <td><strong>{v.label}</strong>{v.object && <div className="helper">{v.object}</div>}</td>
-                  <td>{v.changes.length === 0 ? <span className="helper">—</span> : (
+                  <td className="c-main" style={{ whiteSpace: "nowrap" }}>{fmtDateTime(r.created_at, "—", s.timeZone)}</td>
+                  <td className="c-badge">{auditUser(r.user_id, names)}</td>
+                  <td className="c-sub"><strong>{v.label}</strong>{v.object && <div className="helper">{v.object}</div>}</td>
+                  <td className="c-wide">{v.changes.length === 0 ? <span className="helper">—</span> : (
                     <ul className="audit-changes">{v.changes.map((c) => <li key={c.field}><span>{c.field}</span> : {c.before ? <><s>{c.before}</s> → </> : null}<strong>{c.after}</strong></li>)}</ul>
                   )}</td>
                 </tr>

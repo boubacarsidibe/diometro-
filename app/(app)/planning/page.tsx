@@ -39,17 +39,17 @@ export default async function PlanningPage({ searchParams }: { searchParams: Pro
         <div className="card">
           <h2>En retard{late.length > 0 ? ` (${late.length})` : ""}</h2>
           {late.length === 0 ? <div className="empty">Aucun instrument en service n&apos;est en retard.</div> : (
-            <div className="table-wrap"><table>
+            <div className="table-wrap"><table className="cards">
               <thead><tr><th>Échéance</th><th>Retard</th><th>Référence</th><th>Désignation</th></tr></thead>
               <tbody>{late.map((i) => (
-                <tr key={i.id} className="row-red"><td>{fmtDate(i.date_prochaine)}</td><td>{-(daysUntil(i.date_prochaine) ?? 0)} j</td><td><Link href={`/instruments/${i.id}`}>{i.ref}</Link></td><td>{i.designation}</td></tr>
+                <tr key={i.id} className="row-red"><td data-label="Échéance">{fmtDate(i.date_prochaine)}</td><td className="c-badge"><span className="tag red">{-(daysUntil(i.date_prochaine) ?? 0)} j de retard</span></td><td className="c-main"><Link href={`/instruments/${i.id}`}>{i.ref}</Link></td><td className="c-sub">{i.designation}</td></tr>
               ))}</tbody>
             </table></div>
           )}
         </div>
         <div className="card">
           <h2 style={{ textTransform: "capitalize" }}>{monthLabel(key)}</h2>
-          <div className="table-wrap">
+          <div className="table-wrap cal-wrap">
             <table className="cal">
               <thead><tr>{DAYS.map((d) => <th key={d}>{d}</th>)}</tr></thead>
               <tbody>{calendarGrid(key).map((week, wi) => (
@@ -63,6 +63,27 @@ export default async function PlanningPage({ searchParams }: { searchParams: Pro
                 ))}</tr>
               ))}</tbody>
             </table>
+          </div>
+          {/* Téléphone : agenda (jours qui ont une échéance) à la place de la grille de 7 colonnes */}
+          <div className="agenda">
+            {[...byDay.keys()].sort((a, b) => a - b).length === 0 && <div className="empty">Aucune échéance ce mois-ci.</div>}
+            {[...byDay.keys()].sort((a, b) => a - b).map((day) => {
+              const iso = `${key}-${String(day).padStart(2, "0")}`;
+              const wd = new Date(`${iso}T12:00:00Z`).toLocaleDateString("fr-FR", { weekday: "short", timeZone: "UTC" }).replace(".", "");
+              return (
+                <div className="agenda-day" key={day}>
+                  <div className={`agenda-date${iso === today ? " today" : ""}`}><small>{wd}</small><b>{day}</b></div>
+                  <div className="agenda-items">
+                    {(byDay.get(day) ?? []).map((i) => (
+                      <Link key={i.id} href={`/instruments/${i.id}`} className="agenda-item">
+                        <span><span className="ai-ref">{i.ref}</span><br /><span className="ai-des">{i.designation}</span></span>
+                        <UrgencyTag urgency={urgencyOf(i.date_prochaine)} />
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
         <div className="card">
@@ -78,7 +99,8 @@ export default async function PlanningPage({ searchParams }: { searchParams: Pro
           </div>
           <p className="helper" style={{ marginTop: 8 }}>Cliquez sur une barre pour afficher les instruments du mois.</p>
         </div>
-        <div className="card">
+        {/* Sur téléphone, l'agenda ci-dessus montre déjà ce détail */}
+        <div className="card hide-mobile">
           <h2>Détail du mois</h2>
           {items.length === 0 ? <div className="empty">Aucune échéance ce mois-ci.</div> : (
             <div className="table-wrap"><table>

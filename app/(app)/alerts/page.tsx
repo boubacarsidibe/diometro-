@@ -43,19 +43,19 @@ export default async function AlertsPage() {
               <p className="helper" style={{ marginBottom: 12 }}>{t.hint}</p>
               {list.length === 0 ? <div className="empty">{t.empty}</div> : (
                 <div className="table-wrap">
-                  <table>
+                  <table className="cards">
                     <thead><tr><th>Référence</th><th>Désignation</th><th>Localisation</th><th>Échéance</th><th>Délai</th><th /></tr></thead>
                     <tbody>
                       {list.map((i) => {
                         const d = daysUntil(i.date_prochaine) ?? 0;
                         return (
                           <tr key={i.id} className={rowClass(t.key)} data-f-batiment={i.batiment || ""} data-f-type={i.catalog_id || ""}>
-                            <td><strong>{i.ref}</strong></td>
-                            <td>{i.designation}</td>
-                            <td>{[i.batiment, i.zone].filter(Boolean).join(" · ") || "—"}</td>
-                            <td>{fmtDate(i.date_prochaine)}</td>
-                            <td><strong>{d < 0 ? `${-d} j de retard` : `dans ${d} j`}</strong></td>
-                            <td style={{ textAlign: "right" }}><Link className="btn small soft" href={`/instruments/${i.id}`}>Ouvrir la fiche</Link></td>
+                            <td className="c-main"><strong>{i.ref}</strong></td>
+                            <td className="c-sub">{i.designation}</td>
+                            <td data-label="Localisation">{[i.batiment, i.zone].filter(Boolean).join(" · ") || "—"}</td>
+                            <td data-label="Échéance">{fmtDate(i.date_prochaine)}</td>
+                            <td className="c-badge"><strong>{d < 0 ? `${-d} j de retard` : `dans ${d} j`}</strong></td>
+                            <td className="c-act" style={{ textAlign: "right" }}><Link className="btn small soft" href={`/instruments/${i.id}`}>Ouvrir la fiche</Link></td>
                           </tr>
                         );
                       })}

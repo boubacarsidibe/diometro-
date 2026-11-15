@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { InstrumentPreview } from "@/components/InstrumentPreview";
 import { Topbar } from "@/components/Topbar";
+import { MobileFilters } from "@/components/MobileFilters";
 import { UrgencyTag, rowClass } from "@/components/UrgencyTag";
 import { CATALOG } from "@/lib/calc/catalog";
 import {
@@ -72,6 +73,7 @@ export default async function InstrumentsPage({ searchParams }: { searchParams: 
           <input type="hidden" name="sort" value={q.sort} /><input type="hidden" name="dir" value={q.dir} />
           <div className="grid cols-4">
             <input className="input" name="q" defaultValue={q.q} placeholder="Rechercher (référence, désignation…)" aria-label="Rechercher" maxLength={100} />
+            <MobileFilters count={filters - (q.q ? 1 : 0)}>
             <select className="input" name="statut" defaultValue={q.statut} aria-label="Statut"><option value="">Tous les statuts</option>{STATUTS.map((x) => <option key={x} value={x}>{statutLabel(x)}</option>)}</select>
             <select className="input" name="conformite" defaultValue={q.conformite} aria-label="Conformité"><option value="">Toutes conformités</option>{CONFORMITES.map((x) => <option key={x}>{x}</option>)}</select>
             <select className="input" name="echeance" defaultValue={q.echeance} aria-label="Échéance"><option value="">Toutes échéances</option>{ECHEANCES.map((x) => <option key={x} value={x}>{ECHEANCE_LABEL[x]}</option>)}</select>
@@ -82,6 +84,7 @@ export default async function InstrumentsPage({ searchParams }: { searchParams: 
               <button className="btn soft" style={{ flex: 1, justifyContent: "center" }}>Filtrer</button>
               {filters > 0 && <Link className="btn soft" href="/instruments">Réinitialiser</Link>}
             </div>
+            </MobileFilters>
           </div>
         </form>
 
@@ -89,7 +92,7 @@ export default async function InstrumentsPage({ searchParams }: { searchParams: 
           <div className="card empty">Aucun instrument ne correspond à ces critères.</div>
         ) : (
           <div className="table-wrap">
-            <table>
+            <table className="cards">
               <thead>
                 <tr>
                   {COLUMNS.map((c) => {
@@ -112,14 +115,14 @@ export default async function InstrumentsPage({ searchParams }: { searchParams: 
                   const u = instrumentUrgency(i);
                   return (
                     <tr key={i.id} className={rowClass(u)}>
-                      <td><Link href={`/instruments/${i.id}`}>{i.ref}</Link></td>
-                      <td>{i.designation}</td>
-                      <td>{[i.batiment, i.zone].filter(Boolean).join(" · ") || "—"}</td>
-                      <td>{statutLabel(i.statut)}</td>
-                      <td>{i.conformite}{!isRebut(i.statut) && conformityWarning(i.conformite, i.date_prochaine) && <> <span className="tag orange" title="Échéance dépassée : conformité à revérifier">À revérifier</span></>}</td>
-                      <td>{fmtDate(i.date_prochaine)}</td>
-                      <td><UrgencyTag urgency={u} statut={i.statut} /></td>
-                      <td><InstrumentPreview id={i.id} label={`${i.ref} ${i.designation}`} count={docCount.get(i.id) ?? 0} /></td>
+                      <td className="c-main"><Link href={`/instruments/${i.id}`}>{i.ref}</Link></td>
+                      <td className="c-sub">{i.designation}</td>
+                      <td data-label="Localisation">{[i.batiment, i.zone].filter(Boolean).join(" · ") || "—"}</td>
+                      <td data-label="Statut">{statutLabel(i.statut)}</td>
+                      <td data-label="Conformité">{i.conformite}{!isRebut(i.statut) && conformityWarning(i.conformite, i.date_prochaine) && <> <span className="tag orange" title="Échéance dépassée : conformité à revérifier">À revérifier</span></>}</td>
+                      <td data-label="Échéance">{fmtDate(i.date_prochaine)}</td>
+                      <td className="c-badge"><UrgencyTag urgency={u} statut={i.statut} /></td>
+                      <td className="c-act"><InstrumentPreview id={i.id} label={`${i.ref} ${i.designation}`} count={docCount.get(i.id) ?? 0} /></td>
                     </tr>
                   );
                 })}
