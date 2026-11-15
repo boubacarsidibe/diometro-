@@ -43,3 +43,12 @@ export function QrPattern({ seed, label }: { seed: number; label?: string }) {
     </svg>
   );
 }
+
+// Coordonnées et réseaux (pictogrammes simplifiés, couleur du texte).
+export const IconMail = (p: P) => <svg {...base} strokeWidth={2} {...p}><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>;
+export const IconPhone = (p: P) => <svg {...base} strokeWidth={2} {...p}><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z" /></svg>;
+export const IconWhatsapp = (p: P) => <svg {...base} strokeWidth={2} {...p}><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z" /><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.5-2-1-1 .8a5 5 0 0 1-2.3-2.3l.8-1-1-2z" /></svg>;
+export const IconLinkedin = (p: P) => <svg {...base} strokeWidth={2} {...p}><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 10.5V17M8 7.5v.01M12 17v-6.5M12 13.5a2.5 2.5 0 0 1 5 0V17" /></svg>;
+export const IconFacebook = (p: P) => <svg {...base} strokeWidth={2} {...p}><circle cx="12" cy="12" r="9" /><path d="M13.5 21v-7.5H16M13.5 13.5V10a2 2 0 0 1 2-2H17M10.5 13.5h3" /></svg>;
+export const IconInstagram = (p: P) => <svg {...base} strokeWidth={2} {...p}><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><path d="M17.5 6.5v.01" /></svg>;
+export const IconCopy = (p: P) => <svg {...base} strokeWidth={2} {...p}><rect x="9" y="9" width="12" height="12" rx="2" /><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" /></svg>;

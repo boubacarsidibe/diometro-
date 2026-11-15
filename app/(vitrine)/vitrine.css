@@ -306,6 +306,21 @@
 .vt-faq-contact { margin-top: 28px; padding: 20px; border: 1px solid var(--sage-line2); border-radius: var(--r); background: var(--sage-card); display: grid; gap: 8px; justify-items: start; }
 .vt-faq-contact p { color: var(--ink-soft); font-size: 15px; }
 .vt-btn-off { cursor: default; opacity: .7; }
+section[id] { scroll-margin-top: 84px; }
+.vt-contact { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 64px); align-items: center; }
+.vt-contact-card { background: var(--sage-card); border: 1px solid var(--sage-line); border-radius: var(--r); box-shadow: var(--shadow); padding: clamp(20px, 3vw, 30px); display: grid; gap: 18px; justify-items: start; }
+.vt-contact-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; width: 100%; padding-bottom: 16px; border-bottom: 1px solid var(--sage-line2); }
+.vt-contact-row .vt-ico { width: 42px; height: 42px; }
+.vt-contact-row a { color: var(--ink); font-weight: 600; text-decoration: none; overflow-wrap: anywhere; }
+.vt-contact-row a:hover { color: var(--wine); text-decoration: underline; }
+.vt-contact-k { display: block; font-family: var(--f-mono); font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--wine-mid); margin-bottom: 2px; }
+.vt-copy { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--sage-line2); background: transparent; color: var(--wine); border-radius: 999px; padding: 7px 12px; font: 600 13px var(--f-body); cursor: pointer; }
+.vt-copy:hover { border-color: var(--wine); }
+.vt-copy svg { width: 15px; height: 15px; }
+.vt-socials { display: flex; gap: 10px; }
+.vt-socials a { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; color: var(--wine); border: 1px solid var(--sage-line2); transition: background .2s, color .2s; }
+.vt-socials a:hover { background: var(--wine); color: var(--cream); }
+.vt-socials svg { width: 20px; height: 20px; }
 .vt-faq-grid { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: clamp(28px, 5vw, 64px); align-items: start; }
 .vt-faq { border-top: 1px solid var(--sage-line2); }
 .vt-faq details { border-bottom: 1px solid var(--sage-line2); }
@@ -349,6 +364,7 @@
 .vt.vt-js .vt-reveal.vt-in { transform: none; }
 
 @media (max-width: 960px) {
+  .vt-contact { grid-template-columns: 1fr; }
   .vt-sectors { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .vt-nav-links { display: none; }
   .vt-hero-grid, .vt-calc-grid, .vt-sec-grid, .vt-faq-grid, .vt-final-box { grid-template-columns: minmax(0, 1fr); }
@@ -367,6 +383,8 @@
   .vt-iso-scene { height: 340px; }
 }
 @media (max-width: 640px) {
+  .vt-contact-row { grid-template-columns: auto minmax(0, 1fr); }
+  .vt-contact-row .vt-copy { grid-column: 2; justify-self: start; }
   .vt-sectors { grid-template-columns: 1fr; }
   .vt-nav-cta .vt-login { display: none; }
   .vt-bento, .vt-plans, .vt-steps { grid-template-columns: minmax(0, 1fr); }

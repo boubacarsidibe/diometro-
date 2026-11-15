@@ -4,7 +4,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, type PointerEvent as RPointerEvent, type ReactNode } from "react";
-import { IconArrow, IconCheck, IconClock, IconLayers, IconLock, IconQrThin, rng } from "./icons";
+import { IconArrow, IconCheck, IconClock, IconCopy, IconLayers, IconLock, IconQrThin, rng } from "./icons";
 
 const reduced = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const fr = (n: number, d: number) => n.toLocaleString("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -282,5 +282,18 @@ export function PlanPicker({ offers, contact }: { offers: VitrineOffer[]; contac
         })}
       </div>
     </>
+  );
+}
+
+// Bouton « Copier » de la section Contact.
+export function CopyText({ text, label }: { text: string; label: string }) {
+  const [done, setDone] = useState(false);
+  async function copy() {
+    try { await navigator.clipboard.writeText(text); setDone(true); setTimeout(() => setDone(false), 1800); } catch { /* copie refusée : l'adresse reste affichée et sélectionnable */ }
+  }
+  return (
+    <button type="button" className="vt-copy" onClick={copy} aria-label={label}>
+      {done ? <IconCheck /> : <IconCopy />}<span>{done ? "Copié" : "Copier"}</span>
+    </button>
   );
 }
