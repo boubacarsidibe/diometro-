@@ -484,3 +484,7 @@ dl.details.p-details { grid-template-columns: minmax(0, 150px) minmax(0, 1fr); }
 @media (max-width: 760px) {
   .input, select.input, textarea.input { font-size: 16px; }
 }
+/* Œil du mot de passe : pas de second œil natif (Edge / Windows), pas de zoom au double appui, cible tactile de 44 px */
+input::-ms-reveal, input::-ms-clear { display: none; }
+.pw-eye { touch-action: manipulation; -webkit-tap-highlight-color: transparent; z-index: 1; }
+@media (pointer: coarse) { .pw-eye { width: 44px; height: 44px; right: 2px; } .pw-wrap .input { padding-right: 50px; } }
