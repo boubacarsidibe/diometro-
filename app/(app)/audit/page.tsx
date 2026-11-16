@@ -7,7 +7,10 @@ import { fmtDateTime, zoneLabel } from "@/lib/dates";
 import { auditUser, describeAudit, type AuditRow } from "@/lib/audit";
 
 const PAGE_SIZE = 50;
-type Q = { page?: string; action?: string; entity?: string; from?: string; to?: string; user?: string };
+type Q = { page?: string; action?: string; entity?: string; from?: string; to?: string; user?: string; vue?: string };
+
+const SESSION_ACTIONS = [["login", "Connexion réussie"], ["login_failed", "Échec de connexion"], ["logout", "Déconnexion"]] as const;
+const EDIT_ACTIONS = [["insert", "Création"], ["update", "Modification"], ["delete", "Suppression"], ["platform_update", "Plateforme"]] as const;
 
 const safeToken = (v?: string) => (v && /^[a-z_]{1,40}$/.test(v) ? v : "");
 const safeDate = (v?: string) => (v && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : "");
@@ -17,12 +20,17 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
   const s = await requireAdmin();
   const q = await searchParams;
   const page = Math.max(1, Math.min(10000, Number(q.page) || 1));
-  const f = { action: safeToken(q.action), entity: safeToken(q.entity), from: safeDate(q.from), to: safeDate(q.to), user: safeUuid(q.user) };
+  // Deux vues séparées : le journal des modifications (par défaut) et l'historique des connexions.
+  const connexions = q.vue === "connexions";
+  const allowed: readonly (readonly [string, string])[] = connexions ? SESSION_ACTIONS : EDIT_ACTIONS;
+  const action = allowed.some(([v]) => v === q.action) ? safeToken(q.action) : "";
+  const f = { vue: connexions ? "connexions" : "", action, entity: connexions || q.entity === "sessions" ? "" : safeToken(q.entity), from: safeDate(q.from), to: safeDate(q.to), user: safeUuid(q.user) };
   const supabase = await createClient();
   let query = supabase.from("audit_log").select("id, user_id, action, entity, entity_id, created_at, detail", { count: "exact" }).order("id", { ascending: false });
   if (f.action) query = query.eq("action", f.action);
-  // Les connexions ont leur propre filtre : elles n'apparaissent jamais dans la vue par défaut.
-  if (f.entity) query = query.eq("entity", f.entity); else query = query.neq("entity", "sessions");
+  if (connexions) query = query.eq("entity", "sessions");
+  else if (f.entity) query = query.eq("entity", f.entity);
+  else query = query.neq("entity", "sessions");
   if (f.user) query = query.eq("user_id", f.user);
   if (f.from) query = query.gte("created_at", `${f.from}T00:00:00Z`);
   if (f.to) query = query.lt("created_at", `${f.to}T23:59:59.999Z`);
@@ -33,21 +41,30 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
   const names = new Map((members ?? []).map((m) => [m.user_id, m.display_name]));
   const rows = (data ?? []) as AuditRow[];
   const pages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
-  const exp = f.entity === "sessions" ? "?connexions=1" : "";
+  const exp = connexions ? "?connexions=1" : "";
   const href = (p: number) => { const sp = new URLSearchParams(); Object.entries(f).forEach(([k, v]) => v && sp.set(k, v)); sp.set("page", String(p)); return `/audit?${sp}`; };
   return (
     <>
-      <Topbar title="Audit trail" subtitle={`${count ?? 0} action${(count ?? 0) > 1 ? "s" : ""} — journal non modifiable.`}
-        actions={<><a className="btn small soft" href={`/export/audit.xlsx${exp}`}>Excel</a><a className="btn small soft" href={`/export/audit.pdf${exp}`}>PDF</a></>} />
+      <Topbar title={connexions ? "Historique des connexions" : "Audit trail"}
+        subtitle={connexions ? `${count ?? 0} événement${(count ?? 0) > 1 ? "s" : ""} — connexions, échecs de code et déconnexions.` : `${count ?? 0} action${(count ?? 0) > 1 ? "s" : ""} — journal non modifiable.`}
+        actions={<>
+          {connexions
+            ? <Link className="btn small" href="/audit">Journal des modifications</Link>
+            : <Link className="btn small" href="/audit?vue=connexions">Historique des connexions</Link>}
+          <a className="btn small soft" href={`/export/audit.xlsx${exp}`}>Excel</a><a className="btn small soft" href={`/export/audit.pdf${exp}`}>PDF</a>
+        </>} />
       <div className="content stack">
         <form className="toolbar" role="search">
+          {connexions ? <input type="hidden" name="vue" value="connexions" /> : null}
           <MobileFilters count={[f.action, f.entity, f.user, f.from, f.to].filter(Boolean).length}>
-          <select className="input" name="action" defaultValue={f.action} aria-label="Action" style={{ maxWidth: 170 }}>
-            <option value="">Toutes les actions</option><option value="insert">Création</option><option value="update">Modification</option><option value="delete">Suppression</option><option value="platform_update">Plateforme</option><option value="login">Connexion réussie</option><option value="login_failed">Échec de connexion</option><option value="logout">Déconnexion</option>
+          <select className="input" name="action" defaultValue={f.action} aria-label={connexions ? "Événement" : "Action"} style={{ maxWidth: 190 }}>
+            <option value="">{connexions ? "Tous les événements" : "Toutes les actions"}</option>{allowed.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
+          {connexions ? null : (
           <select className="input" name="entity" defaultValue={f.entity} aria-label="Objet" style={{ maxWidth: 190 }}>
-            <option value="">Tous les objets</option><option value="instruments">Instruments</option><option value="interventions">Interventions</option><option value="prestataires">Prestataires</option><option value="profiles">Utilisateurs</option><option value="attachments">Documents</option><option value="inventory_runs">Inventaires</option><option value="tenants">Entreprise</option><option value="sessions">Connexions</option>
+            <option value="">Tous les objets</option><option value="instruments">Instruments</option><option value="interventions">Interventions</option><option value="prestataires">Prestataires</option><option value="profiles">Utilisateurs</option><option value="attachments">Documents</option><option value="inventory_runs">Inventaires</option><option value="tenants">Entreprise</option>
           </select>
+          )}
           <select className="input" name="user" defaultValue={f.user} aria-label="Utilisateur" style={{ maxWidth: 190 }}>
             <option value="">Tous les utilisateurs</option>{(members ?? []).map((m) => <option key={m.user_id} value={m.user_id}>{m.display_name}</option>)}
           </select>
@@ -56,9 +73,9 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
           <button className="btn small soft">Filtrer</button>
           </MobileFilters>
         </form>
-        {rows.length === 0 ? <div className="card empty">Aucune action pour ces critères.</div> : (
+        {rows.length === 0 ? <div className="card empty">{connexions ? "Aucune connexion pour ces critères." : "Aucune action pour ces critères."}</div> : (
           <div className="table-wrap"><table className="cards">
-            <thead><tr><th>Date ({zoneLabel(s.timeZone)})</th><th>Utilisateur</th><th>Action</th><th>Détail</th></tr></thead>
+            <thead><tr><th>Date ({zoneLabel(s.timeZone)})</th><th>Utilisateur</th><th>{connexions ? "Événement" : "Action"}</th><th>Détail</th></tr></thead>
             <tbody>{rows.map((r) => {
               const v = describeAudit(r, s.timeZone);
               return (
