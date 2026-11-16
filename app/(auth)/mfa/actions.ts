@@ -6,6 +6,7 @@ import { isMailConfigured, mailer, missingMailVars, smtpErrorInfo } from "@/lib/
 import { createAdminClient } from "@/lib/supabase/admin";
 import { appBaseUrl, codeEmail } from "@/lib/email-template";
 import { createClient } from "@/lib/supabase/server";
+import { logSessionEvent } from "@/lib/session-log";
 
 const VALIDITY_MIN = 10;
 const MAX_SENDS_PER_HOUR = 5;
@@ -17,9 +18,9 @@ export type CodeState = { ok?: string; error?: string; sentAt?: number; expiresA
 async function currentSession() {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getClaims();
-  const claims = data?.claims as { sub?: string; email?: string; session_id?: string } | undefined;
+  const claims = data?.claims as { sub?: string; email?: string; session_id?: string; aal?: string } | undefined;
   if (error || !claims?.sub || !claims.session_id) return null;
-  return { supabase, userId: claims.sub, email: claims.email ?? "", sessionId: claims.session_id };
+  return { supabase, userId: claims.sub, email: claims.email ?? "", sessionId: claims.session_id, aal: claims.aal ?? "" };
 }
 
 // Génère un code à 6 chiffres, l'enregistre (empreinte salée seulement) et l'envoie par e-mail.
@@ -84,13 +85,20 @@ export async function verifyEmailCode(_: CodeState, formData: FormData): Promise
   if (!mfaCodeSchema.safeParse(code).success) return { error: "Saisissez le code à 6 chiffres reçu par e-mail." };
   const { data, error } = await s.supabase.rpc("mfa_email_verify", { p_code: code });
   if (error) return { error: "Vérification impossible pour le moment. Réessayez." };
-  if (data !== "ok") return { error: MESSAGES[String(data)] ?? MESSAGES.invalid };
+  if (data !== "ok") {
+    await logSessionEvent(s.userId, "login_failed", { methode: "Code par e-mail", motif: String(data) });
+    return { error: MESSAGES[String(data)] ?? MESSAGES.invalid };
+  }
   await s.supabase.rpc("set_mfa_method", { p_method: "email" });
+  await logSessionEvent(s.userId, "login", { methode: "Code par e-mail" });
   redirect("/dashboard");
 }
 
 // Après validation par l'application d'authentification : mémorise ce choix pour les prochaines connexions.
 export async function rememberTotp(): Promise<void> {
-  const supabase = await createClient();
-  await supabase.rpc("set_mfa_method", { p_method: "totp" });
+  const s = await currentSession();
+  if (!s) return;
+  await s.supabase.rpc("set_mfa_method", { p_method: "totp" });
+  // Journalisé seulement si la double authentification est réellement validée (jeton aal2 signé).
+  if (s.aal === "aal2") await logSessionEvent(s.userId, "login", { methode: "Application d'authentification" });
 }

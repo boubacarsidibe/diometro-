@@ -1,6 +1,7 @@
 "use server";
 
 import { cookies, headers } from "next/headers";
+import { logSessionEvent } from "@/lib/session-log";
 import { redirect } from "next/navigation";
 import { createClient, REMEMBER_COOKIE } from "@/lib/supabase/server";
 import { echoValues, parseForm, type FormState } from "@/lib/form";
@@ -104,6 +105,9 @@ export async function createCompany(_: FormState, formData: FormData): Promise<F
 
 export async function logout() {
   const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  const userId = (data?.claims as { sub?: string } | undefined)?.sub;
+  if (userId) await logSessionEvent(userId, "logout");
   await supabase.auth.signOut();
   redirect("/login");
 }

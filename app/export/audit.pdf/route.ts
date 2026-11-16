@@ -5,11 +5,12 @@ import { auditUser, describeAudit, type AuditRow } from "@/lib/audit";
 import { fmtDateTime, todayIn } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/server";
 
-export async function GET() {
+export async function GET(req: Request) {
+  const connexions = new URL(req.url).searchParams.get("connexions") === "1";
   const s = await requireAdmin();
   const supabase = await createClient();
   const [{ data }, { data: members }] = await Promise.all([
-    supabase.from("audit_log").select("id, user_id, action, entity, entity_id, created_at, detail").order("id", { ascending: false }).limit(1000),
+    (connexions ? supabase.from("audit_log").select("id, user_id, action, entity, entity_id, created_at, detail").eq("entity", "sessions") : supabase.from("audit_log").select("id, user_id, action, entity, entity_id, created_at, detail").neq("entity", "sessions")).order("id", { ascending: false }).limit(1000),
     supabase.from("profiles").select("user_id, display_name"),
   ]);
   const names = new Map((members ?? []).map((m) => [m.user_id, m.display_name]));
@@ -22,5 +23,5 @@ export async function GET() {
     new Date(),
     s.timeZone,
   );
-  return fileResponse(bytes, "application/pdf", `audit-${todayIn(s.timeZone)}.pdf`);
+  return fileResponse(bytes, "application/pdf", `${connexions ? "connexions" : "audit"}-${todayIn(s.timeZone)}.pdf`);
 }

@@ -21,7 +21,7 @@ export default function ConfidentialitePage() {
         <li><strong>Compte :</strong> adresse email, nom affiché, téléphone (facultatif), rôle, mot de passe (conservé uniquement sous forme chiffrée irréversible), preuve d&apos;acceptation des conditions.</li>
         <li><strong>Entreprise :</strong> nom, secteur, téléphone, bâtiments, logo, formule.</li>
         <li><strong>Données métier saisies par le client :</strong> instruments, interventions, prestataires (dont contacts professionnels), inventaires, documents et photos joints.</li>
-        <li><strong>Journal d&apos;audit :</strong> actions réalisées, auteur et date, pour la traçabilité.</li>
+        <li><strong>Journal d&apos;audit :</strong> actions réalisées, auteur et date, pour la traçabilité. Il inclut l&apos;historique des connexions (connexion, échec de code, déconnexion, méthode utilisée), consultable par les administrateurs de l&apos;entreprise, sans adresse IP ni identifiant d&apos;appareil.</li>
         <li><strong>Données techniques :</strong> journaux de connexion et de sécurité nécessaires au fonctionnement.</li>
       </ul>
 
