@@ -58,7 +58,7 @@
 .vt-btn:active { transform: translate(-3px, -3px); box-shadow: 1px 1px 0 var(--st1), 2px 2px 0 var(--st2), 3px 3px 0 var(--st3); }
 
 /* Barre de navigation */
-.vt-nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: rgba(44, 14, 22, .82); backdrop-filter: blur(14px) saturate(140%); -webkit-backdrop-filter: blur(14px) saturate(140%); border-bottom: 1px solid var(--wine-line); }
+.vt-nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: var(--wine-deep); border-bottom: 1px solid var(--wine-line); box-shadow: 0 6px 18px rgba(0, 0, 0, .18); }
 .vt-nav .vt-wrap { display: flex; align-items: center; gap: 28px; min-height: 66px; }
 .vt-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
 .vt-brand .vt-mark { height: 30px; width: auto; }
