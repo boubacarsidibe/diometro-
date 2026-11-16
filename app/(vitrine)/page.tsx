@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { INDEXABLE } from "@/lib/seo";
 import Image from "next/image";
 import Link from "next/link";
 import { CalcDemo, CopyText, EcheancierDemo, HeroStage, PlanPicker, RevealObserver, SecurityStack, Tilt, type VitrineOffer } from "@/components/vitrine/Interactive";
@@ -9,9 +10,15 @@ import { LEGAL } from "@/lib/legal";
 import { OFFERS, prixAffiche, TRIAL_DAYS } from "@/lib/plans";
 import { createClient } from "@/lib/supabase/server";
 
+const DESCRIPTION = "DIOMETRO, logiciel de gestion métrologique en ligne : suivez vos instruments de mesure, étalonnages et échéances. Alertes e-mail, calculateurs de conformité, QR codes, planning, inventaire. Essai gratuit de 30 jours.";
 export const metadata: Metadata = {
-  title: "DIOMETRO · Suivi métrologique des instruments de mesure",
-  description: "Suivez vos instruments de mesure, vos étalonnages et vos échéances. Alertes, calculateurs de conformité, QR codes, planning, inventaire. Essai gratuit de 30 jours.",
+  title: "DIOMETRO · Logiciel de suivi métrologique des instruments de mesure",
+  description: DESCRIPTION,
+  keywords: ["DIOMETRO", "métrologie", "logiciel de métrologie", "gestion des instruments de mesure", "étalonnage", "suivi métrologique", "fiche de vie", "Sénégal", "Afrique"],
+  robots: INDEXABLE,
+  alternates: { canonical: "/" },
+  openGraph: { type: "website", locale: "fr_FR", siteName: "DIOMETRO", title: "DIOMETRO · Suivi métrologique des instruments de mesure", description: DESCRIPTION, url: "/" },
+  twitter: { card: "summary", title: "DIOMETRO · Suivi métrologique", description: DESCRIPTION },
 };
 
 // Chiffres tirés des données réelles : ils se mettent à jour quand le catalogue ou les formules évoluent.

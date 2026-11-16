@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { INDEXABLE } from "@/lib/seo";
 import { Missing } from "@/components/LegalLayout";
 import { LEGAL, missingLegalFields } from "@/lib/legal";
 import { TRIAL_DAYS } from "@/lib/plans";
 
-export const metadata: Metadata = { title: "Conditions générales d'utilisation · DIOMETRO" };
+export const metadata: Metadata = { title: "Conditions générales d'utilisation · DIOMETRO", robots: INDEXABLE };
 
 export default function CguPage() {
   const L = LEGAL;
