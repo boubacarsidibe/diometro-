@@ -17,9 +17,12 @@ function placeOf(tz: string, country: string | null): string {
 }
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const s = await requireSession();
+  // Session et compteur d'alertes en parallèle : la RLS limite déjà les instruments à l'entreprise de l'utilisateur.
   const supabase = await createClient();
-  const { data } = await supabase.from("instruments").select("date_prochaine, statut").is("deleted_at", null);
+  const [s, { data }] = await Promise.all([
+    requireSession(),
+    supabase.from("instruments").select("date_prochaine, statut").is("deleted_at", null),
+  ]);
   const rows = data ?? [];
   const alerts = rows.filter((r) => r.statut === "En service" && ["expire", "urgent", "bientot"].includes(urgencyOf(r.date_prochaine))).length;
   // Même palette pour tous les clients (sauge / bordeaux / orange, app/globals.css) : plus de couleur propre à chaque entreprise.
