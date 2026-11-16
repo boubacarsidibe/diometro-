@@ -15,6 +15,7 @@ const ENTITY: Record<string, { noun: string; article: string }> = {
   inventory_runs: { noun: "inventaire", article: "de l'" },
   attachments: { noun: "pièce jointe", article: "de la " },
   tenants: { noun: "entreprise", article: "de l'" },
+  sessions: { noun: "connexion", article: "de la " },
 };
 
 const FIELD: Record<string, string> = {
@@ -66,6 +67,13 @@ export function describeAudit(r: AuditRow, tz?: string): AuditView {
   const current = (r.action === "update" ? after : r.detail) as Json | null;
   const object = objectName(r.entity, current, tz) || r.entity_id.slice(0, 8);
 
+  if (r.entity === "sessions") {
+    const m = typeof r.detail?.methode === "string" ? String(r.detail.methode) : "";
+    const motif: Record<string, string> = { invalid: "code incorrect", expired: "code expiré", locked: "trop d'essais", none: "aucun code en attente" };
+    if (r.action === "login") return { label: "Connexion", object: m, changes: [] };
+    if (r.action === "logout") return { label: "Déconnexion", object: "", changes: [] };
+    if (r.action === "login_failed") return { label: "Échec de connexion", object: [m, motif[String(r.detail?.motif)] ?? ""].filter(Boolean).join(" · "), changes: [] };
+  }
   if (r.action === "platform_update") return { label: "Modification par l'administrateur de la plateforme", object, changes: [] };
   if (r.action === "insert") return { label: `Création ${e.article}${e.noun}`, object, changes: [] };
   if (r.action === "delete") return { label: `Suppression ${e.article}${e.noun}`, object, changes: [] };
