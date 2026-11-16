@@ -31,29 +31,31 @@ export const requireSession = cache(async (): Promise<Session> => {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("display_name, role, active, tenant_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  // Les vérifications indépendantes partent en même temps (un aller-retour vers la base au lieu de trois).
+  // L'ordre des contrôles et des redirections reste le même qu'avant.
+  const [{ data: profile }, { data: mfaOk }, { data: platform }] = await Promise.all([
+    supabase.from("profiles").select("display_name, role, active, tenant_id").eq("user_id", user.id).maybeSingle(),
+    // Second facteur validé pour cette session : application d'authentification (aal2) ou code e-mail (même règle que la base).
+    supabase.rpc("mfa_ok"),
+    supabase.rpc("is_platform_admin"),
+  ]);
   if (!profile) redirect("/onboarding");
   if (!profile.active) {
     await supabase.auth.signOut();
     redirect("/login?error=inactive");
   }
-
-  // Second facteur validé pour cette session : application d'authentification (aal2) ou code e-mail (même règle que la base).
-  const { data: mfaOk } = await supabase.rpc("mfa_ok");
   if (mfaOk !== true) redirect("/mfa");
 
   // Entreprise bloquée ou abonnement expiré : la base masque ses données, on affiche un message clair.
-  const { data: tenant } = await supabase.from("tenants").select("id, name, accent, logo_data, accreditation_label, currency, buildings, plan, plan_expires_at").eq("id", profile.tenant_id).maybeSingle();
-  // Lu à part : si la migration 0013 n'est pas encore appliquée, la requête échoue sans bloquer la session (Dakar par défaut).
-  const { data: tzRow } = await supabase.from("tenants").select("time_zone, country").eq("id", profile.tenant_id).maybeSingle();
+  // Fuseau lu à part : si la migration 0013 n'est pas encore appliquée, cette requête échoue sans bloquer la session (Dakar par défaut).
+  // Les deux lectures partent en même temps.
+  const [{ data: tenant }, { data: tzRow }] = await Promise.all([
+    supabase.from("tenants").select("id, name, accent, logo_data, accreditation_label, currency, buildings, plan, plan_expires_at").eq("id", profile.tenant_id).maybeSingle(),
+    supabase.from("tenants").select("time_zone, country").eq("id", profile.tenant_id).maybeSingle(),
+  ]);
   const tzValue: unknown = tzRow?.time_zone;
   const timeZone = typeof tzValue === "string" && isValidTimeZone(tzValue) ? tzValue : DEFAULT_TIME_ZONE;
   if (!tenant) redirect("/suspendu");
-  const { data: platform } = await supabase.rpc("is_platform_admin");
 
   return {
     userId: user.id,
