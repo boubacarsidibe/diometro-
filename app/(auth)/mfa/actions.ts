@@ -101,4 +101,5 @@ export async function rememberTotp(): Promise<void> {
   await s.supabase.rpc("set_mfa_method", { p_method: "totp" });
   // Journalisé seulement si la double authentification est réellement validée (jeton aal2 signé).
   if (s.aal === "aal2") await logSessionEvent(s.userId, "login", { methode: "Application d'authentification" });
+  else console.error("Journal des connexions : jeton non aal2 après validation", s.aal || "vide");
 }

@@ -10,10 +10,12 @@ export async function logSessionEvent(userId: string, action: SessionEvent, deta
   try {
     const admin = createAdminClient();
     const { data: profile } = await admin.from("profiles").select("tenant_id").eq("user_id", userId).maybeSingle();
-    if (!profile?.tenant_id) return;
+    if (!profile?.tenant_id) { console.error("Journal des connexions : profil introuvable", action); return; }
     const { error } = await admin.from("audit_log").insert({ tenant_id: profile.tenant_id, user_id: userId, action, entity: "sessions", entity_id: userId, detail });
-    if (error) console.error("Journal des connexions : écriture refusée", error.code);
-  } catch {
+    if (error) console.error("Journal des connexions : écriture refusée", action, error.code, error.message);
+    else console.info("Journal des connexions : enregistré", action);
+  } catch (e) {
     // Journal indisponible (clé serveur absente) : la connexion elle-même n'est jamais bloquée.
+    console.error("Journal des connexions : indisponible", action, e instanceof Error ? e.message : "erreur");
   }
 }
