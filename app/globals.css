@@ -164,6 +164,8 @@ tr.row-yellow td:first-child { box-shadow: inset 3px 0 0 var(--yellow); }
 .auth-box .field + .field { margin-top: 12px; }
 .auth-box .form-actions .btn { width: 100%; justify-content: center; }
 .auth-links { margin-top: 14px; display: flex; justify-content: space-between; font-size: 13px; }
+.auth-forget { margin-top: 10px; }
+.auth-forget .linklike { background: none; border: 0; padding: 0; font: inherit; font-size: 13px; color: var(--text-soft); text-decoration: underline; cursor: pointer; }
 .qr { display: block; margin: 12px auto; width: 180px; height: 180px; }
 .secret { font-family: Consolas, monospace; font-size: 12px; background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 8px; word-break: break-all; }
 dl.details { display: grid; grid-template-columns: minmax(0, 160px) minmax(0, 1fr); gap: 8px 16px; font-size: 14px; }

@@ -6,7 +6,7 @@ import { SubmitButton } from "@/components/SubmitButton";
 import type { FormState } from "@/lib/form";
 
 // type "buildings" : liste de bâtiments (un par ligne), voir components/BuildingsEditor.tsx.
-type Input = { name: string; label: string; type?: string; autoComplete?: string; hint?: string; required?: boolean };
+type Input = { name: string; label: string; type?: string; autoComplete?: string; hint?: string; required?: boolean; defaultValue?: string };
 
 // idPrefix : rend les identifiants uniques quand deux formulaires partagent la page (connexion et inscription).
 export function AuthForm({
@@ -25,7 +25,7 @@ export function AuthForm({
             ? <BuildingsEditor id={`${idPrefix}${i.name}`} name={i.name} initial={(state.values?.[i.name] ?? "").split("\n").map((b) => b.trim()).filter(Boolean)} />
             : i.type === "password"
             ? <PasswordInput id={`${idPrefix}${i.name}`} name={i.name} autoComplete={i.autoComplete} required={i.required !== false} meter={i.autoComplete === "new-password" && i.name === "password"} />
-            : <input id={`${idPrefix}${i.name}`} name={i.name} type={i.type ?? "text"} className="input" autoComplete={i.autoComplete} defaultValue={state.values?.[i.name] ?? ""} required={i.required !== false} />}
+            : <input id={`${idPrefix}${i.name}`} name={i.name} type={i.type ?? "text"} className="input" autoComplete={i.autoComplete} defaultValue={state.values?.[i.name] ?? i.defaultValue ?? ""} required={i.required !== false} />}
           {i.hint && <span className="helper">{i.hint}</span>}
         </Field>
       ))}

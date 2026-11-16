@@ -3,7 +3,7 @@
 import { cookies, headers } from "next/headers";
 import { logSessionEvent } from "@/lib/session-log";
 import { redirect } from "next/navigation";
-import { createClient, REMEMBER_COOKIE } from "@/lib/supabase/server";
+import { createClient, LAST_EMAIL_COOKIE, REMEMBER_COOKIE } from "@/lib/supabase/server";
 import { echoValues, parseForm, type FormState } from "@/lib/form";
 import { emailSchema, loginSchema, newPasswordSchema, onboardingSchema, registerSchema } from "@/lib/schemas";
 import { notifyNewTenant } from "@/lib/notify-platform";
@@ -27,6 +27,7 @@ export async function login(_: FormState, formData: FormData): Promise<FormState
   // Message générique : ne révèle pas si le compte existe.
   if (error) return { error: "Email ou mot de passe invalide.", values: echoValues(formData) };
   store.set(REMEMBER_COOKIE, persist ? "1" : "0", { httpOnly: false, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", ...(persist ? { maxAge: 400 * 24 * 3600 } : {}) });
+  store.set(LAST_EMAIL_COOKIE, parsed.data.email, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 400 * 24 * 3600 });
   redirect("/dashboard");
 }
 
@@ -101,6 +102,12 @@ export async function createCompany(_: FormState, formData: FormData): Promise<F
   if (tenantId) await supabase.from("tenants").update({ time_zone: tz, country }).eq("id", tenantId);
   await notifyNewTenant({ company: parsed.data.company, displayName: parsed.data.displayName, sector: parsed.data.sector, phone: parsed.data.phone, userEmail: user.email ?? "", appUrl: await siteUrl() });
   redirect("/mfa");
+}
+
+// « Ce n'est pas vous ? » : oublie l'adresse mémorisée sur cet appareil.
+export async function forgetEmail() {
+  (await cookies()).delete(LAST_EMAIL_COOKIE);
+  redirect("/login");
 }
 
 export async function logout() {

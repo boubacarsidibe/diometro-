@@ -4,6 +4,7 @@ import { publicEnv } from "@/lib/env";
 import { REMEMBER_COOKIE, sessionScoped } from "@/lib/supabase/remember";
 
 export { REMEMBER_COOKIE };
+export { LAST_EMAIL_COOKIE } from "@/lib/supabase/remember";
 
 export async function createClient(opts: { persist?: boolean } = {}) {
   const store = await cookies();

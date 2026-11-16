@@ -2,6 +2,8 @@
 // à la fermeture du navigateur (cookies sans date d'expiration). Sans ce cookie : session conservée (comportement d'avant).
 // Lisible par le navigateur (pas httpOnly) : le client Supabase du navigateur doit aussi l'appliquer. Il ne contient rien de secret.
 export const REMEMBER_COOKIE = "dm_remember";
+// Dernière adresse e-mail connectée sur cet appareil : préremplit la connexion. Jamais de mot de passe.
+export const LAST_EMAIL_COOKIE = "dm_last_email";
 
 type Opts = { maxAge?: number; expires?: Date | number | string } & Record<string, unknown>;
 

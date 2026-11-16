@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { AuthForm } from "@/components/AuthForm";
 import { TRIAL_DAYS, offerById } from "@/lib/plans";
-import { login, logout, register } from "./actions";
+import { forgetEmail, login, logout, register } from "./actions";
 
 const LOGIN_ERRORS: Record<string, string> = {
   inactive: "Ce compte est désactivé. Contactez votre administrateur.",
@@ -9,7 +9,7 @@ const LOGIN_ERRORS: Record<string, string> = {
 };
 
 // Contenu des deux formulaires, partagé par /login et /register (la carte affiche les deux).
-export function LoginPane({ error, current }: { error?: string; current?: string | null }) {
+export function LoginPane({ error, current, lastEmail }: { error?: string; current?: string | null; lastEmail?: string }) {
   return (
     <>
       <h1>Connexion</h1>
@@ -30,11 +30,12 @@ export function LoginPane({ error, current }: { error?: string; current?: string
         idPrefix="login-"
         initialError={error ? LOGIN_ERRORS[error] : undefined}
         inputs={[
-          { name: "email", label: "Email", type: "email", autoComplete: "username" },
+          { name: "email", label: "Email", type: "email", autoComplete: "username", defaultValue: lastEmail },
           { name: "password", label: "Mot de passe", type: "password", autoComplete: "current-password" },
         ]}
         checks={[{ name: "remember", optional: true, label: <>Rester connecté sur cet appareil <span className="helper">(à ne pas cocher sur un ordinateur partagé)</span></> }]}
       />
+      {lastEmail ? <form action={forgetEmail} className="auth-forget"><button className="linklike" type="submit">Ce n&apos;est pas vous ? Effacer l&apos;adresse mémorisée</button></form> : null}
       <div className="auth-links">
         <Link href="/forgot-password">Mot de passe oublié ?</Link>
         <a href="/register" data-au-go="signup">Inscrire mon entreprise</a>
