@@ -1,22 +1,21 @@
 "use client";
-import { useActionState, useEffect, useMemo, useState } from "react";
-import type { FormState } from "@/lib/form";
+import Link from "next/link";
+import { useMemo, useState } from "react";
 import { PLANS } from "@/lib/schemas";
 import { fmtDate } from "@/lib/dates";
-import { daysSince, daysUntil, fcfa, followUps, monthlyRevenue, stateOf, type ConsoleTenant } from "@/lib/console";
+import { ManageButton, RelanceButton } from "./TenantDrawers";
+import { daysSince, daysUntil, fcfa, followUps, monthlyRevenue, stateOf, type ConsoleTenant, planName } from "@/lib/console";
 
 type Filter = "" | "paying" | "trial" | "follow";
-const planName = (id: string) => PLANS.find((p) => p.id === id)?.nom ?? id;
 
-export function ConsoleBoard({ tenants, today, action, middle, bottom }: {
-  tenants: ConsoleTenant[]; today: string; action: (s: FormState, f: FormData) => Promise<FormState>;
+export function ConsoleBoard({ tenants, today, middle, bottom }: {
+  tenants: ConsoleTenant[]; today: string;
   middle: React.ReactNode; bottom: React.ReactNode;
 }) {
   const [kf, setKf] = useState<Filter>("");
   const [q, setQ] = useState("");
   const [fs, setFs] = useState("");
   const [fp, setFp] = useState("");
-  const [open, setOpen] = useState<ConsoleTenant | null>(null);
 
   const follow = useMemo(() => new Set(followUps(tenants, today).map((f) => f.tenant.id)), [tenants, today]);
   const mrr = tenants.reduce((s, t) => s + monthlyRevenue(t, today), 0);
@@ -86,7 +85,7 @@ export function ConsoleBoard({ tenants, today, action, middle, bottom }: {
                 const rev = monthlyRevenue(t, today);
                 return (
                   <tr key={t.id}>
-                    <td><b>{t.name}</b><div className="cs-muted">{t.admin_email ?? `créée le ${fmtDate(t.created_at)}`}</div></td>
+                    <td><Link className="cs-link" href={`/admin/entreprises/${t.id}`}><b>{t.name}</b></Link><div className="cs-muted">{t.admin_email ?? `créée le ${fmtDate(t.created_at)}`}</div></td>
                     <td><span className="cs-pill">{planName(t.plan)}</span></td>
                     <td>
                       <div className="cs-cap-t">{t.instruments} / {t.max_instruments ?? "illimité"}{over && <span className="cs-over">Dépassement</span>}</div>
@@ -96,7 +95,7 @@ export function ConsoleBoard({ tenants, today, action, middle, bottom }: {
                     <td className={idle !== null && idle >= 7 ? "cs-late" : undefined}>{idle === null ? "—" : idle === 0 ? "Aujourd'hui" : idle === 1 ? "Hier" : `Il y a ${idle} j`}</td>
                     <td className={left !== null && left >= 0 && left <= 10 ? "cs-late" : undefined}>{t.plan_expires_at ? `${fmtDate(t.plan_expires_at)}${left !== null && left < 0 ? " · terminé" : left !== null && left <= 10 ? ` · ${left} j` : ""}` : "Sans fin"}</td>
                     <td>{st === "blocked" ? <span className="cs-tag bad">Bloquée</span> : st === "expired" ? <span className="cs-tag warn">Expirée</span> : <span className="cs-tag ok">Active</span>}</td>
-                    <td><button type="button" className="cs-btn small" onClick={() => setOpen(t)}>Gérer</button></td>
+                    <td><div className="cs-acts">{follow.has(t.id) && <RelanceButton t={t} today={today} />}<ManageButton t={t} today={today} /></div></td>
                   </tr>
                 );
               }) : <tr><td colSpan={8} className="cs-empty">Aucune entreprise ne correspond à ces filtres.</td></tr>}
@@ -108,59 +107,6 @@ export function ConsoleBoard({ tenants, today, action, middle, bottom }: {
 
       {bottom}
 
-      {open && <ManageDrawer key={open.id} t={open} today={today} action={action} onClose={() => setOpen(null)} />}
     </div>
-  );
-}
-
-function ManageDrawer({ t, today, action, onClose }: { t: ConsoleTenant; today: string; action: (s: FormState, f: FormData) => Promise<FormState>; onClose: () => void }) {
-  const [state, formAction, pending] = useActionState(action, {});
-  const [plan, setPlan] = useState(t.plan);
-  const [max, setMax] = useState(t.max_instruments == null ? "" : String(t.max_instruments));
-  const [end, setEnd] = useState(t.plan_expires_at ?? "");
-  useEffect(() => {
-    const k = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", k);
-    return () => window.removeEventListener("keydown", k);
-  }, [onClose]);
-  const extend = (n: number) => {
-    const base = end && daysUntil(end, today) > 0 ? end : today;
-    const d = new Date(base + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); setEnd(d.toISOString().slice(0, 10));
-  };
-  const idle = daysSince(t.last_sign_in_at, today);
-  return (
-    <>
-      <div className="cs-scrim" onClick={onClose} />
-      <aside className="cs-drawer" role="dialog" aria-modal="true" aria-labelledby="cs-d-title">
-        <header><div><h3 id="cs-d-title">{t.name}</h3><div className="cs-muted">Inscrite le {fmtDate(t.created_at)}</div></div><button type="button" className="cs-btn small" onClick={onClose}>Fermer</button></header>
-        <form action={formAction} className="cs-d-body">
-          <input type="hidden" name="tenant_id" value={t.id} />
-          <div className="cs-d-stats">
-            <div><b>{t.users}</b><small>utilisateurs</small></div>
-            <div><b>{t.instruments}</b><small>instruments</small></div>
-            <div><b>{idle === null ? "—" : idle === 0 ? "Auj." : `${idle} j`}</b><small>dernière connexion</small></div>
-          </div>
-          {t.admin_email && <p className="cs-muted">Administrateur : <span className="cs-sel">{t.admin_email}</span></p>}
-          <label className="cs-field">Statut du compte
-            <select name="status" className="cs-input" defaultValue={t.status}><option value="active">Actif</option><option value="blocked">Bloqué</option></select>
-          </label>
-          <label className="cs-field">Formule
-            <select name="plan" className="cs-input" value={plan} onChange={(e) => { setPlan(e.target.value); const p = PLANS.find((x) => x.id === e.target.value); setMax(p?.instruments == null ? "" : String(p.instruments)); }}>
-              {PLANS.map((p) => <option key={p.id} value={p.id}>{p.nom}</option>)}
-            </select>
-          </label>
-          <label className="cs-field">Limite d&apos;instruments
-            <input name="max_instruments" type="number" min={0} className="cs-input" value={max} onChange={(e) => setMax(e.target.value)} placeholder="Illimité" />
-          </label>
-          <label className="cs-field">Fin d&apos;abonnement
-            <input name="expires" type="date" className="cs-input" value={end} onChange={(e) => setEnd(e.target.value)} />
-          </label>
-          <div className="cs-muted">Prolonger : <button type="button" className="cs-btn small" onClick={() => extend(30)}>+ 30 jours</button> <button type="button" className="cs-btn small" onClick={() => extend(365)}>+ 1 an</button></div>
-          {state.error && <p className="cs-err" role="alert">{state.error}</p>}
-          {state.ok && <p className="cs-ok" role="status">{state.ok}</p>}
-          <div className="cs-d-actions"><button type="button" className="cs-btn" onClick={onClose}>Fermer</button><button className="cs-btn primary" disabled={pending}>{pending ? "Enregistrement…" : "Appliquer"}</button></div>
-        </form>
-      </aside>
-    </>
   );
 }

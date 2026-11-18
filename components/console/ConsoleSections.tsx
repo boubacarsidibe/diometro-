@@ -1,4 +1,6 @@
 import { conversion, followUps, signupsByMonth, type ConsoleTenant } from "@/lib/console";
+import Link from "next/link";
+import { RelanceButton } from "./TenantDrawers";
 import { OFFERS, PRIX_PUBLIES } from "@/lib/plans";
 
 // Graphique des inscriptions, jauge de conversion, liste à relancer et répartition par formule (rendu serveur).
@@ -58,7 +60,7 @@ export function consoleSections(tenants: ConsoleTenant[], today: string) {
       <section className="cs-panel">
         <div className="cs-ph"><h2>À relancer</h2><span className="cs-muted">{follow.length}</span></div>
         {follow.length ? (
-          <ul className="cs-list">{follow.map((f) => <li key={f.tenant.id}><span><b>{f.tenant.name}</b><br /><span className="cs-muted">{f.reason}</span></span>{f.tenant.admin_email && <span className="cs-muted">{f.tenant.admin_email}</span>}</li>)}</ul>
+          <ul className="cs-list">{follow.map((f) => <li key={f.tenant.id}><span><b>{f.tenant.name}</b><br /><span className="cs-muted">{f.reason}{f.tenant.admin_email ? ` · ${f.tenant.admin_email}` : ""}</span></span><span className="cs-acts"><Link className="cs-btn small" href={`/admin/entreprises/${f.tenant.id}`}>Fiche</Link><RelanceButton t={f.tenant} today={today} primary /></span></li>)}</ul>
         ) : <p className="cs-muted">Personne à relancer pour l&apos;instant.</p>}
       </section>
       <section className="cs-panel">
