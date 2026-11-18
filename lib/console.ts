@@ -1,5 +1,9 @@
 // Calculs de la console plateforme (fonctions pures, testées dans tests/console.test.ts).
 import { offerById } from "@/lib/plans";
+import { PLANS } from "@/lib/schemas";
+
+/** Nom affiché d'une formule. */
+export const planName = (id: string) => PLANS.find((p) => p.id === id)?.nom ?? id;
 
 export type ConsoleTenant = {
   id: string; name: string; status: string; plan: string; plan_expires_at: string | null; created_at: string;
@@ -34,6 +38,10 @@ export function monthlyRevenue(t: ConsoleTenant, today: string): number {
   if (t.plan === "essai" || stateOf(t, today) !== "active") return 0;
   return offerById(t.plan)?.prix?.mensuel ?? 0;
 }
+
+/** Prix mensuel et annuel publiés d'une formule (null pour l'essai et le sur-mesure). */
+export const offerMonthly = (plan: string) => offerById(plan)?.prix?.mensuel ?? null;
+export const offerAnnual = (plan: string) => offerById(plan)?.prix?.annuel ?? null;
 
 export type FollowUp = { tenant: ConsoleTenant; reason: string };
 
@@ -78,3 +86,46 @@ export function conversion(list: ConsoleTenant[], today: string, trialDays = 30)
 }
 
 export const fcfa = (n: number) => `${n.toLocaleString("fr-FR").replace(/ | /g, " ")} FCFA`;
+
+/** Message de relance pré-rempli selon la raison (essai fini, limite dépassée, échéance proche, inactivité). */
+export function relanceMessage(t: ConsoleTenant, today: string, planLabel: (id: string) => string): { subject: string; body: string } {
+  const fr = (d: string) => d.slice(0, 10).split("-").reverse().join("/");
+  const left = t.plan_expires_at ? daysUntil(t.plan_expires_at, today) : null;
+  const idle = daysSince(t.last_sign_in_at, today);
+  const st = stateOf(t, today);
+  const essai = t.plan === "essai";
+  if (st === "expired") return {
+    subject: essai ? "Votre essai DIOMETRO est terminé" : "Votre abonnement DIOMETRO est arrivé à échéance",
+    body: `Bonjour,\n\n${essai ? "Votre essai gratuit" : "Votre abonnement"} DIOMETRO pour ${t.name} s'est terminé le ${fr(t.plan_expires_at!)}. Vos données sont conservées et votre compte est en lecture seule.\n\nPour continuer à suivre vos ${t.instruments} instruments, il suffit de choisir une formule. Je peux vous aider à choisir celle qui correspond à votre parc.\n\nSouhaitez-vous que nous en parlions quelques minutes ?\n\nBien cordialement,`,
+  };
+  if (t.max_instruments != null && t.instruments > t.max_instruments) return {
+    subject: "Votre parc dépasse la limite de votre formule DIOMETRO",
+    body: `Bonjour,\n\nVotre espace DIOMETRO compte aujourd'hui ${t.instruments} instruments, pour une limite de ${t.max_instruments} dans votre formule ${planLabel(t.plan)}.\n\nPour continuer à en ajouter, une formule supérieure est nécessaire. Je peux vous présenter les options adaptées à votre parc.\n\nBien cordialement,`,
+  };
+  if (left !== null && left <= 10) return {
+    subject: essai ? `Votre essai DIOMETRO se termine dans ${left} jour${left > 1 ? "s" : ""}` : "Votre abonnement DIOMETRO arrive à échéance",
+    body: `Bonjour,\n\n${essai ? "Votre essai gratuit" : "Votre abonnement"} DIOMETRO pour ${t.name} se termine le ${fr(t.plan_expires_at!)}.\n\nAvez-vous des questions sur l'outil ou sur les formules ? Je reste disponible pour vous accompagner.\n\nBien cordialement,`,
+  };
+  return {
+    subject: "Comment se passe votre utilisation de DIOMETRO ?",
+    body: `Bonjour,\n\n${idle !== null ? `Votre espace DIOMETRO n'a pas été utilisé depuis ${idle} jours. ` : ""}Avez-vous rencontré une difficulté ?\n\nJe peux vous aider à importer vos instruments ou à configurer vos alertes d'échéance.\n\nBien cordialement,`,
+  };
+}
+
+export type JournalEntry = { at: string; tenant_id: string; tenant_name: string; actor: string | null; kind: string; detail: Record<string, unknown> };
+export type JournalChange = { label: string; before: string; after: string };
+
+/** Changements lisibles d'une modification d'abonnement (detail.before / detail.after de audit_log). */
+export function journalChanges(e: JournalEntry, planLabel: (id: string) => string): JournalChange[] {
+  if (e.kind !== "modification") return [];
+  const b = (e.detail.before ?? {}) as Record<string, unknown>, a = (e.detail.after ?? {}) as Record<string, unknown>;
+  const show: Record<string, [string, (v: unknown) => string]> = {
+    status: ["Statut", (v) => (v === "blocked" ? "Bloqué" : "Actif")],
+    plan: ["Formule", (v) => planLabel(String(v))],
+    max_instruments: ["Limite", (v) => (v == null ? "illimité" : String(v))],
+    plan_expires_at: ["Fin d'abonnement", (v) => (v ? String(v).slice(0, 10).split("-").reverse().join("/") : "sans fin")],
+  };
+  return Object.entries(show)
+    .filter(([k]) => JSON.stringify(b[k] ?? null) !== JSON.stringify(a[k] ?? null))
+    .map(([k, [label, f]]) => ({ label, before: f(b[k] ?? null), after: f(a[k] ?? null) }));
+}

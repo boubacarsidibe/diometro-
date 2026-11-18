@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { conversion, daysSince, daysUntil, followUps, monthlyRevenue, signupsByMonth, stateOf, type ConsoleTenant } from "@/lib/console";
+import { conversion, daysSince, daysUntil, followUps, journalChanges, monthlyRevenue, relanceMessage, signupsByMonth, stateOf, type ConsoleTenant } from "@/lib/console";
 
 const T = (o: Partial<ConsoleTenant>): ConsoleTenant => ({
   id: "x", name: "Démo", status: "active", plan: "essai", plan_expires_at: null, created_at: "2026-11-01T10:00:00Z",
@@ -58,6 +58,53 @@ describe("console plateforme", () => {
     ], today);
     expect(c).toEqual({ eligible: 2, converted: 1, rate: 0.5 });
     expect(conversion([], today).rate).toBeNull();
+  });
+});
+
+describe("relances et journal", () => {
+  const pl = (id: string) => ({ essai: "Essai", standard: "Standard" })[id] ?? id;
+  it("choisit le message de relance selon la raison", () => {
+    expect(relanceMessage(T({ plan_expires_at: "2026-11-10" }), today, pl).subject).toBe("Votre essai DIOMETRO est terminé");
+    expect(relanceMessage(T({ instruments: 60, plan_expires_at: "2027-01-01" }), today, pl).subject).toContain("dépasse la limite");
+    expect(relanceMessage(T({ plan_expires_at: "2026-11-25" }), today, pl).subject).toBe("Votre essai DIOMETRO se termine dans 8 jours");
+    const idle = relanceMessage(T({ plan: "standard", plan_expires_at: "2027-05-01", last_sign_in_at: "2026-11-01T08:00:00Z" }), today, pl);
+    expect(idle.subject).toBe("Comment se passe votre utilisation de DIOMETRO ?");
+    expect(idle.body.startsWith("Bonjour,")).toBe(true);
+    expect(idle.body.endsWith("Bien cordialement,")).toBe(true);
+    expect(idle.body).not.toMatch(/—/);
+  });
+
+  it("décrit les changements d'abonnement avant et après", () => {
+    const e = { at: "", tenant_id: "x", tenant_name: "A", actor: null, kind: "modification",
+      detail: { before: { status: "active", plan: "essai", plan_expires_at: "2026-11-20", max_instruments: 50 },
+                after: { status: "active", plan: "standard", plan_expires_at: "2027-11-20", max_instruments: 200 } } };
+    expect(journalChanges(e, pl)).toEqual([
+      { label: "Formule", before: "Essai", after: "Standard" },
+      { label: "Limite", before: "50", after: "200" },
+      { label: "Fin d'abonnement", before: "20/11/2026", after: "20/11/2027" },
+    ]);
+    expect(journalChanges({ ...e, kind: "relance" }, pl)).toEqual([]);
+  });
+});
+
+describe("journal et relances (migration 0015)", () => {
+  it("journalise inscriptions, modifications et relances, réservé à la plateforme", async () => {
+    const { createContext, rows, fails, ID } = await import("./helpers");
+    const c = await createContext();
+    const P: [string, string] = [ID.PLATFORM, "aal2"];
+    const a = { id: c.tenantA };
+    await rows(c.db, `select public.platform_update_tenant('${a.id}', 'active', 'standard', '2027-11-20', 200)`, P);
+    await rows(c.db, `select public.platform_log_relance('${a.id}', 'alice@a.sn', 'Votre essai DIOMETRO est terminé')`, P);
+    const j = await rows<{ kind: string; tenant_name: string; detail: Record<string, unknown> }>(c.db, `select kind, tenant_name, detail from public.platform_journal('${a.id}')`, P);
+    expect(j.map((x) => x.kind).sort()).toEqual(["inscription", "modification", "relance"]);
+    expect(j.every((x) => x.tenant_name === "Entreprise A")).toBe(true);
+    expect((j.find((x) => x.kind === "modification")!.detail.after as Record<string, unknown>).plan).toBe("standard");
+    expect(j.find((x) => x.kind === "relance")!.detail.to).toBe("alice@a.sn");
+    const all = await rows<{ tenant_id: string }>(c.db, "select tenant_id from public.platform_journal()", P);
+    expect(new Set(all.map((x) => x.tenant_id)).size).toBeGreaterThan(1);
+    await fails(c.db, "select * from public.platform_journal()", [ID.A_ADMIN, "aal2"]);
+    await fails(c.db, `select public.platform_log_relance('${a.id}', 'x@y.z', 's')`, [ID.A_ADMIN, "aal2"]);
+    await fails(c.db, "select * from public.platform_events", [ID.A_ADMIN, "aal2"]);
   });
 });
 
